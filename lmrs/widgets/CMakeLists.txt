@@ -3,6 +3,8 @@ add_library (
 
     actionutils.cpp
     actionutils.h
+    documentmanager.cpp
+    documentmanager.h
     navigationtoolbar.cpp
     navigationtoolbar.h
     recentfilemenu.cpp
