@@ -14,6 +14,7 @@ class Parameter;
 namespace lmrs::core {
 
 class Device;
+class DeviceFactory;
 
 using parameters::Parameter;
 
@@ -319,7 +320,46 @@ enum class DeviceInfo {
 
 Q_ENUM_NS(DeviceInfo)
 
-class DeviceFactory;
+class DeviceInfoModel : public QAbstractTableModel
+{
+    Q_OBJECT
+    Q_PROPERTY(lmrs::core::Device *device READ device WRITE setDevice NOTIFY deviceChanged FINAL)
+
+public:
+    enum class Column {
+        Name,
+        Value,
+    };
+
+    Q_ENUM(Column)
+
+    using QAbstractTableModel::QAbstractTableModel;
+
+    void setDevice(Device *device);
+    Device *device() const;
+
+public: // QAbstractItemModel interface
+    int rowCount(const QModelIndex &parent) const override;
+    int columnCount(const QModelIndex &parent) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+signals:
+    void deviceChanged(lmrs::core::Device *device);
+
+private:
+    void onDeviceInfoChanged(QList<DeviceInfo> changedIds);
+
+    struct Row
+    {
+        QVariant value;
+        QString text;
+    };
+
+    QMap<DeviceInfo, Row> m_rows;
+    QPointer<Device> m_device;
+};
+
 class Device : public QObject
 {
     Q_OBJECT
@@ -410,46 +450,6 @@ inline void Device::observe(core::DeviceInfo id, Observable *observable,
     connect(observable, notify, this, updateDeviceInfo);
     updateDeviceInfo((observable->*getter)());
 }
-
-class DeviceInfoModel : public QAbstractTableModel
-{
-    Q_OBJECT
-    Q_PROPERTY(lmrs::core::Device *device READ device WRITE setDevice NOTIFY deviceChanged FINAL)
-
-public:
-    enum class Column {
-        Name,
-        Value,
-    };
-
-    Q_ENUM(Column)
-
-    using QAbstractTableModel::QAbstractTableModel;
-
-    void setDevice(Device *device);
-    Device *device() const;
-
-public: // QAbstractItemModel interface
-    int rowCount(const QModelIndex &parent) const override;
-    int columnCount(const QModelIndex &parent) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-signals:
-    void deviceChanged(lmrs::core::Device *device);
-
-private:
-    void onDeviceInfoChanged(QList<DeviceInfo> changedIds);
-
-    struct Row
-    {
-        QVariant value;
-        QString text;
-    };
-
-    QMap<DeviceInfo, Row> m_rows;
-    QPointer<Device> m_device;
-};
 
 class DeviceFactory : public QObject
 {
