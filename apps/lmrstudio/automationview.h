@@ -15,6 +15,8 @@ public:
     explicit AutomationView(QWidget *parent = nullptr);
 
     QActionGroup *actionGroup(ActionCategory category) const override;
+    QString fileName() const override;
+    bool isModified() const override;
 
 public slots:
     bool open(QString newFileName);

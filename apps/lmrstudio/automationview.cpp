@@ -11,6 +11,7 @@
 #include <lmrs/gui/fontawesome.h>
 
 #include <lmrs/widgets/actionutils.h>
+#include <lmrs/widgets/documentmanager.h>
 #include <lmrs/widgets/recentfilemenu.h>
 
 #include <QActionGroup>
@@ -138,10 +139,22 @@ private:
 
 } // namespace
 
-class AutomationView::Private : public core::PrivateObject<AutomationView>
+class AutomationView::Private : public core::PrivateObject<AutomationView, widgets::DocumentManager, QString>
 {
 public:
     using PrivateObject::PrivateObject;
+
+    // widgets::DocumentManager interface ------------------------------------------------------------------------------
+
+    QString documentType() const override { return tr("automation plan"); }
+    QList<core::FileFormat> readableFileFormats() const override { return AutomationModelReader::fileFormats(); }
+    QList<core::FileFormat> writableFileFormats() const override { return AutomationModelWriter::fileFormats(); }
+
+    FileHandlerPointer readFile(QString fileName) override;
+    FileHandlerPointer writeFile(QString fileName) override;
+    void resetModel() override;
+
+    // model handling --------------------------------------------------------------------------------------------------
 
     void createActionItem(const automation::Action *prototype);
     void createEventItem(const automation::Event *prototype);
@@ -149,49 +162,34 @@ public:
     void onClipboardChanged(QClipboard::Mode mode);
     void onCurrentIndexChanged();
 
-    void onFileNew();
-    void onFileOpen();
-    void onFileSave();
-    void onFileSaveAs();
-
     void onEditCut();
     void onEditCopy();
     void onEditPaste();
     void onEditDelete();
 
     void setModel(core::automation::AutomationModel *newModel);
-    void markDirty() { qInfo() << __func__; setDirty(true); }
-    void setDirty(bool isDirty);
 
-    QDialog::DialogCode open(QString newFileName);
-    QDialog::DialogCode maybeSaveChanges();
-    QDialog::DialogCode saveChanges();
-
-    void resetModel();
-
-    bool hasPendingChanges = false;
-    QString fileName;
+    // fields ----------------------------------------------------------------------------------------------------------
 
     core::ConstPointer<AutomationTypeModel> types{this};
     core::ConstPointer<AutomationCanvas> canvas{q()};
 
     QHash<ActionCategory, QActionGroup *> actionGroups;
-    core::ConstPointer<widgets::RecentFileMenu> recentFilesMenu{"AutomationView/RecentFiles"_L1, q()};
 
     core::ConstPointer<QAction> fileNewAction = createAction(icon(gui::fontawesome::fasFile),
                                                              tr("&New"), tr("Create new automation plan"),
-                                                             QKeySequence::New, this, &Private::onFileNew);
+                                                             QKeySequence::New, this, &DocumentManager::reset);
     core::ConstPointer<QAction> fileOpenAction = createAction(icon(gui::fontawesome::fasFolderOpen),
                                                               tr("&Open..."), tr("Open automation plan from disk"),
-                                                              QKeySequence::Open, this, &Private::onFileOpen);
+                                                              QKeySequence::Open, this, &DocumentManager::open);
     core::ConstPointer<QAction> fileOpenRecentAction = q()->addAction(tr("Recent&ly used files"));
 
     core::ConstPointer<QAction> fileSaveAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
-                                                              tr("&Save"), tr("&Save current automation plan to disk"),
-                                                              QKeySequence::Save, this, &Private::onFileSave);
+                                                              tr("&Save"), tr("Save current automation plan to disk"),
+                                                              QKeySequence::Save, this, &DocumentManager::save);
     core::ConstPointer<QAction> fileSaveAsAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
-                                                                tr("Save &as..."), tr("&Save current automation plan to disk, under new name"),
-                                                                QKeySequence::SaveAs, this, &Private::onFileSaveAs);
+                                                                tr("Save &as..."), tr("Save current automation plan to disk, under new name"),
+                                                                QKeySequence::SaveAs, this, &DocumentManager::saveAs);
 
     core::ConstPointer<QAction> editCutAction = createAction(icon(gui::fontawesome::fasScissors),
                                                              tr("C&ut"), tr("Copy currently selected item to clipboard, and then delete from view"),
@@ -210,7 +208,7 @@ public:
 
 AutomationView::AutomationView(QWidget *parent)
     : MainWindowView{parent}
-    , d{new Private{this}}
+    , d{new Private{"AutomationView"_L1, this}}
 {
     d->setModel(new AutomationModel{this});
 
@@ -232,10 +230,8 @@ AutomationView::AutomationView(QWidget *parent)
     toolBar->addAction(d->editPasteAction);
     toolBar->addAction(d->editDeleteAction);
 
-    d->recentFilesMenu->bindMenuAction(d->fileOpenRecentAction);
-    d->recentFilesMenu->bindToolBarAction(fileOpenToolBarAction, toolBar);
-
-    connect(d->recentFilesMenu, &widgets::RecentFileMenu::fileSelected, this, &AutomationView::open);
+    d->recentFilesMenu()->bindMenuAction(d->fileOpenRecentAction);
+    d->recentFilesMenu()->bindToolBarAction(fileOpenToolBarAction, toolBar);
 
     const auto typesGroup = new QActionGroup{this};
 
@@ -273,6 +269,19 @@ AutomationView::AutomationView(QWidget *parent)
 
     // -----------------------------------------------------------------------------------------------------------------
 
+    connect(d, &Private::modifiedChanged, d->fileSaveAction, &QAction::setEnabled);
+    d->fileSaveAction->setEnabled(d->isModified());
+
+    connect(d, &Private::fileNameChanged, this, [this](QString fileName) {
+        emit AutomationView::fileNameChanged(std::move(fileName), {});
+    });
+
+    connect(d, &Private::modifiedChanged, this, [this](bool modified) {
+        emit AutomationView::modifiedChanged(modified, {});
+    });
+
+    // -----------------------------------------------------------------------------------------------------------------
+
     d->actionGroups[ActionCategory::FileNew] = new QActionGroup{this};
     d->actionGroups[ActionCategory::FileNew]->addAction(d->fileNewAction);
 
@@ -300,7 +309,7 @@ AutomationView::AutomationView(QWidget *parent)
     layout->addWidget(d->canvas, 1, 0);
     layout->addWidget(typeSelector, 1, 1);
 
-    d->setDirty(false);
+    d->resetModified();
 }
 
 QActionGroup *AutomationView::actionGroup(ActionCategory category) const
@@ -308,9 +317,19 @@ QActionGroup *AutomationView::actionGroup(ActionCategory category) const
     return d->actionGroups[category];
 }
 
+QString AutomationView::fileName() const
+{
+    return d->fileName();
+}
+
+bool AutomationView::isModified() const
+{
+    return d->isModified();
+}
+
 bool AutomationView::open(QString newFileName)
 {
-    return d->open(std::move(newFileName)) == QDialog::Accepted;
+    return d->readFile(std::move(newFileName))->succeeded();
 }
 
 void AutomationView::Private::createEventItem(const automation::Event *prototype)
@@ -351,43 +370,6 @@ void AutomationView::Private::onCurrentIndexChanged()
     editCutAction->setEnabled(hasSelectedItem);
     editCopyAction->setEnabled(hasSelectedItem);
     editDeleteAction->setEnabled(hasSelectedItem);
-}
-
-void AutomationView::Private::onFileNew()
-{
-    if (maybeSaveChanges() == QDialog::Rejected)
-        return;
-
-    resetModel();
-}
-
-void AutomationView::Private::onFileOpen()
-{
-    if (maybeSaveChanges() == QDialog::Rejected)
-        return;
-
-    auto filters = core::FileFormat::openFileDialogFilter(AutomationModelReader::fileFormats());
-    auto newFileName = QFileDialog::getOpenFileName(q(), tr("Open Automation Plan"), {}, std::move(filters));
-
-    if (!newFileName.isEmpty())
-        q()->open(std::move(newFileName));
-}
-
-void AutomationView::Private::onFileSave()
-{
-    saveChanges();
-}
-
-void AutomationView::Private::onFileSaveAs()
-{
-    auto restoreFileName = qScopeGuard([this, oldFileName = fileName] {
-        fileName = std::move(oldFileName);
-    });
-
-    fileName.clear();
-
-    if (saveChanges() == QDialog::Accepted)
-        restoreFileName.dismiss();
 }
 
 void AutomationView::Private::onEditCut()
@@ -434,101 +416,38 @@ void AutomationView::Private::setModel(AutomationModel *newModel)
             oldModel->disconnect(this);
 
         canvas->setModel(newModel);
-        setDirty(false);
+        resetModified();
 
         if (newModel) {
-            connect(newModel, &AutomationModel::actionChanged, this, &Private::markDirty);
-            connect(newModel, &AutomationModel::eventChanged, this, &Private::markDirty);
-            connect(newModel, &AutomationModel::rowsInserted, this, &Private::markDirty);
-            connect(newModel, &AutomationModel::rowsMoved, this, &Private::markDirty);
-            connect(newModel, &AutomationModel::rowsRemoved, this, &Private::markDirty);
+            connect(newModel, &AutomationModel::actionChanged, this, &DocumentManager::markModified);
+            connect(newModel, &AutomationModel::eventChanged, this, &DocumentManager::markModified);
+            connect(newModel, &AutomationModel::rowsInserted, this, &DocumentManager::markModified);
+            connect(newModel, &AutomationModel::rowsMoved, this, &DocumentManager::markModified);
+            connect(newModel, &AutomationModel::rowsRemoved, this, &DocumentManager::markModified);
         }
     }
 }
 
-void AutomationView::Private::setDirty(bool isDirty)
+AutomationView::Private::FileHandlerPointer AutomationView::Private::readFile(QString fileName)
 {
-    hasPendingChanges = isDirty;
-    fileSaveAction->setEnabled(hasPendingChanges);
-}
+    auto reader = AutomationModelReader::fromFile(std::move(fileName));
 
-QDialog::DialogCode AutomationView::Private::open(QString newFileName)
-{
-    if (maybeSaveChanges() == QDialog::Rejected)
-        return QDialog::Rejected;
-
-    const auto reader = AutomationModelReader::fromFile(newFileName);
-
-    if (auto newModel = reader->read(types); !newModel) {
-        const auto fileInfo = QFileInfo{reader->fileName()};
-
-        QMessageBox::warning(q(), tr("Reading failed"),
-                             tr("Reading the automation plan <b>\"%1\"</b> from \"%2\" has failed.<br><br>%3").
-                             arg(fileInfo.fileName(), fileInfo.filePath(), reader->errorString()));
-
-        return QDialog::Rejected;
-    } else {
-        fileName = std::move(newFileName);
-        recentFilesMenu->addFileName(fileName);
+    if (auto newModel = reader->read(types))
         setModel(newModel.release());
-        return QDialog::Accepted;
-    }
+
+    return reader;
 }
 
-QDialog::DialogCode AutomationView::Private::maybeSaveChanges()
+widgets::DocumentManager::FileHandlerPointer AutomationView::Private::writeFile(QString fileName)
 {
-    if (!hasPendingChanges)
-        return QDialog::Accepted;
-
-    const auto result = QMessageBox::question(q(), tr("Save changes"),
-                                              tr("There are unsaved changes to your automation plan. "
-                                                 "Do you want to save them first?"),
-                                              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-
-    if (result == QMessageBox::Cancel)
-        return QDialog::Rejected;
-
-    if (result == QMessageBox::Discard) {
-        resetModel();
-        return QDialog::Accepted;
-    }
-
-    return saveChanges();
-}
-
-QDialog::DialogCode AutomationView::Private::saveChanges()
-{
-    const auto fileNameGuard = core::propertyGuard(q(), &AutomationView::fileName, &AutomationView::fileNameChanged);
-
-    if (fileName.isEmpty()) {
-        auto filters = core::FileFormat::saveFileDialogFilter(AutomationModelWriter::fileFormats());
-        fileName = QFileDialog::getSaveFileName(q(), tr("Save Automation Plan"), {}, std::move(filters));
-
-        if (fileName.isEmpty())
-            return QDialog::Rejected;
-    }
-
-    const auto writer = AutomationModelWriter::fromFile(fileName);
-
-    if (!writer->write(canvas->model())) {
-        const auto fileInfo = QFileInfo{writer->fileName()};
-
-        QMessageBox::warning(q(), tr("Saving failed"),
-                             tr("Saving your automation plan <b>\"%1\"</b> to \"%2\" has failed.<br><br>%3").
-                             arg(fileInfo.fileName(), fileInfo.filePath(), writer->errorString()));
-
-        return QDialog::Rejected;
-    }
-
-    setDirty(false);
-    recentFilesMenu->addFileName(fileName);
-
-    return QDialog::Accepted;
+    auto writer = AutomationModelWriter::fromFile(std::move(fileName));
+    const auto succeeded = writer->write(canvas->model());
+    Q_ASSERT(succeeded == writer->succeeded());
+    return writer;
 }
 
 void AutomationView::Private::resetModel()
 {
-    fileName.clear();
     canvas->model()->clear();
 }
 
