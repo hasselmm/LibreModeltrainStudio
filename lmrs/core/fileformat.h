@@ -43,33 +43,45 @@ struct FileFormat
 
 // =====================================================================================================================
 
-namespace internal {
-
-class FileFormatTranslations
+class FileFormatHandler
 {
     Q_GADGET
     QT_TR_FUNCTIONS
 
 public:
-    static QString unsupportedFileType();
+    explicit FileFormatHandler(QString fileName);
+    virtual ~FileFormatHandler();
+
+    [[nodiscard]] auto fileName() const { return m_fileName; }
+    [[nodiscard]] auto errorString() const { return m_errorString; }
+    [[nodiscard]] auto succeeded() const { return m_errorString.isEmpty(); }
+    [[nodiscard]] auto failed() const { return !succeeded(); }
+
+protected:
+    void reset() { m_errorString.clear(); }
+
+    void reportError(QString errorString);
+    void reportUnsupportedFileError();
+
+    template<typename T>
+    static auto fileFormats(const QList<QPair<FileFormat, T>> &registry)
+    {
+        auto formats = QList<FileFormat>{};
+        formats.reserve(registry.size());
+        std::transform(registry.begin(), registry.end(), std::back_inserter(formats),
+                       [](const auto &entry) { return entry.first; });
+        return formats;
+    }
+
+private:
+    QString m_fileName;
+    QString m_errorString;
 };
-
-template<typename T>
-auto fileFormats(const QList<QPair<FileFormat, T>> &registry)
-{
-    auto formats = QList<FileFormat>{};
-    formats.reserve(registry.size());
-    std::transform(registry.begin(), registry.end(), std::back_inserter(formats),
-                   [](const auto &entry) { return entry.first; });
-    return formats;
-}
-
-} // namespace interal
 
 // =====================================================================================================================
 
 template<typename T, typename... Args>
-class FileFormatReader
+class FileFormatReader : public FileFormatHandler
 {
 public:
     using ModelType = T;
@@ -79,31 +91,23 @@ public:
     using Factory = std::function<Pointer(QString)>;
     using Registry = QList<QPair<FileFormat, Factory>>;
 
-    explicit FileFormatReader(QString fileName) : m_fileName{std::move(fileName)} {}
-    virtual ~FileFormatReader() { reset(); }
+    using FileFormatHandler::FileFormatHandler;
 
-    static QList<FileFormat> fileFormats() { return internal::fileFormats(registry()); }
-    static Pointer fromFile(QString fileName);
-
-    virtual ModelPointer read(Args...) = 0;
-
-    [[nodiscard]] auto fileName() const { return m_fileName; }
-    [[nodiscard]] auto errorString() const { return m_errorString; }
+    static QList<FileFormat> fileFormats()
+    {
+        return FileFormatHandler::fileFormats(registry());
+    }
 
     static void registerFileFormat(FileFormat fileFormat, Factory factory)
     {
         registry().emplaceBack(std::move(fileFormat), std::move(factory));
     }
 
-protected:
-    void reportError(QString errorString) { m_errorString = std::move(errorString); }
-    virtual void reset() { m_errorString.clear(); }
+    static Pointer fromFile(QString fileName);
+    virtual ModelPointer read(Args...) = 0;
 
 private:
     [[nodiscard]] static Registry &registry();
-
-    QString m_fileName;
-    QString m_errorString;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -116,66 +120,12 @@ public:
 
     typename FallbackFileFormatReader::ModelPointer read(Args...) override
     {
-        FallbackFileFormatReader::reportError(internal::FileFormatTranslations::unsupportedFileType());
+        FileFormatHandler::reportUnsupportedFileError();
         return {};
     }
 };
 
-// =====================================================================================================================
-
-template<typename T>
-class FileFormatWriter
-{
-public:
-    using ModelType = T;
-
-    using Pointer = std::unique_ptr<FileFormatWriter>;
-    using Factory = std::function<Pointer(QString)>;
-    using Registry = QList<QPair<FileFormat, Factory>>;
-
-    explicit FileFormatWriter(QString fileName) : m_fileName{std::move(fileName)} {}
-    virtual ~FileFormatWriter() { reset(); }
-
-    [[nodiscard]] static QList<FileFormat> fileFormats() { return internal::fileFormats(registry()); }
-    [[nodiscard]] static inline Pointer fromFile(QString fileName);
-
-    virtual bool write(const ModelType *model) = 0;
-
-    [[nodiscard]] auto fileName() const noexcept { return m_fileName; }
-    [[nodiscard]] auto errorString() const noexcept { return m_errorString; }
-
-    static void registerFileFormat(FileFormat fileFormat, Factory factory)
-    {
-        registry().emplaceBack(std::move(fileFormat), std::move(factory));
-    }
-
-protected:
-    void reportError(QString errorString) { m_errorString = std::move(errorString); }
-    virtual void reset() { m_errorString.clear(); }
-
-private:
-    [[nodiscard]] static Registry &registry();
-
-    QString m_fileName;
-    QString m_errorString;
-};
-
 // ---------------------------------------------------------------------------------------------------------------------
-
-template<typename ModelType>
-class FallbackFileFormatWriter : public FileFormatWriter<ModelType>
-{
-public:
-    using FileFormatWriter<ModelType>::FileFormatWriter;
-
-    bool write(const ModelType *) override
-    {
-        FallbackFileFormatWriter::reportError(internal::FileFormatTranslations::unsupportedFileType());
-        return false;
-    }
-};
-
-// =====================================================================================================================
 
 template<typename ModelType, typename... Args>
 typename FileFormatReader<ModelType, Args...>::Pointer
@@ -188,6 +138,54 @@ FileFormatReader<ModelType, Args...>::fromFile(QString fileName)
     return std::make_unique<FallbackFileFormatReader<ModelType, Args...>>(std::move(fileName));
 }
 
+// =====================================================================================================================
+
+template<typename T>
+class FileFormatWriter : public FileFormatHandler
+{
+public:
+    using ModelType = T;
+
+    using Pointer = std::unique_ptr<FileFormatWriter>;
+    using Factory = std::function<Pointer(QString)>;
+    using Registry = QList<QPair<FileFormat, Factory>>;
+
+    using FileFormatHandler::FileFormatHandler;
+
+    [[nodiscard]] static QList<FileFormat> fileFormats()
+    {
+        return FileFormatHandler::fileFormats(registry());
+    }
+
+    static void registerFileFormat(FileFormat fileFormat, Factory factory)
+    {
+        registry().emplaceBack(std::move(fileFormat), std::move(factory));
+    }
+
+    [[nodiscard]] static inline Pointer fromFile(QString fileName);
+    virtual bool write(const ModelType *model) = 0;
+
+private:
+    [[nodiscard]] static Registry &registry();
+};
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+template<typename ModelType>
+class FallbackFileFormatWriter : public FileFormatWriter<ModelType>
+{
+public:
+    using FileFormatWriter<ModelType>::FileFormatWriter;
+
+    bool write(const ModelType *) override
+    {
+        FileFormatHandler::reportUnsupportedFileError();
+        return false;
+    }
+};
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 template<typename ModelType>
 typename FileFormatWriter<ModelType>::Pointer
 FileFormatWriter<ModelType>::fromFile(QString fileName)
@@ -199,7 +197,7 @@ FileFormatWriter<ModelType>::fromFile(QString fileName)
     return std::make_unique<FallbackFileFormatWriter<ModelType>>(std::move(fileName));
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
+// =====================================================================================================================
 
 template<typename ModelType>
 inline void registerFileFormat(FileFormat fileFormat, typename FileFormatReader<ModelType>::Factory factory)
@@ -212,8 +210,6 @@ inline void registerFileFormat(FileFormat fileFormat, typename FileFormatWriter<
 {
     FileFormatWriter<ModelType>::registerFileFormat(std::move(fileFormat), std::move(factory));
 }
-
-// ---------------------------------------------------------------------------------------------------------------------
 
 template<typename T, typename ModelType = typename T::ModelType>
 inline void registerFileFormat(FileFormat fileFormat)

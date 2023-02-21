@@ -116,9 +116,25 @@ bool FileFormat::accepts(QString fileName) const
     return false;
 }
 
-QString internal::FileFormatTranslations::unsupportedFileType()
+// =====================================================================================================================
+
+FileFormatHandler::FileFormatHandler(QString fileName)
+    : m_fileName{std::move(fileName)}
+{}
+
+FileFormatHandler::~FileFormatHandler()
 {
-    return tr("The type of this file is not recognized, or it is not supported at all.");
+    reset();
+}
+
+void FileFormatHandler::reportError(QString errorString)
+{
+    m_errorString = std::move(errorString);
+}
+
+void FileFormatHandler::reportUnsupportedFileError()
+{
+    reportError(tr("The type of this file is not recognized, or it is not supported at all."));
 }
 
 } // namespace lmrs::core
