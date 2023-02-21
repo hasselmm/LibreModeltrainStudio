@@ -9,6 +9,10 @@ namespace lmrs::core {
 
 struct FileFormat
 {
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
     QString name;
     QString mimeType;
     QStringList extensions;
@@ -37,8 +41,6 @@ struct FileFormat
 
     [[nodiscard]] bool accepts(QString fileName) const;
 
-    Q_GADGET
-    QT_TR_FUNCTIONS
 };
 
 // =====================================================================================================================
