@@ -1,0 +1,81 @@
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Disconnected
+z21.stream: sending 08 00 50 00 05 01 05 00
+z21.stream: sending 07 00 40 00 21 24 00
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Connecting for "Z21 Control Station"
+z21.stream: received 08 00 40 00 62 22 02 42
+void lmrs::roco::z21::Client::Private::setTrackStatus(lmrs::roco::z21::Client::TrackStatus) lmrs::roco::z21::Client::TrackStatus::PowerOff lmrs::roco::z21::Client::TrackStatus::PowerOff
+z21.stream: sending 07 00 40 00 21 21 00
+z21.stream: sending 07 00 40 00 f1 0a fb
+z21.stream: sending 04 00 1a 00
+z21.stream: sending 04 00 10 00
+z21.stream: sending 07 00 40 00 21 24 00
+z21.stream: sending 04 00 85 00
+z21.stream: sending 04 00 18 00
+z21.stream: sending 04 00 51 00
+z21.stream: Adding 8 observers from callbacks
+z21.stream: received 09 00 40 00 63 21 36 13 67
+z21.stream: received 09 00 40 00 f3 0a 01 41 b9
+z21.stream: received 0c 00 1a 00 04 02 00 00 41 01 00 00
+z21.stream: received 08 00 10 00 08 6d 03 00
+z21.stream: received 08 00 40 00 62 22 02 42
+void lmrs::roco::z21::Client::Private::setTrackStatus(lmrs::roco::z21::Client::TrackStatus) lmrs::roco::z21::Client::TrackStatus::PowerOff lmrs::roco::z21::Client::TrackStatus::PowerOff
+z21.stream: received 14 00 84 00 00 00 03 00 13 00 1b 00 8c 45 8c 45 02 00 03 00
+z21.stream: received 05 00 18 00 01
+
+
+
+
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Disconnected
+z21.stream: sending 08 00 50 00 05 01 05 00
+z21.stream: sending 07 00 40 00 21 24 00
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Connecting for "Z21 Control Station"
+z21.stream: received 08 00 40 00 62 22 02 42
+void lmrs::roco::z21::Client::Private::setTrackStatus(lmrs::roco::z21::Client::TrackStatus) lmrs::roco::z21::Client::TrackStatus::PowerOff lmrs::roco::z21::Client::TrackStatus::PowerOff
+z21.stream: sending 07 00 40 00 21 21 00
+z21.stream: sending 07 00 40 00 f1 0a fb
+z21.stream: sending 04 00 1a 00
+z21.stream: sending 04 00 10 00
+z21.stream: sending 07 00 40 00 21 24 00
+z21.stream: sending 04 00 85 00
+z21.stream: sending 04 00 18 00
+z21.stream: sending 04 00 51 00
+z21.stream: Adding 8 observers from callbacks
+z21.stream: received 09 00 40 00 63 21 36 13 67
+z21.stream: received 09 00 40 00 f3 0a 01 41 b9
+z21.stream: received 0c 00 1a 00 04 02 00 00 41 01 00 00
+z21.stream: received 08 00 10 00 08 6d 03 00
+z21.stream: received 14 00 84 00 00 00 03 00 13 00 1b 00 95 45 95 45 02 00 03 00
+z21.stream: received 08 00 51 00 05 01 05 00
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Connected for "Z21 Control Station"
+
+
+
+
+
+
+17:56:55: Starting C:\Users\HasselmaMat\Builds\EsuTools-Desktop_Qt_6_2_4_MinGW_64_bit-Debug\apps\lmrsstudio\LmrsStudio.exe...
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Disconnected
+z21.stream: sending 08 00 50 00 05 01 05 00
+z21.stream: sending 07 00 40 00 21 24 00
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Connecting for "Z21 Control Station"
+z21.stream: received 08 00 40 00 62 22 02 42
+void lmrs::roco::z21::Client::Private::setTrackStatus(lmrs::roco::z21::Client::TrackStatus) lmrs::roco::z21::Client::TrackStatus::PowerOff lmrs::roco::z21::Client::TrackStatus::PowerOff
+z21.stream: sending 07 00 40 00 21 21 00
+z21.stream: sending 07 00 40 00 f1 0a fb
+z21.stream: sending 04 00 1a 00
+z21.stream: sending 04 00 10 00
+z21.stream: sending 07 00 40 00 21 24 00
+z21.stream: sending 04 00 85 00
+z21.stream: sending 04 00 18 00
+z21.stream: sending 04 00 51 00
+z21.stream: Adding 8 observers from callbacks
+z21.stream: received 09 00 40 00 63 21 36 13 67
+z21.stream: received 09 00 40 00 f3 0a 01 41 b9
+z21.stream: received 0c 00 1a 00 04 02 00 00 41 01 00 00
+z21.stream: received 08 00 10 00 08 6d 03 00
+z21.stream: received 08 00 40 00 62 22 02 42
+void lmrs::roco::z21::Client::Private::setTrackStatus(lmrs::roco::z21::Client::TrackStatus) lmrs::roco::z21::Client::TrackStatus::PowerOff lmrs::roco::z21::Client::TrackStatus::PowerOff
+z21.stream: received 14 00 84 00 00 00 03 00 13 00 1b 00 68 45 68 45 02 00 03 00
+z21.stream: received 05 00 18 00 01
+z21.stream: received 08 00 51 00 05 01 05 00
+lmrs.studio.MainWindow.Private: state changed to lmrs::core::Device::State::Connected for "Z21 Control Station"

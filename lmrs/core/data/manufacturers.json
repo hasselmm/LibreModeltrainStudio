@@ -1,0 +1,1164 @@
+{
+  "$origin": "https://www.nmra.org/index-nmra-standards-and-recommended-practices/",
+  "$title": "NMRA S-9.2.2, Appendix A",
+  "$revision": "6 March 2021",
+  "manufacturers": [
+    {
+      "id": 17,
+      "name": "Advance IC Engineering",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 169,
+      "name": "AE Electronic Ltd.",
+      "countries": [
+        "CHN"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "AMW",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 45,
+      "name": "ANE Model Co, Ltd",
+      "countries": [
+        "TWN"
+      ]
+    },
+    {
+      "id": 34,
+      "name": "Aristo-Craft Trains",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 173,
+      "name": "Arnold \u2013 Rivarossi",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 127,
+      "name": "Atlas Model Railroad Products",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 170,
+      "name": "AuroTrains",
+      "countries": [
+        "US",
+        "IT"
+      ]
+    },
+    {
+      "id": 76,
+      "name": "Auvidel",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 110,
+      "name": "AXJ Electronics",
+      "countries": [
+        "CHN"
+      ]
+    },
+    {
+      "id": 101,
+      "name": "Bachmann Trains",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 114,
+      "name": "Benezan Electronics",
+      "countries": [
+        "ESP"
+      ]
+    },
+    {
+      "id": 122,
+      "name": "Berros",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "id": 148,
+      "name": "BLOCKsignalling",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 60,
+      "name": "Bluecher-Electronic",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 225,
+      "name": "Blue Digital",
+      "countries": [
+        "POL"
+      ]
+    },
+    {
+      "id": 31,
+      "name": "Brelec",
+      "countries": [
+        "BE"
+      ]
+    },
+    {
+      "id": 186,
+      "name": "BRAWA Modellspielwaren GmbH & Co.",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 38,
+      "name": "Broadway Limited Imports, LLC",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 47,
+      "name": "Capecom",
+      "countries": [
+        "AU"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "CML Electronics Limited",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 130,
+      "name": "cmOS Engineering",
+      "countries": [
+        "AUS"
+      ]
+    },
+    {
+      "id": 105,
+      "name": "Computer Dialysis France",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "id": 204,
+      "name": "Con-Com GmbH",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 120,
+      "name": "csikos-muhely",
+      "countries": [
+        "HUN"
+      ]
+    },
+    {
+      "id": 117,
+      "name": "cT Elektronik",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 135,
+      "name": "CVP Products",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 154,
+      "name": "Dapol Limited",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 36,
+      "name": "DCCconcepts",
+      "countries": [
+        "AU"
+      ]
+    },
+    {
+      "id": 124,
+      "name": "DCC-Gaspar-Electronic",
+      "countries": [
+        "HUN"
+      ]
+    },
+    {
+      "id": 51,
+      "name": "DCC Supplies, Ltd",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 144,
+      "name": "DCC Train Automation",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 140,
+      "name": "Desktop Station",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 115,
+      "name": "Dietz Modellbahntechnik",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 152,
+      "name": "Digi-CZ",
+      "countries": [
+        "CZE"
+      ]
+    },
+    {
+      "id": 42,
+      "name": "Digikeijs",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "id": 64,
+      "name": "Digital Bahn",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 75,
+      "name": "Digitools Elektronika, Kft",
+      "countries": [
+        "HUN"
+      ]
+    },
+    {
+      "id": 129,
+      "name": "Digitrax",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "Digsight",
+      "countries": [
+        "CN"
+      ]
+    },
+    {
+      "id": 97,
+      "name": "Doehler & Haas",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 164,
+      "name": "drM",
+      "countries": [
+        "TWN"
+      ]
+    },
+    {
+      "id": 39,
+      "name": "Educational Computer, Inc.",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 35,
+      "name": "Electronik & Model Produktion",
+      "countries": [
+        "SE"
+      ]
+    },
+    {
+      "id": 151,
+      "name": "Electronic Solutions Ulm GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 94,
+      "name": "Electroniscript, Inc.",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 69,
+      "name": "E-Modell",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 128,
+      "name": "Frateschi Model Trains",
+      "countries": [
+        "BRA"
+      ]
+    },
+    {
+      "id": 158,
+      "name": "Fucik",
+      "countries": [
+        "CZE"
+      ]
+    },
+    {
+      "id": 65,
+      "name": "Gaugemaster",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 155,
+      "name": "Gebr. Fleischmann GmbH & Co.",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 156,
+      "name": "Nucky",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 46,
+      "name": "GFB Designs",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 81,
+      "name": "GooVerModels",
+      "countries": [
+        "BEL"
+      ]
+    },
+    {
+      "id": 111,
+      "name": "Haber & Koenig Electronics GmbH (HKE)",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 82,
+      "name": "HAG Modelleisenbahn AG",
+      "countries": [
+        "CHE"
+      ]
+    },
+    {
+      "id": 98,
+      "name": "Harman DCC",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 79,
+      "name": "Hattons Model Railways",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 28,
+      "name": "Heljan A/S",
+      "countries": [
+        "DK"
+      ]
+    },
+    {
+      "id": 67,
+      "name": "Heller Modenlbahn",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 167,
+      "name": "Helvest Systems GmbH",
+      "countries": [
+        "CH"
+      ]
+    },
+    {
+      "id": 88,
+      "name": "HONS Model",
+      "countries": [
+        "HKG"
+      ]
+    },
+    {
+      "id": 48,
+      "name": "Hornby Hobbies Ltd",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 102,
+      "name": "Integrated Signal Systems",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 133,
+      "name": "Intelligent Command Control",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 49,
+      "name": "Joka Electronic",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "JMRI",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 83,
+      "name": "JSS-Elektronic",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "KAM Industries",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 40,
+      "name": "KATO Precision Models",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 93,
+      "name": "Kevtronics cc",
+      "countries": [
+        "ZAF"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Kreischer Datentechnik",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 58,
+      "name": "KRES GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 52,
+      "name": "Krois-Modell",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 157,
+      "name": "Kuehn Ing.",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 134,
+      "name": "LaisDCC",
+      "countries": [
+        "CHN"
+      ]
+    },
+    {
+      "id": 99,
+      "name": "Lenz Elektronik GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 56,
+      "name": "LDH",
+      "countries": [
+        "ARG"
+      ]
+    },
+    {
+      "id": 159,
+      "name": "LGB (Ernst Paul Lehmann Patentwerk)",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 112,
+      "name": "LSdigital",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 77,
+      "name": "LS Models Sprl",
+      "countries": [
+        "BEL"
+      ]
+    },
+    {
+      "id": 166,
+      "name": "Maison de DCC",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 123,
+      "name": "Massoth Elektronik, GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 68,
+      "name": "MAWE Elektronik",
+      "countries": [
+        "CH"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "MBTronik \u2013 PiN GITmBH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 160,
+      "name": "MD Electronics",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 29,
+      "name": "Mistral Train Models",
+      "countries": [
+        "BE"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "MoBaTron.de",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 165,
+      "name": "Model Electronic Railway Group",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 143,
+      "name": "Model Rectifier Corp.",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 168,
+      "name": "Model Train Technology",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 161,
+      "name": "Modelleisenbahn GmbH (formerly Roco)",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 126,
+      "name": "M\u00f6llehem G\u00e5rdsproduktion",
+      "countries": [
+        "SE"
+      ]
+    },
+    {
+      "id": 72,
+      "name": "MTB Model",
+      "countries": [
+        "CZE"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "MTH Electric Trains, Inc.",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 118,
+      "name": "M\u00dcT GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 116,
+      "name": "MyLocoSound",
+      "countries": [
+        "AUS"
+      ]
+    },
+    {
+      "id": 50,
+      "name": "N&Q Electronics",
+      "countries": [
+        "ESP"
+      ]
+    },
+    {
+      "id": 37,
+      "name": "NAC Services, Inc",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 103,
+      "name": "Nagasue System Design Office",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 108,
+      "name": "Nagoden",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "NCE Corporation (formerly North Coast Engineering)",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 71,
+      "name": "New York Byano Limited",
+      "countries": [
+        "HK"
+      ]
+    },
+    {
+      "id": 43,
+      "name": "Ngineering",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 238,
+      "name": "NMRA Reserved (for extended ID #\u2019s)",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 63,
+      "name": "Noarail",
+      "countries": [
+        "AUS"
+      ]
+    },
+    {
+      "id": 156,
+      "name": "Nucky",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 136,
+      "name": "NYRS",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 106,
+      "name": "Opherline1",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "id": 41,
+      "name": "Passmann",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 107,
+      "name": "Phoenix Sound Systems, Inc.",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 162,
+      "name": "PIKO",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 74,
+      "name": "PpP Digital",
+      "countries": [
+        "ESP"
+      ]
+    },
+    {
+      "id": 89,
+      "name": "Pojezdy.EU",
+      "countries": [
+        "CZE"
+      ]
+    },
+    {
+      "id": 33,
+      "name": "Praecipuus",
+      "countries": [
+        "CA"
+      ]
+    },
+    {
+      "id": 96,
+      "name": "PRICOM Design",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 125,
+      "name": "ProfiLok Modellbahntechnik GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "PSI \u2013Dynatrol",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Public Domain & Do-It-Yourself Decoders",
+      "countries": [
+        "-"
+      ]
+    },
+    {
+      "id": 55,
+      "name": "QElectronics GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 113,
+      "name": "QS Industries (QSI)",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 84,
+      "name": "Railflyer Model Prototypes, Inc.",
+      "countries": [
+        "CAN"
+      ]
+    },
+    {
+      "id": 66,
+      "name": "Railnet Solutions, LLC",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 146,
+      "name": "Rails Europ Express",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "id": 91,
+      "name": "Railstars Limited",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Ramfixx Technologies (Wangrow)",
+      "countries": [
+        "CA",
+        "US"
+      ]
+    },
+    {
+      "id": 57,
+      "name": "Rampino Elektronik",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 53,
+      "name": "Rautenhaus Digital Vertrieb",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 139,
+      "name": "RealRail Effects",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 32,
+      "name": "Regal Way Co. Ltd",
+      "countries": [
+        "HKG"
+      ]
+    },
+    {
+      "id": 149,
+      "name": "Rock Junction Controls",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 70,
+      "name": "Rocrail",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 87,
+      "name": "RR-Cirkits",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "S Helper Service",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 95,
+      "name": "Sanda Kan Industrial, Ltd.",
+      "countries": [
+        "HKG"
+      ]
+    },
+    {
+      "id": 90,
+      "name": "Shourt Line",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 142,
+      "name": "SLOMO Railroad Models",
+      "countries": [
+        "JP"
+      ]
+    },
+    {
+      "id": 80,
+      "name": "Spectrum Engineering",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 44,
+      "name": "SPROG-DCC",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "T4T \u2013 Technology for Trains GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 59,
+      "name": "Tam Valley Depot",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 62,
+      "name": "Tams Elektronik GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 92,
+      "name": "Tawcrafts",
+      "countries": [
+        "UK"
+      ]
+    },
+    {
+      "id": 54,
+      "name": "TCH Technology",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "Team Digital, LLC",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 78,
+      "name": "Tehnologistic (train-O-matic)",
+      "countries": [
+        "ROM"
+      ]
+    },
+    {
+      "id": 73,
+      "name": "The Electric Railroad Company",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 141,
+      "name": "Throttle-Up (Soundtraxx)",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 153,
+      "name": "Train Control Systems",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 138,
+      "name": "Train ID Systems",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 61,
+      "name": "TrainModules",
+      "countries": [
+        "HUN"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Train Technology",
+      "countries": [
+        "BE"
+      ]
+    },
+    {
+      "id": 104,
+      "name": "TrainTech",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "id": 100,
+      "name": "Trenes Digitales",
+      "countries": [
+        "ARG"
+      ]
+    },
+    {
+      "id": 131,
+      "name": "Trix Modelleisenbahn",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 85,
+      "name": "Uhlenbrock GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 147,
+      "name": "Umelec Ing. Buero",
+      "countries": [
+        "CH"
+      ]
+    },
+    {
+      "id": 109,
+      "name": "Viessmann Modellspielwaren GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 150,
+      "name": "Wm. K. Walthers, Inc.",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 119,
+      "name": "W. S. Ataras Engineering",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Wangrow Electronics",
+      "countries": [
+        "US"
+      ]
+    },
+    {
+      "id": 86,
+      "name": "Wekomm Engineering, GmbH",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "id": 163,
+      "name": "WP Railshops",
+      "countries": [
+        "CA"
+      ]
+    },
+    {
+      "id": 145,
+      "name": "Zimo Elektronik",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "id": 132,
+      "name": "ZTC",
+      "countries": [
+        "UK"
+      ]
+    }
+  ]
+}

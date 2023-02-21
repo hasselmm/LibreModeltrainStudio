@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/taschenorakel.de/lmrs/esustudio">
+        <file>assets/esu-package-3.png</file>
+        <file>assets/esu-package-5a.png</file>
+        <file>assets/esu-package-5b.png</file>
+    </qresource>
+</RCC>

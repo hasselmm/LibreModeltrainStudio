@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/taschenorakel.de/lmrs/studio">
+        <file>qml/AutomationView.qml</file>
+        <file>qml/AutomationParameterEditor.qml</file>
+        <file>qml/Style.qml</file>
+    </qresource>
+</RCC>

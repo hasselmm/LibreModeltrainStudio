@@ -1,0 +1,3 @@
+[submodule "lmrs/gui/fontawesome"]
+	path = lmrs/gui/fontawesome
+	url = https://github.com/hasselmm/Font-Awesome.git

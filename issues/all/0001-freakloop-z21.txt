@@ -1,0 +1,73 @@
+Infinite loop when connecting to Z21
+
+When connecting to a "z21 start" while another client is running it
+occurs that the app enters an infinite loop that toggles power of the
+central. See the log below:
+
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOff 0
+z21.stream: sending 08 00 50 00 05 01 05 00
+z21.stream: sending 07 00 40 00 21 24 00
+lmrs.studio.MainWindow.Private: state changed for "Z21 Control Station": lmrs::core::Device::State::Connected
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: received 08 00 40 00 62 22 00 40
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOn 1
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: sending 07 00 40 00 21 21 00
+z21.stream: sending 07 00 40 00 f1 0a fb
+z21.stream: sending 04 00 1a 00
+z21.stream: sending 04 00 10 00
+z21.stream: sending 07 00 40 00 21 24 00
+z21.stream: sending 04 00 85 00
+z21.stream: sending 04 00 18 00
+z21.stream: sending 04 00 51 00
+z21.stream: Adding 8 observers from callbacks
+z21.stream: received 07 00 40 00 61 00 61
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOff 0
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: received 14 00 84 00 3b 00 39 00 39 00 1f 00 83 45 83 45 02 00 03 00
+z21.stream: received 07 00 40 00 61 01 60
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOn 1
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: received 14 00 84 00 30 00 29 00 36 00 1f 00 83 45 83 45 00 00 03 00
+z21.stream: received 07 00 40 00 61 01 60
+z21.stream: received 09 00 40 00 63 21 36 13 67
+z21.stream: received 09 00 40 00 f3 0a 01 41 b9
+z21.stream: received 0c 00 1a 00 04 02 00 00 41 01 00 00
+z21.stream: received 08 00 10 00 08 6d 03 00
+z21.stream: received 08 00 40 00 62 22 00 40
+z21.stream: received 14 00 84 00 36 00 3a 00 36 00 1f 00 68 45 68 45 00 00 03 00
+z21.stream: received 07 00 40 00 61 00 61
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOff 0
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: received 14 00 84 00 36 00 39 00 36 00 1f 00 95 45 95 45 02 00 03 00
+z21.stream: received 07 00 40 00 61 00 61
+z21.stream: received 07 00 40 00 61 01 60
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOn 1
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: received 14 00 84 00 3b 00 32 00 36 00 1f 00 83 45 83 45 00 00 03 00
+z21.stream: received 07 00 40 00 61 01 60
+z21.stream: received 07 00 40 00 61 00 61
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOff 0
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: received 14 00 84 00 38 00 34 00 36 00 1f 00 4d 45 4d 45 02 00 03 00
+z21.stream: received 07 00 40 00 61 00 61
+z21.stream: received 07 00 40 00 61 01 60
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOn 1
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: sending 07 00 40 00 21 81 a0
+z21.stream: received 14 00 84 00 33 00 31 00 36 00 1f 00 83 45 83 45 00 00 03 00
+z21.stream: received 07 00 40 00 61 01 60
+z21.stream: received 07 00 40 00 61 00 61
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOff 0
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: sending 07 00 40 00 21 80 a1
+z21.stream: received 14 00 84 00 2a 00 35 00 36 00 1f 00 68 45 68 45 02 00 03 00
+z21.stream: received 07 00 40 00 61 00 61
+z21.stream: received 07 00 40 00 61 01 60
+void lmrs::widgets::DeviceConnectionView::Private::onPowerStateChanged(lmrs::core::PowerControl::State) lmrs::core::PowerControl::State::PowerOn 1
