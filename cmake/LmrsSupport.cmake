@@ -100,6 +100,28 @@ function(lmrs_install_target TARGET)
 endfunction()
 
 ## =====================================================================================================================
+## This function adds the sources of a CMake target to the list of files processed by Doxygen
+## =====================================================================================================================
+
+function(lmrs_doxygen_add_target TARGET)
+    set(doxygen_sources_list ${ARG1})
+
+    if (NOT doxygen_sources_list)
+        set(doxygen_sources_list LMRS_DOXYGEN_SOURCES)
+    endif()
+
+    get_target_property(sources ${TARGET} SOURCES)
+    set(doxygen_sources)
+
+    foreach(filename ${sources})
+        file(RELATIVE_PATH filepath ${CMAKE_SOURCE_DIR}/docs ${CMAKE_CURRENT_SOURCE_DIR}/${filename})
+        list(APPEND doxygen_sources ${filepath})
+    endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY ${doxygen_sources_list} ${doxygen_sources})
+endfunction()
+
+## =====================================================================================================================
 ## This macros shows the current content of the variables passed
 ## =====================================================================================================================
 

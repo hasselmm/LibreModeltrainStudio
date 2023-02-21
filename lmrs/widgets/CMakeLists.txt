@@ -31,4 +31,5 @@ target_link_libraries(
 )
 
 add_library(Lmrs::Widgets ALIAS LmrsWidgets)
+lmrs_doxygen_add_target(LmrsWidgets)
 lmrs_add_translations(LmrsWidgets)

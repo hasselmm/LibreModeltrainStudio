@@ -2,3 +2,5 @@
 *.sw?
 *.user
 *.user.*
+
+/docs/thirdparty
