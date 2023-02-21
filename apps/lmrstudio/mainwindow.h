@@ -27,9 +27,11 @@ public:
 
     virtual QActionGroup *actionGroup(ActionCategory category) const;
     virtual QString fileName() const;
+    virtual bool isModified() const;
 
 signals:
     void fileNameChanged(QString fileName, QPrivateSignal);
+    void modifiedChanged(bool modified, QPrivateSignal);
 };
 
 class MainWindow : public QMainWindow

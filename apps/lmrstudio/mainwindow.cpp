@@ -27,6 +27,7 @@
 
 #include <QActionGroup>
 #include <QApplication>
+#include <QFileInfo>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -97,6 +98,7 @@ public:
 
     void onCurrentViewChanged();
     void onFileNameChanged();
+    void onModifiedChanged();
 
     void onCurrentDeviceChanged(core::Device *newDevice);
     void onDeviceStateChanged(core::Device::State state);
@@ -185,6 +187,7 @@ void MainWindow::Private::setupViews()
     const auto addView = [this](QIcon icon, QString text, QWidget *view) {
         if (const auto mainWindowView = dynamic_cast<MainWindowView *>(view)) {
             connect(mainWindowView, &MainWindowView::fileNameChanged, this, &Private::onFileNameChanged);
+            connect(mainWindowView, &MainWindowView::modifiedChanged, this, &Private::onModifiedChanged);
             mergeActions(mainWindowView);
         }
 
@@ -421,15 +424,33 @@ void MainWindow::Private::onCurrentViewChanged()
         }
 
         category.placeholder->setVisible(placeholderVisible);
+
+        onFileNameChanged();
+        onModifiedChanged();
     }
 }
 
 void MainWindow::Private::onFileNameChanged()
 {
-    qInfo() << Q_FUNC_INFO;
     if (const auto mainWindowView = dynamic_cast<MainWindowView *>(stack->currentWidget()))
         q()->setWindowFilePath(mainWindowView->fileName());
-    qInfo() << Q_FUNC_INFO << q()->windowTitle() << q()->windowFilePath();
+    else
+        q()->setWindowFilePath({});
+
+    auto windowTitle = qApp->applicationName();
+
+    if (const auto fileName = q()->windowFilePath(); !fileName.isEmpty())
+        windowTitle = QFileInfo{fileName}.fileName() + "[*] - "_L1 + windowTitle;
+
+    q()->setWindowTitle(std::move(windowTitle));
+}
+
+void MainWindow::Private::onModifiedChanged()
+{
+    if (const auto mainWindowView = dynamic_cast<MainWindowView *>(stack->currentWidget()))
+        q()->setWindowModified(mainWindowView->isModified());
+    else
+        q()->setWindowModified(false);
 }
 
 void MainWindow::Private::onCurrentDeviceChanged(core::Device *newDevice)
@@ -560,6 +581,11 @@ QActionGroup *MainWindowView::actionGroup(ActionCategory) const
 QString MainWindowView::fileName() const
 {
     return {};
+}
+
+bool MainWindowView::isModified() const
+{
+    return false;
 }
 
 } // namespace lmrs::studio
