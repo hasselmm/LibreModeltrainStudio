@@ -409,7 +409,7 @@ void MainWindow::Private::mergeActions(MainWindowView *view)
 
 void MainWindow::Private::onCurrentViewChanged()
 {
-    for (const auto &category: actionCategories) {
+    for (const auto &category: std::as_const(actionCategories)) {
         auto placeholderVisible = false;
 
         for (const auto &[view, actionGroups]: category.actionGroups.asKeyValueRange()) {
