@@ -47,5 +47,6 @@ set_target_properties(
     FOLDER "qtc_runnable"
 )
 
+lmrs_doxygen_add_target(LmrsStudio)
 lmrs_add_translations(LmrsStudio)
 lmrs_install_target(LmrsStudio)

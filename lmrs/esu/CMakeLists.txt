@@ -20,4 +20,5 @@ target_include_directories(LmrsEsu PUBLIC ${CMAKE_SOURCE_DIR})
 target_link_libraries(LmrsEsu PUBLIC Lmrs::Core Qt6::SerialPort)
 
 add_library(Lmrs::Esu ALIAS LmrsEsu)
+lmrs_doxygen_add_target(LmrsEsu)
 lmrs_add_translations(LmrsEsu)
