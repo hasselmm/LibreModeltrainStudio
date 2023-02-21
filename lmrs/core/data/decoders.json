@@ -1,0 +1,830 @@
+{
+    "NMRA:Identity": {
+        "variables": {
+            "1": {
+                "name": "Primary Address",
+                "minimumValue": 1,
+                "maximumValue": 127
+            },
+
+            "7": {
+                "name": "Decoder Type",
+                "type": "NMRA:DecoderType:U16H"
+            },
+
+            "8": {
+                "name": "Manufacturer",
+                "type": "NMRA:ManufacturerId:U16L"
+            },
+
+            "17": { "name": "Extended Address (High)",
+                "type": "NMRA:ExtendedAddress:U16H",
+                "minimumValue": 192,
+                "maximumValue": 231
+            },
+
+            "18": {
+                "name": "Extended Address (Low)",
+                "type": "U16L"
+            },
+
+            "19": {
+                "name": "Consist Address",
+                "fields": [
+                    {"name": "Address", "width": 7},
+                    {"name": "Reverse Direction", "width": 1}
+                ]
+            },
+
+            "105": {
+                "name": "Owner Identification 1",
+                "type": "U16H"
+            },
+
+            "106": {
+                "name": "Owner Identification 2",
+                "type": "U16L"
+            }
+        }
+    },
+
+    "NMRA:Baseline": {
+        "extends": "NMRA:Identity",
+        "variables": {
+            "15": {
+                "name": "Decoder Lock Selected",
+                "type": "NMRA:DecoderLock:U16H"
+            },
+
+            "16": {
+                "name": "Decoder Lock Index",
+                "type": "U16L"
+            },
+
+            "28": {
+                "name": "Bi-Directional Communication",
+                "flags": [
+                    "Channel 1 (Adress-Broadcast)",
+                    "Channel 2 (Data and Acknowledge)",
+                    "Automatically disable channel 1",
+                    "Reserved Bit 3",
+                    "Programming via extended address 3",
+                    "Reserved Bit 5",
+                    "High Current RailCom",
+                    "Automated Registration (RCN-218 or RailComPlus®)"
+                ]
+            },
+
+            "29": {
+                "name": "Configuration",
+                "flags": [
+                    "Reverse Direction",
+                    "Advanced Step Steps",
+                    "Power Source Conversion",
+                    "Bi-Directional Communication",
+                    "Advanced Speed Table",
+                    "Extended Addressing",
+                    "Reserved Bit 6",
+                    "Accessory Decoder"
+                ]
+            },
+
+            "30": { "name": "Error Information" },
+            "31": { "name": "Index (High)", "type": "U16H" },
+            "32": { "name": "Index (Low)", "type": "U16L" }
+        }
+    },
+
+    "NMRA:Functions": {
+        "extends": "NMRA:Baseline",
+        "variables": {
+            "13": {
+                "name": "Alternate Mode Functions (F1-F8)",
+                "flags": "$ref:NMRA:functions:f1-f8"
+            },
+
+            "14": {
+                "name": "Alternate Mode Functions (F9-F12, F0)",
+                "flags": "$ref:NMRA:functions:f9-f12:f0",
+                "maximumValue": 63
+            },
+
+            "21": {
+                "name": "Consist Address Functions (F1-F8)",
+                "flags": "$ref:NMRA:functions:f1-f8"
+            },
+
+            "22": {
+                "name": "Consist Address Functions (F9-F12, F0)",
+                "flags": "$ref:NMRA:functions:f9-f12:f0",
+                "maximumValue": 63
+            },
+
+            "33": { "name": "Outputs for Function 0 (forward)", "flags": "$ref:NMRA:function-outputs:1-8" },
+            "34": { "name": "Outputs for Function 0 (reverse)", "flags": "$ref:NMRA:function-outputs:1-8" },
+            "35": { "name": "Outputs for Function 1", "flags": "$ref:NMRA:function-outputs:1-8" },
+            "36": { "name": "Outputs for Function 2", "flags": "$ref:NMRA:function-outputs:1-8" },
+            "37": { "name": "Outputs for Function 3", "flags": "$ref:NMRA:function-outputs:1-8" },
+            "38": { "name": "Outputs for Function 4", "flags": "$ref:NMRA:function-outputs:4-11" },
+            "39": { "name": "Outputs for Function 5", "flags": "$ref:NMRA:function-outputs:4-11" },
+            "40": { "name": "Outputs for Function 6", "flags": "$ref:NMRA:function-outputs:4-11" },
+            "41": { "name": "Outputs for Function 7", "flags": "$ref:NMRA:function-outputs:4-11" },
+            "42": { "name": "Outputs for Function 8", "flags": "$ref:NMRA:function-outputs:4-11" },
+            "43": { "name": "Outputs for Function 9", "flags": "$ref:NMRA:function-outputs:7-14" },
+            "44": { "name": "Outputs for Function 10", "flags": "$ref:NMRA:function-outputs:7-14" },
+            "45": { "name": "Outputs for Function 11", "flags": "$ref:NMRA:function-outputs:7-14" },
+            "46": { "name": "Outputs for Function 12", "flags": "$ref:NMRA:function-outputs:7-14" }
+        }
+    },
+
+    "NMRA:Vehicle": {
+        "extends": "NMRA:Functions",
+        "variables": {
+            "2": { "name": "Vstart" },
+            "3": { "name": "Acceleration Rate" },
+            "4": { "name": "Deceleration Rate" },
+            "5": { "name": "Vhigh", "minimumValue": 1 },
+            "6": { "name": "Vmid", "minimumValue": 1 },
+            "9": { "name": "Total PWM Period" },
+            "10": { "name": "EMF Feedback Cutout" },
+            "11": { "name": "Packet Timeout Value" },
+
+            "12": {
+                "name": "Power Source Conversion",
+                "flags": [
+                    "AC (analog)",
+                    "Remote Control (radio)",
+                    "DCC (digital)",
+                    "Selectrix (digital)",
+                    "AC (analog)",
+                    "Motorola (digital)",
+                    "mfx (digital)",
+                    "Reserved Bit 7"
+                ]
+            },
+
+            "23": {
+                "name": "Acceleration Adjustment",
+                "minimumValue": -127,
+                "maximumValue": 127,
+                "signed": true
+            },
+
+            "24": {
+                "name": "Deceleration Adjustment",
+                "minimumValue": -127,
+                "maximumValue": 127,
+                "signed": true
+            },
+
+            "25": { "name": "Speed Table" },
+
+            "27": {
+                "name": "Automatic Stopping",
+                "flags": [
+                    "Asymmetrical DCC Signal (left rail)",
+                    "Asymmetrical DCC Signal (right rail)",
+                    "Signal Controlled Influence",
+                    "Reserved Bit 3",
+                    "Reverse Polarity DC",
+                    "Forward Polarity DC",
+                    "Reserved Bit 6",
+                    "Reserved Bit 7"
+                ]
+            },
+
+            "65": { "name": "Kickstart" },
+            "66": { "name": "Forward Trim" },
+            "67": { "name": "Speed Table Entry 1" },
+            "68": { "name": "Speed Table Entry 2" },
+            "69": { "name": "Speed Table Entry 3" },
+            "70": { "name": "Speed Table Entry 4" },
+            "71": { "name": "Speed Table Entry 5" },
+            "72": { "name": "Speed Table Entry 6" },
+            "73": { "name": "Speed Table Entry 7" },
+            "74": { "name": "Speed Table Entry 8" },
+            "75": { "name": "Speed Table Entry 9" },
+            "76": { "name": "Speed Table Entry 10" },
+            "77": { "name": "Speed Table Entry 11" },
+            "78": { "name": "Speed Table Entry 12" },
+            "79": { "name": "Speed Table Entry 13" },
+            "80": { "name": "Speed Table Entry 14" },
+            "81": { "name": "Speed Table Entry 15" },
+            "82": { "name": "Speed Table Entry 16" },
+            "83": { "name": "Speed Table Entry 17" },
+            "84": { "name": "Speed Table Entry 18" },
+            "85": { "name": "Speed Table Entry 19" },
+            "86": { "name": "Speed Table Entry 20" },
+            "87": { "name": "Speed Table Entry 21" },
+            "88": { "name": "Speed Table Entry 22" },
+            "89": { "name": "Speed Table Entry 23" },
+            "90": { "name": "Speed Table Entry 24" },
+            "91": { "name": "Speed Table Entry 25" },
+            "92": { "name": "Speed Table Entry 26" },
+            "93": { "name": "Speed Table Entry 27" },
+            "94": { "name": "Speed Table Entry 28" },
+            "95": { "name": "Reverse Trim" }
+        }
+    },
+
+    "RCN:217:RailCom": {
+        "name": "RCN-217 RailCom",
+        "variables": {
+            "rc0:0": {"name": "Manufacturer (High)", "type": "NMRA:ManufacturerId:U16L"},
+            "rc0:1": {"name": "Manufacturer (Low)", "type": "NMRA:ManufacturerId:U16H"},
+
+            "rc0:4": {"name": "Product Id (Byte\u2081)", "type": "U32A"},
+            "rc0:5": {"name": "Product Id (Byte\u2082)", "type": "U32B"},
+            "rc0:6": {"name": "Product Id (Byte\u2083)", "type": "U32C"},
+            "rc0:7": {"name": "Product Id (Byte\u2084)", "type": "U32D"},
+
+            "rc0:8": {"name": "Serial Number (Byte\u2081)", "type": "U32A"},
+            "rc0:9": {"name": "Serial Number (Byte\u2082)", "type": "U32B"},
+            "rc0:10": {"name": "Serial Number (Byte\u2083)", "type": "U32C"},
+            "rc0:11": {"name": "Serial Number (Byte\u2084)", "type": "U32D"},
+
+            "rc0:12": {"name": "Production Date (Byte\u2081)", "type": "RCN:DateTime:U32A"},
+            "rc0:13": {"name": "Production Date (Byte\u2082)", "type": "RCN:DateTime:U32B"},
+            "rc0:14": {"name": "Production Date (Byte\u2083)", "type": "RCN:DateTime:U32C"},
+            "rc0:15": {"name": "Production Date (Byte\u2084)", "type": "RCN:DateTime:U32D"}
+        }
+    },
+
+    "64:85": {
+        "extends": "NMRA:Baseline",
+        "name": "AGA FD4.1",
+        "has-railcom": false,
+
+        "variables": {
+            "48": {
+                "name": "Operation Mode 1",
+                "flags": [
+                    "Do not preserve settings",
+                    "Reserved Bit 1",
+                    "Reserved Bit 2",
+                    "Reserved Bit 3",
+                    "Reserved Bit 4",
+                    "Reserved Bit 5",
+                    "Reserved Bit 6",
+                    "Reserved Bit 7"
+                ]
+            },
+
+            "50": { "name": "Delay 1" },
+            "52": { "name": "PWM Value 1", "maximumValue": 15 },
+            "53": { "name": "PWM Value 2", "maximumValue": 15 },
+
+            "54": { "name": "Neon Effect Duration" },
+            "61": { "name": "Blinker Frequency", "minimumValue": 1 },
+            "62": { "name": "Brake Light Duration" },
+            "63": { "name": "Brake Light Threshold" },
+            "64": { "name": "Brake Light Duration on Hold" },
+
+            "115": { "name": "Lissy Train Category", "minimumValue": 1, "maximumValue": 4 },
+
+            "140": { "name": "Mapping Command 1", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "141": { "name": "Mapping Command 2", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "142": { "name": "Mapping Command 3", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "143": { "name": "Mapping Command 4", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "144": { "name": "Mapping Command 5", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "145": { "name": "Mapping Command 6", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "146": { "name": "Mapping Command 7 (Dimm A)", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "147": { "name": "Mapping Command 8 (Dimm B)", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "148": { "name": "Mapping Command 9 (unused)", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+            "149": { "name": "Mapping Command 10 (unused)", "minimumValue": 1, "maximumValue": 28, "values": "$ref:NMRA:functions:none:f1-f28" },
+
+            "150": { "name": "Effect Output 1", "flags": "$ref:64:85:effect-flags", "values": "$ref:64:85:effect-values" },
+            "151": { "name": "Effect Output 2", "flags": "$ref:64:85:effect-flags", "values": "$ref:64:85:effect-values" },
+            "152": { "name": "Effect Output 3", "flags": "$ref:64:85:effect-flags", "values": "$ref:64:85:effect-values" },
+            "153": { "name": "Effect Output 4", "flags": "$ref:64:85:effect-flags", "values": "$ref:64:85:effect-values" },
+            "154": { "name": "Effect Output 5", "flags": "$ref:64:85:effect-flags", "values": "$ref:64:85:effect-values" },
+            "155": { "name": "Effect Output 6", "flags": "$ref:64:85:effect-flags", "values": "$ref:64:85:effect-values" },
+
+            "156": { "name": "Dimming Command A", "flags": "$ref:NMRA:function-outputs:1-6" },
+            "157": { "name": "Dimming Command B", "flags": "$ref:NMRA:function-outputs:1-6" },
+
+            "160": { "name": "PWM Output 1", "maximumValue": 32 },
+            "161": { "name": "PWM Output 1 (dimmed)", "maximumValue": 32 },
+            "162": { "name": "PWM Output 2", "maximumValue": 32 },
+            "163": { "name": "PWM Output 2 (dimmed)", "maximumValue": 32 },
+            "164": { "name": "PWM Output 3", "maximumValue": 32 },
+            "165": { "name": "PWM Output 3 (dimmed)", "maximumValue": 32 },
+            "166": { "name": "PWM Output 4", "maximumValue": 32 },
+            "167": { "name": "PWM Output 4 (dimmed)", "maximumValue": 32 },
+            "168": { "name": "PWM Output 5", "maximumValue": 32 },
+            "169": { "name": "PWM Output 5 (dimmed)", "maximumValue": 32 },
+            "170": { "name": "PWM Output 6", "maximumValue": 32 },
+            "171": { "name": "PWM Output 6 (dimmed)", "maximumValue": 32 },
+
+            "172": { "name": "Fading Duration" },
+
+            "180": { "name": "Activation Delay Output 1" },
+            "181": { "name": "Activation Delay Output 2" },
+            "182": { "name": "Activation Delay Output 3" },
+            "183": { "name": "Activation Delay Output 4" },
+            "184": { "name": "Activation Delay Output 5" },
+            "185": { "name": "Activation Delay Output 6" },
+
+            "186": { "name": "Deactivation Delay Output 1" },
+            "187": { "name": "Deactivation Delay Output 2" },
+            "188": { "name": "Deactivation Delay Output 3" },
+            "189": { "name": "Deactivation Delay Output 4" },
+            "190": { "name": "Deactivation Delay Output 5" },
+            "191": { "name": "Deactivation Delay Output 6" }
+        }
+    },
+
+    "85:8": {
+        "extends": "NMRA:Vehicle",
+        "name": "IntelliDrive Deluxe",
+        "unsupported": [
+            9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+            40, 41, 42, 43, 44, 45, 46, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84,
+            85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 105, 106],
+        "has-railcom": false,
+
+        "variables": {
+            "49": {
+                "name": "Decoder Configuration 1",
+                "flags": [
+                    "Disable Load Regulation",
+                    "Unused Bit 1",
+                    "Unused Bit 2",
+                    "DCC only",
+                    "Motorola only",
+                    "Unused Bit 5",
+                    "Reverse Lights",
+                    "Stop on Analog Voltage"
+                ]
+            },
+
+            "50": {
+                "name": "Brightness",
+                "maximumValue": 31
+            },
+
+            "51": {
+                "name": "Analog Mode",
+                "values": [
+                    "",
+                    "AC only",
+                    "DC only",
+                    "Autodetect AC/DC"
+                ],
+                "minimumValue": 1,
+                "maximumValue": 3
+            },
+
+            "53": {
+                "name": "Sampling Rate Load Regulation",
+                "minimumValue": 1
+            },
+
+            "54": {
+                "name": "Decoder Configuration 2",
+                "fields": [
+                    {
+                        "name": "Motor Voltage",
+                        "width": 2,
+                        "values": [
+                            "12V Motor",
+                            "14V Motor",
+                            "",
+                            "16V Motor"
+                        ]
+                    }, {
+                        "name": "Sampling Rate Load Regulation",
+                        "width": 1,
+                        "values": [
+                            "constant",
+                            "speed-dependant"
+                        ]
+                    }, {
+                        "name": "Reserved, do not change",
+                        "width": 5
+                    }
+                ]
+            },
+
+            "58": {
+                "name": "Timeslot AD Measurement"
+            },
+
+            "59": {
+                "name": "Factory Reset",
+                "confirmation": true
+            },
+
+            "60": {
+                "name": "Shortcut Detection",
+                "values": {"0": "Disabled", "35": "Enabled (do not change)"}
+            },
+
+            "65": {
+                "name": "Offset Register (Motorola)"
+            },
+
+            "66": {
+                "name": "Page Register (Motorola)"
+            },
+
+            "100": {
+                "name": "Last Error",
+                "values": ["None", "Shortcut Motor", "Shortcut Lights"]
+            }
+        }
+    },
+
+    "99:Gold1": {
+        "extends": "99:Silver1",
+        "name": "GOLD1 Series",
+        "variables": {
+            "112": {"name": "Duration of motor timeout when track signal has stopped" },
+            "126": {"name": "CV (indicator) for SUSI, offset 800" },
+            "127": {"name": "CV (transport device) for SUSI" }
+        }
+    },
+
+    "99:Silver1": {
+        "extends": "NMRA:Vehicle",
+        "name": "SILVER1 Series",
+        "variables": {
+            "30": {
+                "name": "Error Information",
+                "flags": [
+                    "Short circut on lights",
+                    "Overheating",
+                    "Short circut on motor"
+                ]
+            },
+
+            "50": {
+                "name": "Motor Configuration",
+
+                "fields": [
+                    {"name": "Motor Type", "width": 4}
+                ],
+
+                "flags": [
+                    "Unused Bit 4",
+                    "EMF Divider Enabled",
+                    "Motor Regulation Enabled",
+                    "Motor Regulation Low Frequency"
+                ]
+            },
+
+            "51": {
+                "name": "Braking Configuration",
+                "flags": [
+                    "Constant braking distance enabled",
+                    "ABC-Braking enabled",
+                    "Direction-dependent ABC-Braking disabled",
+                    "Shuttle operation without stopover enabled",
+                    "Shuttle operation with stopover enabled",
+                    "Brake on direct current",
+                    "Unused bit 6",
+                    "Unused bit 7"
+                ]
+            },
+
+            "52": { "name": "Constant braking distance" },
+            "53": { "name": "Slow approach with ABC" },
+            "54": { "name": "Stopover duration" },
+            "55": { "name": "Brightness Output A and C" },
+            "56": { "name": "Brightness Output B and D" },
+            "57": { "name": "Dimming Function", "flags": "$ref:NMRA:functions:f1-f8" },
+            "58": { "name": "Shunting Gear", "flags": "$ref:NMRA:functions:f1-f8" },
+            "59": { "name": "Acceleration Override", "flags": "$ref:NMRA:functions:f1-f8" },
+            "60": {
+                "name": "Effects on Output A/B",
+                "fields": [
+                    {"name": "Effect for Output A", "bcd": 0, "values": ["None", "Mars", "Gyra", "Strobe", "Double Strobe"]},
+                    {"name": "Effect for Output B", "bcd": 1, "values": ["None", "Mars", "Gyra", "Strobe", "Double Strobe"]}
+                ]
+            },
+            "61": { "name": "Function Mapping for Effects on Output A/B", "flags": "$ref:NMRA:functions:f1-f8" },
+            "62": {
+                "name": "Effects on Output C/D",
+                "fields": [
+                    {"name": "Effect for Output C", "bcd": 0, "values": ["None", "Blink", "Flicker 1 (calm)", "Dimmed (CV55)"]},
+                    {"name": "Effect for Output D", "bcd": 1, "values": ["None", "Blink with C", "Blink contra C", "Flicker 2 (restless)", "Flicker 3 (hectic)", "Dimmed (CV56)"]}
+                ]
+            },
+            "63": { "name": "Blinking frequency for Output C/D" },
+            "64": { "name": "Function Mapping for Effects on Output C/D", "flags": "$ref:NMRA:functions:f1-f8" },
+            "113": { "name": "Minimal PWM value for regulation of motor type 4/5" },
+            "114": { "name": "Change of duty cycle for motor type 4/5" },
+            "128": { "name": "Service number" }
+        }
+    },
+
+    "99:Gold2": { "extends": "99:Silver2", "name": "GOLD2 Series" },
+    "99:Silver2": { "extends": "NMRA:Standard2", "name": "SILVER2 Series" },
+    "99:Standard2": { "extends": "NMRA:Vehicle", "name": "STANDARD2 Series" },
+
+    "99:Gold+": { "extends": "99:Silver+", "name": "GOLD+ Series" },
+    "99:Silver+": { "extends": "99:Standard+", "name": "SILVER+ Series" },
+    "99:Standard+": { "extends": "NMRA:Vehicle", "name": "STANDARD+ Series" },
+
+    "99:60": { "extends": "99:Gold1",       "name": "GOLD1 mini" },
+    "99:61": { "extends": "99:Gold1",       "name": "GOLD1 H0" },
+    "99:62": { "extends": "99:Gold1",       "name": "GOLD1 maxi" },
+    "99:63": { "extends": "99:Silver1",     "name": "BR66" },
+    "99:65": { "extends": "99:Silver1",     "name": "SILVER1 H0" },
+    "99:70": { "extends": "99:Gold2",       "name": "GOLD2 mini" },
+    "99:71": { "extends": "99:Gold2",       "name": "GOLD2 H0" },
+    "99:72": { "extends": "99:Gold2",       "name": "GOLD2 maxi" },
+    "99:75": { "extends": "99:Silver2",     "name": "SILVER2" },
+    "99:76": { "extends": "99:Silver2",     "name": "SILVER2 mini)" },
+    "99:77": { "extends": "99:Standard2",   "name": "V36" },
+    "99:78": { "extends": "99:Silver2",     "name": "SILVER2 direct" },
+    "99:81": { "extends": "99:Standard2",   "name": "STANDARD2" },
+    "99:82": { "extends": "99:Silver2",     "name": "SILVER2 21" },
+    "99:90": { "extends": "99:Gold+",       "name": "GOLD+ mini" },
+    "99:91": { "extends": "99:Gold+",       "name": "GOLD+" },
+    "99:92": { "extends": "99:Gold+",       "name": "GOLD+ 21" },
+    "99:93": { "extends": "99:Standard+",   "name": "STANDARD+" },
+    "99:95": { "extends": "99:Silver+",     "name": "SILVER+" },
+    "99:96": { "extends": "99:Silver+",     "name": "SILVER+ mini" },
+    "99:98": { "extends": "99:Silver+",     "name": "SILVER+ direct" },
+    "99:99": { "extends": "99:Silver+",     "name": "SILVER+ 21" },
+
+    "157:35": {
+        "extends": "NMRA:Vehicle",
+        "name": "N45 family",
+
+        "variables": {
+            "47": {
+                "name": "Effects Output E (Logic, Pad)",
+                "fields": "$ref:157:35:effect-fields"
+            },
+
+            "48": {
+                "name": "Effects Output F (Logic, Pad)",
+                "fields": "$ref:157:35:effect-fields"
+            },
+
+            "49": {
+                "name": "Effects Output A (white)",
+                "fields": "$ref:157:35:effect-fields"
+            },
+
+            "50": {
+                "name": "Effects Output B (yellow)",
+                "fields": "$ref:157:35:effect-fields"
+            },
+
+            "51": {
+                "name": "Effects Output C (green)",
+                "fields": "$ref:157:35:effect-fields"
+            },
+
+            "52": {
+                "name": "Effects Output D (violett)",
+                "fields": "$ref:157:35:effect-fields"
+            },
+
+            "53": {
+                "name": "I-Parameter Load Regulation",
+                "minimumValue": 1,
+                "maximumValue": 63
+            },
+
+            "54": {
+                "name": "P-Parameter Load Regulation",
+                "minimumValue": 2,
+                "maximumValue": 63
+            },
+
+            "55": {
+                "name": "Cycle Time for Effects/Dimming Rate",
+                "fields": [
+                    {"name": "Cycle Time for Effects", "bcd": 1},
+                    {"name": "Dimming Rate", "bcd": 0}
+                ],
+                "maximumValue": 99
+            },
+
+            "56": {
+                "name": "User Configuration 1",
+                "flags": [
+                    "EMF Divider Enabled",
+                    "Load Regulation Enabled",
+                    "SUSI Interface Enabled",
+                    "Unused Bit 3",
+                    "Unused Bit 4",
+                    "Unused Bit 5",
+                    "Unused Bit 6",
+                    "Unused Bit 7"
+                ]
+            },
+
+            "57": {
+                "name": "Shunting Outputs",
+                "flags": [
+                    "Output A",
+                    "Output B",
+                    "Output C",
+                    "Output D",
+                    "Output E",
+                    "Output F",
+                    "F0 Required",
+                    "Unused Bit 7"
+                ]
+            },
+
+            "58": {
+                "name": "Shunting Function",
+                "fields": [
+                    {
+                        "name": "Acceleration Override",
+                        "flags": "$ref:NMRA:functions:f1-f4",
+                        "width": 4
+                    },
+
+                    {
+                        "name": "Shunting Gear (50% Speed)",
+                        "flags": "$ref:NMRA:functions:f1-f4",
+                        "width": 4
+                    }
+                ]
+            },
+
+            "59": {
+                "name": "Dimming Function",
+                "flags": "$ref:NMRA:functions:f1-f4"
+            },
+
+            "60": {
+                "name": "Dimming Value Output A, B",
+                "fields": [
+                    {"name": "Dimming Value Output A", "bcd": 0},
+                    {"name": "Dimming Value Output B", "bcd": 1}
+                ]
+            },
+
+            "61": {
+                "name": "Dimming Value Output C, D",
+                "fields": [
+                    {"name": "Dimming Value Output C", "bcd": 0},
+                    {"name": "Dimming Value Output D", "bcd": 1}
+                ]
+            },
+
+            "62": {
+                "name": "Dimming Value Output E, F",
+                "fields": [
+                    {"name": "Dimming Value Output E", "bcd": 0},
+                    {"name": "Dimming Value Output F", "bcd": 1}
+                ]
+            },
+
+            "63": {
+                "name": "Coupling Parameters",
+                "fields": [
+                    {"name": "Activation Duration", "bcd": 1},
+                    {"name": "Voltage Reduction", "bcd": 0}
+                ]
+            },
+
+            "112": {
+                "name": "User Configuration 2",
+                "flags": [
+                    "Reserved Bit 0",
+                    "Unused Bit 1",
+                    "Unused Bit 2",
+                    "Unused Bit 3",
+                    "Reserved Bit 4",
+                    "Short-Term Memory Disabled",
+                    "Unused Bit 6",
+                    "Unused Bit 7"
+                ]
+            },
+
+            "113": {
+                "name": "Random Effects Frequency",
+                "maximumValue": 9,
+                "values": ["32 ms", "64 ms", "128 ms", "256 ms", "512 ms", "1 sec", "2 sec", "4 sec", "8 sec", "16 sec"]
+            },
+
+            "115": {"name": "Asymmetry Detection Level"},
+            "123": {"name": "Move Away Duration"},
+            "124": {"name": "Move Away Speed"},
+            "126": {"name": "Maximum Speed in Analog Mode"},
+            "127": {"name": "Software Revision"}
+        }
+    },
+
+    "162:32": {
+        "extends": "NMRA:Vehicle",
+        "name": "SmartDecoder 4.1"
+    },
+
+    "NMRA:functions:f1-f4": [
+        "Function 1", "Function 2", "Function 3", "Function 4"
+    ],
+
+    "NMRA:functions:f1-f8": [
+        "Function 1", "Function 2", "Function 3", "Function 4",
+        "Function 5", "Function 6", "Function 7", "Function 8"
+    ],
+
+    "NMRA:functions:f9-f12:f0": [
+        "Function 0 (forward)", "Function 0 (reverse)",
+        "Function 9", "Function 10", "Function 11", "Function 12"
+    ],
+
+    "NMRA:functions:none:f1-f28": [
+        "None",
+        "Function 1", "Function 2", "Function 3", "Function 4", "Function 5", "Function 6", "Function 7",
+        "Function 8", "Function 9", "Function 10", "Function 11", "Function 12", "Function 13", "Function 14",
+        "Function 15", "Function 16", "Function 17", "Function 18", "Function 19", "Function 20", "Function 21",
+        "Function 22", "Function 23", "Function 24", "Function 25", "Function 26", "Function 27", "Function 28"
+    ],
+
+    "NMRA:function-outputs:1-6": [
+        "Output 1", "Output 2", "Output 3",
+        "Output 4", "Output 5", "Output 6",
+        "Unused Bit 6", "Unused Bit 7"
+    ],
+
+    "NMRA:function-outputs:1-8": [
+        "Output 1", "Output 2", "Output 3", "Output 4",
+        "Output 5", "Output 6", "Output 7", "Output 8"
+    ],
+
+    "NMRA:function-outputs:4-11": [
+        "Output 4", "Output 5", "Output 6", "Output 7",
+        "Output 8", "Output 9", "Output 10", "Output 11"
+    ],
+
+    "NMRA:function-outputs:7-14": [
+        "Output 7", "Output 8", "Output 9", "Output 10",
+        "Output 11", "Output 12", "Output 13", "Output 14"
+    ],
+
+    "157:35:effect-fields": [
+        {
+            "name": "Effect",
+            "width": 6,
+            "values": [
+                "On/Off",
+                "Mars",
+                "Strobe",
+                "Unused 3",
+                "Blink (phase A)",
+                "Fade with key",
+                "Fade when stopped",
+                "Fade when moving",
+                "Blink (phase B)",
+                "Random",
+                "Unused 10",
+                "Unused 11",
+                "Coupling"
+            ]},
+
+        {"name": "Disable on Reverse", "width": 1},
+        {"name": "Disable on Forward", "width": 1}
+    ],
+
+    "64:85:effect-flags": [
+        "Neon Effect",
+        "Braking Light",
+        "Blinker",
+        "Unused Bit 3",
+        "Unused Bit 4",
+        "Unused Bit 5",
+        "Reverse Direction",
+        "Direction"
+    ],
+
+    "64:85:effect-values": {
+        "0": "No Effect",
+        "1": "Neon Effect",
+        "2": "Braking Light",
+        "4": "Blinker",
+        "128": "Directional (forward)",
+        "130": "Directional Braking Light (forward)",
+        "192": "Directional (reverse)",
+        "194": "Directional Braking Light (reverse)"
+    },
+
+    "pages": {
+        "cv0":      {"pointer": [0, 0], "name": "Variables 1 to 256"},
+        "cv1":      {"pointer": [0, 1], "name": "Variables 257 to 512"},
+        "cv2":      {"pointer": [0, 2], "name": "Variables 513 to 768"},
+        "cv3":      {"pointer": [0, 3], "name": "Variables 769 to 1024"},
+        "fn0":      {"pointer": [0, 40], "name": "Extended Function Mapping (RCN-227)"},
+        "fn1":      {"pointer": [0, 41], "name": "Extended Function Mapping 1 (RCN-227, Matrix)"},
+        "fn2":      {"pointer": [0, 42], "name": "Extended Function Mapping 2 (RCN-227, Numbers)"},
+        "fn2":      {"pointer": [0, 43], "name": "Extended Function Mapping 3 (RCN-227, Numbers and states)"},
+        "dc":       {"pointer": [0, 254], "name": "Decoder Features (RCN-225)"},
+        "rc0":      {"pointer": [0, 255], "name": "Railcom (RCN-217)"},
+        "rcplus0":  {"pointer": [1, 0], "name": "RailComPlus®, Page 1"},
+        "rcplus1":  {"pointer": [1, 1], "name": "RailComPlus®, Page 2"},
+        "dcca0":    {"pointer": [2, 0], "name": "DCC-A Extended Capabilities (RCN-218, Space 0)"},
+        "dcca1":    {"pointer": [2, 1], "name": "DCC-A SpaceInfo (RCN-218, Space 1)"},
+        "dcca2":    {"pointer": [2, 2], "name": "DCC-A ShortGUI (RCN-218, Space 2)"},
+        "dcca3":    {"pointer": [2, 3], "name": "DCC-A CV-Read (RCN-218, Space 3)"}
+    }
+}

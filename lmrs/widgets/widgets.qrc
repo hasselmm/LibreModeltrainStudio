@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/taschenorakel.de/lmrs/widgets">
+        <file>assets/track-symbols.svg</file>
+        <file>qml/SpeedMeter.qml</file>
+    </qresource>
+</RCC>

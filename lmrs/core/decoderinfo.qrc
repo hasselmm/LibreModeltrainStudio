@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/taschenorakel.de/lmrs/core">
+        <file>data/decoders.json</file>
+        <file>data/manufacturers.json</file>
+    </qresource>
+</RCC>

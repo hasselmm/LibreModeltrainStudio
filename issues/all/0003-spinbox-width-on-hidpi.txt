@@ -1,0 +1,5 @@
+Spinboxes are too small on HIDPI
+
+They receive only half of the required width for 200% scaling, which is quite
+problematic for editing. Also they seem two pixels too tall on HIDPI and
+Windows.

@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/taschenorakel.de">
+        <file>data/standards/RCN-225.json</file>
+        <file>data/traces/drive.txt</file>
+        <file>data/traces/find-decoder.txt</file>
+        <file>data/traces/read-decoder-info.txt</file>
+        <file>data/traces/read-decoder-settings.txt</file>
+        <file>data/traces/read-programmer-info.txt</file>
+        <file>data/traces/read-variable.txt</file>
+        <file>data/traces/write-decoder-settings-preserve-defaults.txt</file>
+        <file>data/traces/write-decoder-settings-replace-defaults.txt</file>
+        <file>data/traces/write-soundproject-with-decoder-and-defaults.txt</file>
+        <file>data/traces/write-soundproject-without-decoder-settings.txt</file>
+        <file>data/traces/write-variable.txt</file>
+    </qresource>
+</RCC>
