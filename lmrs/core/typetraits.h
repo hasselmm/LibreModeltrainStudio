@@ -22,7 +22,7 @@ template<typename T>
 concept HasIsNull = requires(T value) { value.isNull(); };
 
 template<typename T>
-concept HasParent = requires(T object) { object.parent(); };
+concept HasParent = requires(T &value) { value.parent(); };
 
 template<typename T>
 concept HasToString = requires(T object) { object.toString(); };
