@@ -1,7 +1,8 @@
 Libre Modelrail Studio
 ======================
 
-A free collection of software tools dealing with digital model railways.
+Libre Railroad Studio, short "LMRS", is collection of free software tools
+dealing with various aspects of digital model railways.
 
 There is plenty of software around digital model railways. This software
 is great, and it works. Still many of these projects are isolated efforts
@@ -33,7 +34,7 @@ Contributions
 Feedback, recommendations, contributions are highly welcome.
 
 The source code can be found at Github:
-https://github.com/hasselmm/LibreModeltrainStudio
+<https://github.com/hasselmm/LibreModeltrainStudio>
 
 Let's team up: Modelrailing is much more fun together!
 

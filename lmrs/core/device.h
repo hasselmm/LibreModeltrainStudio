@@ -14,6 +14,7 @@ class Parameter;
 namespace lmrs::core {
 
 class Device;
+class DeviceFactory;
 
 using parameters::Parameter;
 
@@ -56,6 +57,9 @@ inline QDebug operator<<(QDebug debug, Result<T> result)
         return debug << result.error;
 }
 
+///
+/// The Control class is the base class for all optional features of a Device.
+///
 class Control : public QObject
 {
     Q_OBJECT
@@ -66,6 +70,10 @@ public:
     virtual Device *device() const = 0;
 };
 
+///
+/// The AccessoryControl class is a Control, that provides access to modelrail layout accessories
+/// like turnouts, signals, and the like.
+///
 class AccessoryControl : public Control
 {
     Q_OBJECT
@@ -103,6 +111,10 @@ signals:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(AccessoryControl::Features)
 
+///
+/// The DebugControl class is a Control, that provides facilities for debugging a Device implementation,
+/// but also for analysing a modelrail layout and its components.
+///
 class DebugControl : public Control
 {
     Q_OBJECT
@@ -148,6 +160,9 @@ signals:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DebugControl::Features)
 
+///
+/// The PowerControl class is a Control, that allows to manipulate and observe track power for a modelrail layout.
+///
 class PowerControl : public Control
 {
     Q_OBJECT
@@ -175,6 +190,9 @@ signals:
     void stateChanged(lmrs::core::PowerControl::State state);
 };
 
+///
+/// The DetectorControl class is a Control, allows to observe response modules, detectors of a modelrail layout.
+///
 class DetectorControl : public Control
 {
     Q_OBJECT
@@ -186,6 +204,9 @@ signals:
     void detectorInfoChanged(lmrs::core::DetectorInfo detectorInfo);
 };
 
+///
+/// The SpeedMeterControl class is a Control, that provides speed measurements for modelrail vehicles.
+///
 class SpeedMeterControl : public Control
 {
     Q_OBJECT
@@ -220,6 +241,10 @@ signals:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(SpeedMeterControl::Features)
 
+///
+/// The VariableControl class is a Control, that provides access to configuration variables
+/// of modelrail vehicles and accessories.
+///
 class VariableControl : public Control
 {
     Q_OBJECT
@@ -267,6 +292,9 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(VariableControl::Features)
 
+///
+/// The VehicleControl class is a Control, that allows to manipulate behavior of modelrail vehicles.
+///
 class VehicleControl : public Control
 {
     Q_OBJECT
@@ -288,6 +316,9 @@ signals:
     void vehicleInfoChanged(lmrs::core::VehicleInfo vehicleInfo);
 };
 
+///
+/// The DeviceInfo enum uniformly describes apects of a Device.
+///
 enum class DeviceInfo {
     ManufacturerId,
     ProductId,
@@ -319,7 +350,55 @@ enum class DeviceInfo {
 
 Q_ENUM_NS(DeviceInfo)
 
-class DeviceFactory;
+///
+/// The DeviceInfoModel class is a QAbstractTableModel that provides canonical information about a modelrail Device.
+///
+class DeviceInfoModel : public QAbstractTableModel
+{
+    Q_OBJECT
+    Q_PROPERTY(lmrs::core::Device *device READ device WRITE setDevice NOTIFY deviceChanged FINAL)
+
+public:
+    enum class Column {
+        Name,
+        Value,
+    };
+
+    Q_ENUM(Column)
+
+    using QAbstractTableModel::QAbstractTableModel;
+
+    void setDevice(Device *device);
+    Device *device() const;
+
+public: // QAbstractItemModel interface
+    int rowCount(const QModelIndex &parent) const override;
+    int columnCount(const QModelIndex &parent) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+signals:
+    void deviceChanged(lmrs::core::Device *device);
+
+private:
+    void onDeviceInfoChanged(QList<DeviceInfo> changedIds);
+
+    struct Row
+    {
+        QVariant value;
+        QString text;
+    };
+
+    QMap<DeviceInfo, Row> m_rows;
+    QPointer<Device> m_device;
+};
+
+///
+/// The Device class describes a modelrail related device that can be controlled by a computer.
+///
+/// Examples for such devices are DCC command stations, but also roller dynamometer. As the capabilities
+/// of such devices vary greatly, the various aspects of such devices are described via optional Control instances.
+///
 class Device : public QObject
 {
     Q_OBJECT
@@ -411,57 +490,36 @@ inline void Device::observe(core::DeviceInfo id, Observable *observable,
     updateDeviceInfo((observable->*getter)());
 }
 
-class DeviceInfoModel : public QAbstractTableModel
-{
-    Q_OBJECT
-    Q_PROPERTY(lmrs::core::Device *device READ device WRITE setDevice NOTIFY deviceChanged FINAL)
-
-public:
-    enum class Column {
-        Name,
-        Value,
-    };
-
-    Q_ENUM(Column)
-
-    using QAbstractTableModel::QAbstractTableModel;
-
-    void setDevice(Device *device);
-    Device *device() const;
-
-public: // QAbstractItemModel interface
-    int rowCount(const QModelIndex &parent) const override;
-    int columnCount(const QModelIndex &parent) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-signals:
-    void deviceChanged(lmrs::core::Device *device);
-
-private:
-    void onDeviceInfoChanged(QList<DeviceInfo> changedIds);
-
-    struct Row
-    {
-        QVariant value;
-        QString text;
-    };
-
-    QMap<DeviceInfo, Row> m_rows;
-    QPointer<Device> m_device;
-};
-
+///
+/// The DeviceFactory class is used to describe and create Device instances.
+///
+/// Supported parameters of the managed Device are described by the parameters() function.
+/// To create an instance use the create() function.
+///
 class DeviceFactory : public QObject
 {
 public:
     using QObject::QObject;
 
+    /// A description of the Device class instances produced by the DeviceFactory that can be shown to users.
     [[nodiscard]] virtual QString name() const = 0;
+
+    /// The parameters that have to be passed to create() when creating a new Device instance.
     [[nodiscard]] virtual QList<Parameter> parameters() const = 0;
+
+    /// Creates a new Device instance using the configuration described by @p parameters.
+    /// The Device will be created parent, if @p parent is not @c null.
     [[nodiscard]] virtual Device *create(QVariantMap parameters, QObject *parent = nullptr) = 0;
+
+    /// Unique identifier of the Device described by @p parameters.
+    /// This identifier is used for storing the Device's configuration within the local settings.
     [[nodiscard]] virtual QString uniqueId(QVariantMap parameters);
 
+    /// Registers @p factory with the LMRS library.
+    /// A list of registered factories can be obtained using the deviceFactories() function.
     static void addDeviceFactory(DeviceFactory *factory);
+
+    /// A list of DeviceFactory instances registered with the LMRS library.
     [[nodiscard]] static QList<DeviceFactory *> deviceFactories();
 };
 

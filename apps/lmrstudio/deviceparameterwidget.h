@@ -33,6 +33,6 @@ private:
     Private *const d;
 };
 
-} // namespace core::studio
+} // namespace lmrs::studio
 
 #endif // LMRS_STUDIO_DEVICEPARAMETERWIDGET_H

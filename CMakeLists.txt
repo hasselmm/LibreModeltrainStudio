@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(
-    LibreModelrailStudio
-    VERSION 0.0.1
-    LANGUAGES CXX
+    "Libre Modelrail Studio" VERSION "0.0.1"
     HOMEPAGE_URL "https://github.com/hasselmm/LibreModeltrainStudio"
+    LANGUAGES CXX
 )
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -69,13 +68,10 @@ add_compile_options(
     -Werror=unused-result
 )
 
+find_package(Doxygen)
+find_package(Sphinx REQUIRED COMPONENTS Breathe QtHelp)
 
-add_custom_target (
-    documentation
-
-    SOURCES
-    README.md
-)
+add_custom_target(documentation SOURCES README.md)
 
 add_subdirectory(lmrs)
 
@@ -88,6 +84,7 @@ add_custom_target (
     cmake
 
     SOURCES
+    cmake/FindSphinx.cmake
     cmake/FontAwesome.cmake
     cmake/LmrsSupport.cmake
 )
