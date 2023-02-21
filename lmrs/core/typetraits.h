@@ -244,14 +244,14 @@ constexpr auto Flags<T>::isSet(T test) const
 template<class T>
 inline const QLoggingCategory &logger();
 
-template<class PublicObject, HasParent BaseType = QObject>
+template<class PublicObject, HasParent BaseType = QObject, typename... ConstructorArgs>
 class PrivateObject : public BaseType
 {
     friend PublicObject;
 
 protected:
-    explicit PrivateObject(PublicObject *parent)
-        : BaseType{parent} {}
+    explicit PrivateObject(ConstructorArgs... args, PublicObject *parent)
+        : BaseType{args..., parent} {}
 
     auto q() const { return core::checked_cast<const PublicObject *>(BaseType::parent()); }
     auto q() { return core::checked_cast<PublicObject *>(BaseType::parent()); }
