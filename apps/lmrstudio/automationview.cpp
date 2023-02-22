@@ -269,6 +269,7 @@ AutomationView::AutomationView(QWidget *parent)
 
     // -----------------------------------------------------------------------------------------------------------------
 
+    // FIXME: move fileOpenAction, fileSaveAction, and fileSaveAsAction into document manager
     connect(d, &Private::modifiedChanged, d->fileSaveAction, &QAction::setEnabled);
     d->fileSaveAction->setEnabled(d->isModified());
 
