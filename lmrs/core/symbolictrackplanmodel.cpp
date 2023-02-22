@@ -411,31 +411,31 @@ void SymbolicTrackPlanModel::Private::generateLoops()
 
     // wide curves
 
-    m_cells[offset(1, 3)] = {{TrackSymbol::Type::WideCurve}, Orientation::North};
+    m_cells[offset(1, 3)] = {{TrackSymbol::Type::WideCurve}, Orientation::East};
     m_cells[offset(1, 4)] = {{TrackSymbol::Type::Straight},  Orientation::East};
-    m_cells[offset(1, 5)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthEast};
+    m_cells[offset(1, 5)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthEast};
     m_cells[offset(2, 6)] = {{TrackSymbol::Type::Straight},  Orientation::SouthEast};
-    m_cells[offset(3, 7)] = {{TrackSymbol::Type::WideCurve}, Orientation::East};
+    m_cells[offset(3, 7)] = {{TrackSymbol::Type::WideCurve}, Orientation::South};
     m_cells[offset(4, 7)] = {{TrackSymbol::Type::Straight},  Orientation::South};
-    m_cells[offset(5, 7)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthEast};
+    m_cells[offset(5, 7)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthWest};
     m_cells[offset(6, 6)] = {{TrackSymbol::Type::Straight},  Orientation::SouthWest};
-    m_cells[offset(7, 5)] = {{TrackSymbol::Type::WideCurve}, Orientation::South};
+    m_cells[offset(7, 5)] = {{TrackSymbol::Type::WideCurve}, Orientation::West};
     m_cells[offset(7, 4)] = {{TrackSymbol::Type::Straight},  Orientation::West};
-    m_cells[offset(7, 3)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthWest};
+    m_cells[offset(7, 3)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthWest};
     m_cells[offset(6, 2)] = {{TrackSymbol::Type::Straight},  Orientation::NorthWest};
-    m_cells[offset(5, 1)] = {{TrackSymbol::Type::WideCurve}, Orientation::West};
+    m_cells[offset(5, 1)] = {{TrackSymbol::Type::WideCurve}, Orientation::North};
     m_cells[offset(4, 1)] = {{TrackSymbol::Type::Straight},  Orientation::North};
-    m_cells[offset(3, 1)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthWest};
+    m_cells[offset(3, 1)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthEast};
     m_cells[offset(2, 2)] = {{TrackSymbol::Type::Straight},  Orientation::NorthEast};
 
-    m_cells[offset(1, 10)] = {{TrackSymbol::Type::WideCurve}, Orientation::North};
-    m_cells[offset(1, 11)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthEast};
-    m_cells[offset(2, 12)] = {{TrackSymbol::Type::WideCurve}, Orientation::East};
-    m_cells[offset(3, 12)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthEast};
-    m_cells[offset(4, 11)] = {{TrackSymbol::Type::WideCurve}, Orientation::South};
-    m_cells[offset(4, 10)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthWest};
-    m_cells[offset(3,  9)] = {{TrackSymbol::Type::WideCurve}, Orientation::West};
-    m_cells[offset(2,  9)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthWest};
+    m_cells[offset(1, 10)] = {{TrackSymbol::Type::WideCurve}, Orientation::East};
+    m_cells[offset(1, 11)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthEast};
+    m_cells[offset(2, 12)] = {{TrackSymbol::Type::WideCurve}, Orientation::South};
+    m_cells[offset(3, 12)] = {{TrackSymbol::Type::WideCurve}, Orientation::SouthWest};
+    m_cells[offset(4, 11)] = {{TrackSymbol::Type::WideCurve}, Orientation::West};
+    m_cells[offset(4, 10)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthWest};
+    m_cells[offset(3,  9)] = {{TrackSymbol::Type::WideCurve}, Orientation::North};
+    m_cells[offset(2,  9)] = {{TrackSymbol::Type::WideCurve}, Orientation::NorthEast};
 
     // points
 
