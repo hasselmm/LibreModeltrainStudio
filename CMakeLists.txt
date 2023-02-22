@@ -69,7 +69,7 @@ add_compile_options(
 )
 
 find_package(Doxygen)
-find_package(Sphinx REQUIRED COMPONENTS Breathe QtHelp)
+find_package(Sphinx REQUIRED COMPONENTS Breathe MystParser QtHelp)
 
 add_custom_target(documentation SOURCES README.md)
 
