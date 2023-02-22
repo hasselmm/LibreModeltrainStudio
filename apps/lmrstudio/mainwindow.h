@@ -4,6 +4,10 @@
 #include <QFrame>
 #include <QMainWindow>
 
+namespace lmrs::widgets {
+class DocumentManager;
+}
+
 namespace lmrs::studio {
 
 class MainWindowView : public QFrame
@@ -32,6 +36,9 @@ public:
 signals:
     void fileNameChanged(QString fileName, QPrivateSignal);
     void modifiedChanged(bool modified, QPrivateSignal);
+
+protected:
+    void connectDocumentManager(widgets::DocumentManager *manager);
 };
 
 class MainWindow : public QMainWindow
