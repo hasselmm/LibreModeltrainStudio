@@ -12,6 +12,7 @@
 #include <lmrs/roco/z21appfilesharing.h>
 
 #include <lmrs/widgets/actionutils.h>
+#include <lmrs/widgets/documentmanager.h>
 #include <lmrs/widgets/recentfilemenu.h>
 #include <lmrs/widgets/symbolictrackplanview.h>
 
@@ -40,10 +41,22 @@ using Preset = SymbolicTrackPlanModel::Preset;
 
 } // namespace
 
-class TrackPlanView::Private : public core::PrivateObject<TrackPlanView>
+class TrackPlanView::Private : public core::PrivateObject<TrackPlanView, widgets::DocumentManager, QString>
 {
 public:
     using PrivateObject::PrivateObject;
+
+    // widgets::DocumentManager interface ------------------------------------------------------------------------------
+
+    QString documentType() const override { return tr("symbolic track plan"); }
+    QList<core::FileFormat> readableFileFormats() const override { return core::SymbolicTrackPlanReader::fileFormats(); }
+    QList<core::FileFormat> writableFileFormats() const override { return core::SymbolicTrackPlanWriter::fileFormats(); }
+
+    FileHandlerPointer readFile(QString fileName) override;
+    FileHandlerPointer writeFile(QString fileName) override;
+    void resetModel(QVariant preset) override;
+
+    // model handling --------------------------------------------------------------------------------------------------
 
     SymbolicTrackPlanModel *model(int index) const;
     SymbolicTrackPlanModel *currentModel() const;
@@ -53,8 +66,6 @@ public:
 
     SymbolicTrackPlanView *createView(SymbolicTrackPlanModel *model);
 
-    void onFileOpen();
-    void onFileSave();
     void onFileSharing();
 
     void onZoomInAction();
@@ -69,24 +80,29 @@ public:
     std::function<void()> makeResetAction(Preset preset);
     static QString displayName(Preset preset);
 
-    bool open(QString fileName);
+    core::ConstPointer<QAction> fileNewAction = createAction(icon(gui::fontawesome::fasFile),
+                                                             tr("&New"), tr("Reset new symbolic track plan"),
+                                                             this, makeResetAction(Preset::Empty));
+    core::ConstPointer<QAction> fileOpenAction = createAction(icon(gui::fontawesome::fasFolderOpen),
+                                                              tr("&Open"), tr("&Open symbolic track plan from disk"),
+                                                              QKeySequence::Open, this, &DocumentManager::open);
+    core::ConstPointer<QAction> fileOpenRecentAction = q()->addAction(tr("Recent&ly used files"));
 
-    core::ConstPointer<QAction> fileNewAction = q()->addAction(icon(gui::fontawesome::fasFile), tr("&Reset Track Plan"),
-                                                               this, makeResetAction(Preset::Empty));
-    core::ConstPointer<QAction> fileOpenAction = q()->addAction(icon(gui::fontawesome::fasFolderOpen), tr("&Open Track Plan"),
-                                                                QKeySequence::Open, this, &Private::onFileOpen);
-    core::ConstPointer<QAction> fileOpenRecentAction = q()->addAction(tr("&Recent Track Plans..."));
-    core::ConstPointer<QAction> fileSaveAction = q()->addAction(icon(gui::fontawesome::fasFloppyDisk), tr("&Save Track Plan"),
-                                                                QKeySequence::Save, this, &Private::onFileSave);
-    core::ConstPointer<QAction> fileSharingAction = q()->addAction(icon(gui::fontawesome::fasShareNodes), tr("S&hare Track Plan"),
-                                                                   this, &Private::onFileSharing);
+    core::ConstPointer<QAction> fileSaveAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
+                                                              tr("&Save"), tr("Save current symbolic track plan to disk"),
+                                                                QKeySequence::Save, this, &DocumentManager::save);
+    core::ConstPointer<QAction> fileSaveAsAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
+                                                                tr("Save &as..."), tr("Save current symbolic track plan to disk, under new name"),
+                                                                QKeySequence::SaveAs, this, &DocumentManager::saveAs);
+    core::ConstPointer<QAction> fileSharingAction = createAction(icon(gui::fontawesome::fasShareNodes),
+                                                                 tr("S&hare..."), tr("Share current symbolic track plan in the local network"),
+                                                                 this, &Private::onFileSharing);
 
     core::ConstPointer<QTabWidget> notebook{q()};
     core::ConstPointer<QComboBox> deviceBox{q()}; // FIXME: move up in class hierachy
     core::ConstPointer<QSpinBox> zoomBox{q()};
 
     QHash<ActionCategory, QActionGroup *> actionGroups;
-    core::ConstPointer<widgets::RecentFileMenu> recentFilesMenu{"TrackPlanView/RecentFiles"_L1, q()};
 
     QPointer<FileSharing> fileSharing;
 
@@ -145,33 +161,6 @@ SymbolicTrackPlanView *TrackPlanView::Private::createView(SymbolicTrackPlanModel
     return view;
 }
 
-void TrackPlanView::Private::onFileOpen()
-{
-    // FIXME: Use proper documents folder from QDesktopServices, from QSettings
-    auto filters = core::FileFormat::openFileDialogFilter(core::SymbolicTrackPlanReader::fileFormats());
-    auto fileName = QFileDialog::getOpenFileName(q(), tr("Open Track Plan"), {}, std::move(filters));
-
-    if (!fileName.isEmpty())
-        q()->open(std::move(fileName));
-}
-
-void TrackPlanView::Private::onFileSave()
-{
-    // FIXME: Use proper documents folder from QDesktopServices, from QSettings
-    auto filters = core::FileFormat::saveFileDialogFilter(core::SymbolicTrackPlanWriter::fileFormats());
-    auto fileName = QFileDialog::getSaveFileName(q(), tr("Save Track Plan"), {}, std::move(filters));
-
-    if (!fileName.isEmpty()) {
-        const auto writer = core::SymbolicTrackPlanWriter::fromFile(std::move(fileName));
-
-        if (!writer->write(std::move(layout.get()))) {
-            QMessageBox::critical(q(), tr("Could not write track layout"),
-                                  tr("<p>Could not write this track layout to <b>%1</b>.</p><p>%2</p>").
-                                  arg(QFileInfo{writer->fileName()}.fileName(), writer->errorString()));
-        }
-    }
-}
-
 void TrackPlanView::Private::onFileSharing()
 {
     Q_UNIMPLEMENTED();
@@ -219,8 +208,7 @@ void TrackPlanView::Private::onCurrentPageChanged()
 std::function<void()> TrackPlanView::Private::makeResetAction(Preset preset)
 {
     return [this, preset] {
-        if (const auto model = currentModel())
-            model->reset(preset);
+        resetWithModel(QVariant::fromValue(preset));
     };
 }
 
@@ -243,7 +231,7 @@ QString TrackPlanView::Private::displayName(Preset preset)
 
 TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     : MainWindowView{parent}
-    , d{new Private{this}}
+    , d{new Private{"TrackPlanView"_L1, this}}
 {
     d->layout = std::make_unique<core::SymbolicTrackPlanLayout>();
     d->layout->pages.emplace_back(std::make_unique<SymbolicTrackPlanModel>());
@@ -272,8 +260,8 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     toolBar->addAction(d->fileSharingAction);
 
     widgets::forceMenuButtonMode(toolBar, d->fileNewAction);
-    d->recentFilesMenu->bindMenuAction(d->fileOpenRecentAction);
-    d->recentFilesMenu->bindToolBarAction(fileOpenToolBarAction, toolBar);
+    d->recentFilesMenu()->bindMenuAction(d->fileOpenRecentAction);
+    d->recentFilesMenu()->bindToolBarAction(fileOpenToolBarAction, toolBar);
 
     toolBar->addSeparator();
     const auto zoomInAction = toolBar->addAction(icon(gui::fontawesome::fasMagnifyingGlassPlus),
@@ -330,7 +318,14 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
             action->setShortcut(Qt::ControlModifier | Qt::Key_N);
     }
 
-    connect(d->recentFilesMenu, &widgets::RecentFileMenu::fileSelected, this, &TrackPlanView::open);
+    // -----------------------------------------------------------------------------------------------------------------
+
+    connect(d, &Private::modifiedChanged, d->fileSaveAction, &QAction::setEnabled);
+    d->fileSaveAction->setEnabled(d->isModified());
+
+    connectDocumentManager(d);
+
+    // -----------------------------------------------------------------------------------------------------------------
 
     d->actionGroups[ActionCategory::FileNew] = new QActionGroup{this};
     d->actionGroups[ActionCategory::FileNew]->addAction(d->fileNewAction);
@@ -341,6 +336,7 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
 
     d->actionGroups[ActionCategory::FileSave] = new QActionGroup{this};
     d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSaveAction);
+    d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSaveAsAction);
     d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSharingAction);
 
     d->actionGroups[ActionCategory::EditCreate] = new QActionGroup{this};
@@ -381,36 +377,51 @@ QActionGroup *TrackPlanView::actionGroup(ActionCategory category) const
     return d->actionGroups[category];
 }
 
-bool TrackPlanView::Private::open(QString fileName)
+QString TrackPlanView::fileName() const
 {
-    if (fileName.isEmpty()) // FIXME staticassert
-        return false;
+    return d->fileName();
+}
 
-    const auto reader = core::SymbolicTrackPlanReader::fromFile(std::move(fileName));
+bool TrackPlanView::isModified() const
+{
+    return d->isModified();
+}
 
-    if (auto newLayout = reader->read(); !newLayout) {
-        QMessageBox::critical(q(), tr("Could not read track layout"),
-                              tr("<p>Could not read a track layout from <b>%1</b>.</p><p>%2</p>").
-                              arg(QFileInfo{reader->fileName()}.fileName(), reader->errorString()));
+bool TrackPlanView::open(QString newFileName)
+{
+    return d->readFile(std::move(newFileName))->succeeded();
+}
 
-        return false;
-    } else {
+TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::readFile(QString fileName)
+{
+    auto reader = core::SymbolicTrackPlanReader::fromFile(std::move(fileName));
+
+    if (auto newLayout = reader->read()) {
         qInfo() << newLayout->name << newLayout->pages.size();
 
         notebook->clear();
-        recentFilesMenu->addFileName(reader->fileName());
         layout = std::move(newLayout);
 
         for (const auto &page: layout->pages)
             createView(page.get());
-
-        return true;
     }
+
+    return reader;
 }
 
-bool TrackPlanView::open(QString fileName)
+TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::writeFile(QString fileName)
 {
-    return d->open(std::move(fileName));
+    auto writer = core::SymbolicTrackPlanWriter::fromFile(std::move(fileName));
+    const auto succeeded = writer->write(layout.get());
+    Q_ASSERT(succeeded == writer->succeeded());
+    return writer;
+}
+
+void TrackPlanView::Private::resetModel(QVariant model)
+{
+    if (const auto preset = core::get_if<Preset>(std::move(model)))
+        if (const auto model = currentModel())
+            model->reset(preset.value());
 }
 
 } // namespace studio::lmrs

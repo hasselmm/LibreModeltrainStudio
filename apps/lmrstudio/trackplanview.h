@@ -22,9 +22,11 @@ public:
     roco::z21app::FileSharing *fileSharing() const;
 
     QActionGroup *actionGroup(ActionCategory category) const override;
+    QString fileName() const override;
+    bool isModified() const override;
 
 public slots:
-    bool open(QString fileName);
+    bool open(QString newFileName);
 
 private:
     class Private;
