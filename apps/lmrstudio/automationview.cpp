@@ -272,13 +272,7 @@ AutomationView::AutomationView(QWidget *parent)
     connect(d, &Private::modifiedChanged, d->fileSaveAction, &QAction::setEnabled);
     d->fileSaveAction->setEnabled(d->isModified());
 
-    connect(d, &Private::fileNameChanged, this, [this](QString fileName) {
-        emit AutomationView::fileNameChanged(std::move(fileName), {});
-    });
-
-    connect(d, &Private::modifiedChanged, this, [this](bool modified) {
-        emit AutomationView::modifiedChanged(modified, {});
-    });
+    connectDocumentManager(d);
 
     // -----------------------------------------------------------------------------------------------------------------
 

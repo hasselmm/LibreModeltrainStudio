@@ -22,6 +22,7 @@
 
 #include <lmrs/roco/z21appfilesharing.h>
 
+#include <lmrs/widgets/documentmanager.h>
 #include <lmrs/widgets/navigationtoolbar.h>
 #include <lmrs/widgets/statusbar.h>
 
@@ -586,6 +587,17 @@ QString MainWindowView::fileName() const
 bool MainWindowView::isModified() const
 {
     return false;
+}
+
+void MainWindowView::connectDocumentManager(widgets::DocumentManager *manager)
+{
+    connect(manager, &widgets::DocumentManager::fileNameChanged, this, [this](QString fileName) {
+        emit fileNameChanged(std::move(fileName), {});
+    });
+
+    connect(manager, &widgets::DocumentManager::modifiedChanged, this, [this](bool modified) {
+        emit modifiedChanged(modified, {});
+    });
 }
 
 } // namespace lmrs::studio
