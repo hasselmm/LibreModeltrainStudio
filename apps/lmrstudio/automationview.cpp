@@ -256,9 +256,9 @@ AutomationView::AutomationView(QWidget *parent)
     typeSelector->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
     typeSelector->setUniformItemSizes(true);
 
-    auto foo = new StyledAutomationTypeModel{typeSelector};
-    foo->setSourceModel(d->types);
-    typeSelector->setModel(foo);
+    auto styledTypes = new StyledAutomationTypeModel{typeSelector};
+    styledTypes->setSourceModel(d->types);
+    typeSelector->setModel(styledTypes);
 
     connect(typeSelector, &QListView::activated, this, [this](QModelIndex index) {
         if (const auto prototype = d->types->eventItem(index))
