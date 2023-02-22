@@ -31,4 +31,4 @@ breathe_default_project = "lmrs"
 
 # -- External link collection ------------------------------------------------
 
-rst_epilog = open('links.rst').read()
+rst_epilog = open('links.rst', encoding='utf-8-sig').read()
