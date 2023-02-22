@@ -53,13 +53,18 @@ bool DocumentManager::isModified() const
 
 void DocumentManager::reset()
 {
+    resetWithModel({});
+}
+
+void DocumentManager::resetWithModel(QVariant model)
+{
     if (maybeSaveChanges() == QDialog::Rejected)
         return;
 
     m_fileName.clear();
     emit fileNameChanged(m_fileName, {});
 
-    resetModel();
+    resetModel(std::move(model));
     resetModified();
 }
 
