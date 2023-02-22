@@ -432,7 +432,7 @@ AutomationView::Private::FileHandlerPointer AutomationView::Private::readFile(QS
     return reader;
 }
 
-widgets::DocumentManager::FileHandlerPointer AutomationView::Private::writeFile(QString fileName)
+AutomationView::Private::FileHandlerPointer AutomationView::Private::writeFile(QString fileName)
 {
     auto writer = AutomationModelWriter::fromFile(std::move(fileName));
     const auto succeeded = writer->write(canvas->model());
