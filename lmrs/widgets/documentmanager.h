@@ -40,6 +40,7 @@ public:
 
 public slots:
     void reset();
+    void resetWithModel(QVariant model);
     void open();
     void openWithFileName(QString newFileName);
     void save();
@@ -50,11 +51,12 @@ signals:
     void modifiedChanged(bool modified, QPrivateSignal);
 
 protected:
+
     using FileHandlerPointer = std::unique_ptr<core::FileFormatHandler>;
 
     virtual FileHandlerPointer readFile(QString fileName) = 0;
     virtual FileHandlerPointer writeFile(QString fileName) = 0;
-    virtual void resetModel() = 0;
+    virtual void resetModel(QVariant model) = 0;
 
 private:
     QWidget *parentWidget() const;

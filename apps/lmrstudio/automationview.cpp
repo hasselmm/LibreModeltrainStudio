@@ -152,7 +152,7 @@ public:
 
     FileHandlerPointer readFile(QString fileName) override;
     FileHandlerPointer writeFile(QString fileName) override;
-    void resetModel() override;
+    void resetModel(QVariant) override;
 
     // model handling --------------------------------------------------------------------------------------------------
 
@@ -440,7 +440,7 @@ AutomationView::Private::FileHandlerPointer AutomationView::Private::writeFile(Q
     return writer;
 }
 
-void AutomationView::Private::resetModel()
+void AutomationView::Private::resetModel(QVariant)
 {
     canvas->model()->clear();
 }
