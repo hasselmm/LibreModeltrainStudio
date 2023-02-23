@@ -14,7 +14,6 @@ author = 'Mathias Hasselmann'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ['breathe', 'myst_parser']
-
 templates_path = ['_templates']
 exclude_patterns = ['links.rst']
 
@@ -27,7 +26,7 @@ html_static_path = ['_static']
 # -- Breathe Configuration ---------------------------------------------------
 # https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/
 
-breathe_default_project = "lmrs"
+breathe_default_project = 'lmrs'
 
 # -- External link collection ------------------------------------------------
 
