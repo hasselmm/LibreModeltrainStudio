@@ -4,9 +4,8 @@
 #include <QFrame>
 #include <QMainWindow>
 
-namespace lmrs::widgets {
-class DocumentManager;
-}
+namespace lmrs::core::l10n { class LanguageManager; }
+namespace lmrs::widgets { class DocumentManager; }
 
 namespace lmrs::studio {
 
@@ -48,6 +47,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = {});
     ~MainWindow() override;
+
+    void setLanguageManager(core::l10n::LanguageManager *languageManager);
+    core::l10n::LanguageManager *languageManager() const;
 
 private:
     class Private;

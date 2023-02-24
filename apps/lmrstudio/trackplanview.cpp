@@ -8,6 +8,7 @@
 #include <lmrs/core/typetraits.h>
 
 #include <lmrs/gui/fontawesome.h>
+#include <lmrs/gui/localization.h>
 
 #include <lmrs/roco/z21appfilesharing.h>
 
@@ -78,25 +79,26 @@ public:
 
     void attachCurrentDevice(widgets::SymbolicTrackPlanView *view);
     std::function<void()> makeResetAction(Preset preset);
-    static QString displayName(Preset preset);
+    static l10n::String displayName(Preset preset);
 
-    core::ConstPointer<QAction> fileNewAction = createAction(icon(gui::fontawesome::fasFile),
-                                                             tr("&New"), tr("Reset new symbolic track plan"),
-                                                             this, makeResetAction(Preset::Empty));
-    core::ConstPointer<QAction> fileOpenAction = createAction(icon(gui::fontawesome::fasFolderOpen),
-                                                              tr("&Open"), tr("&Open symbolic track plan from disk"),
-                                                              QKeySequence::Open, this, &DocumentManager::open);
-    core::ConstPointer<QAction> fileOpenRecentAction = q()->addAction(tr("Recent&ly used files"));
+    core::ConstPointer<l10n::Action> fileNewAction{icon(gui::fontawesome::fasFile),
+                LMRS_TR("&New"), LMRS_TR("Reset new symbolic track plan"),
+                this, makeResetAction(Preset::Empty)};
+    core::ConstPointer<l10n::Action> fileOpenAction{icon(gui::fontawesome::fasFolderOpen),
+                LMRS_TR("&Open"), LMRS_TR("&Open symbolic track plan from disk"),
+                QKeySequence::Open, this, &DocumentManager::open};
 
-    core::ConstPointer<QAction> fileSaveAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
-                                                              tr("&Save"), tr("Save current symbolic track plan to disk"),
-                                                                QKeySequence::Save, this, &DocumentManager::save);
-    core::ConstPointer<QAction> fileSaveAsAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
-                                                                tr("Save &as..."), tr("Save current symbolic track plan to disk, under new name"),
-                                                                QKeySequence::SaveAs, this, &DocumentManager::saveAs);
-    core::ConstPointer<QAction> fileSharingAction = createAction(icon(gui::fontawesome::fasShareNodes),
-                                                                 tr("S&hare..."), tr("Share current symbolic track plan in the local network"),
-                                                                 this, &Private::onFileSharing);
+    core::ConstPointer<l10n::Action> fileOpenRecentAction{LMRS_TR("Recent&ly used files"), this};
+
+    core::ConstPointer<l10n::Action> fileSaveAction{icon(gui::fontawesome::fasFloppyDisk),
+                LMRS_TR("&Save"), LMRS_TR("Save current symbolic track plan to disk"),
+                QKeySequence::Save, this, &DocumentManager::save};
+    core::ConstPointer<l10n::Action> fileSaveAsAction{icon(gui::fontawesome::fasFloppyDisk),
+                LMRS_TR("Save &as..."), LMRS_TR("Save current symbolic track plan to disk, under new name"),
+                QKeySequence::SaveAs, this, &DocumentManager::saveAs};
+    core::ConstPointer<l10n::Action> fileSharingAction{icon(gui::fontawesome::fasShareNodes),
+                LMRS_TR("S&hare..."), LMRS_TR("Share current symbolic track plan in the local network"),
+                this, &Private::onFileSharing};
 
     core::ConstPointer<QTabWidget> notebook{q()};
     core::ConstPointer<QComboBox> deviceBox{q()}; // FIXME: move up in class hierachy
@@ -212,21 +214,47 @@ std::function<void()> TrackPlanView::Private::makeResetAction(Preset preset)
     };
 }
 
-QString TrackPlanView::Private::displayName(Preset preset)
+l10n::String TrackPlanView::Private::displayName(Preset preset)
 {
     switch (preset) {
     case Preset::Empty:
-        return tr("Empty");
+        return LMRS_TR("Empty");
     case Preset::SymbolGallery:
-        return tr("Symbol Gallery");
+        return LMRS_TR("Symbol Gallery");
     case Preset::Loops:
-        return tr("Various Loops");
+        return LMRS_TR("Various Loops");
     case Preset::Roofs:
-        return tr("Platforms and Roofs");
+        return LMRS_TR("Platforms and Roofs");
     };
 
     Q_UNREACHABLE();
-    return QString::number(core::value(preset));
+}
+
+template<int index>
+QString addNumericMnemonic(QString &text)
+{
+    if (index < 10)
+        return "&%1. %2"_L1.arg(QString::number(index + 1), text);
+
+    return text;
+}
+
+auto numericMnemonicFunction(int index)
+{
+    switch (index) {
+    case 0: return &addNumericMnemonic<0>;
+    case 1: return &addNumericMnemonic<1>;
+    case 2: return &addNumericMnemonic<2>;
+    case 3: return &addNumericMnemonic<3>;
+    case 4: return &addNumericMnemonic<4>;
+    case 5: return &addNumericMnemonic<5>;
+    case 6: return &addNumericMnemonic<6>;
+    case 7: return &addNumericMnemonic<7>;
+    case 8: return &addNumericMnemonic<8>;
+    case 9: return &addNumericMnemonic<9>;
+    }
+
+    return &addNumericMnemonic<10>;
 }
 
 TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
@@ -238,9 +266,11 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     d->createView(d->layout->pages.front().get());
 
     // FIXME: make this method pretty
-    const auto newPageAction = addAction(icon(gui::fontawesome::fasPlus), tr("New page"));
+    const auto newPageAction = new l10n::Action{icon(gui::fontawesome::fasPlus), LMRS_TR("New page"), this};
     const auto newPageButton = new QPushButton{this};
+
     widgets::bindAction(newPageButton, newPageAction);
+
     d->notebook->setCornerWidget(newPageButton, Qt::Corner::TopRightCorner);
     connect(d->notebook, &QTabWidget::currentChanged, d, &Private::onCurrentPageChanged);
 
@@ -252,7 +282,7 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     });
 
     const auto toolBar = new QToolBar{this};
-    const auto fileOpenToolBarAction = widgets::createProxyAction(d->fileOpenAction);
+    const auto fileOpenToolBarAction = widgets::createProxyAction(d->fileOpenAction.get());
 
     toolBar->addAction(d->fileNewAction);
     toolBar->addAction(fileOpenToolBarAction);
@@ -311,8 +341,10 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     d->fileNewAction->setMenu(new QMenu{this});
 
     for (const auto preset: QMetaTypeId<Preset>{}) {
-        auto text = '&'_L1 + QString::number(preset.index() + 1) + ". "_L1 + Private::displayName(preset.value());
-        const auto action = d->fileNewAction->menu()->addAction(std::move(text), d, d->makeResetAction(preset.value()));
+        auto text = l10n::String(Private::displayName(preset.value()), numericMnemonicFunction(preset.index()));
+
+        const auto action = new l10n::Action{std::move(text), d, d->makeResetAction(preset.value())};
+        d->fileNewAction->menu()->addAction(action);
 
         if (preset == Preset::Empty)
             action->setShortcut(Qt::ControlModifier | Qt::Key_N);

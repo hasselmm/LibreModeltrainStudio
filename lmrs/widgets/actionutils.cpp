@@ -3,6 +3,8 @@
 #include <lmrs/core/logging.h>
 #include <lmrs/core/typetraits.h>
 
+#include <lmrs/gui/localization.h>
+
 #include <QToolBar>
 #include <QToolButton>
 
@@ -54,11 +56,6 @@ QAction *bindAction(QAction *target, QAction *action)
     return bindAction<QAction>(target, action);
 }
 
-QAction *createProxyAction(QAction *prototype)
-{
-return bindAction(new QAction{prototype->parent()}, prototype);
-}
-
 void forceMenuButtonMode(QToolBar *toolBar, QAction *action)
 {
     if (const auto button = core::checked_cast<QToolButton *>(toolBar->widgetForAction(action))) {
@@ -67,6 +64,12 @@ void forceMenuButtonMode(QToolBar *toolBar, QAction *action)
         qCWarning(core::logger<ActionUtils>, "Could not find action \"%ls\" in toolbar",
                   qUtf16Printable(action->text()));
     }
+}
+
+QAction *makeCheckable(QAction *action)
+{
+    action->setCheckable(true);
+    return action;
 }
 
 } // namespace lmrs::widgets

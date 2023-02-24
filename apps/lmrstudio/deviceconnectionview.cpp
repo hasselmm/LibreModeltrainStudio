@@ -2,6 +2,7 @@
 
 #include "deviceparameterwidget.h"
 
+#include <lmrs/core/localization.h>
 #include <lmrs/core/logging.h>
 #include <lmrs/core/memory.h>
 #include <lmrs/core/propertyguard.h>
@@ -308,10 +309,10 @@ public:
     core::ConstPointer<QStackedWidget> parameterStack{q()};
     core::ConstPointer<QTableView> deviceInfoView{q()};
 
-    core::ConstPointer<QPushButton> refreshButton{tr("&Refresh"), q()};
+    core::ConstPointer<l10n::Facade<QPushButton>> refreshButton{LMRS_TR("&Refresh"), q()};
     core::ConstPointer<QSlider> powerSlider{Qt::Orientation::Horizontal, q()};
-    core::ConstPointer<QPushButton> connectButton{tr("&Connect"), q()};
-    core::ConstPointer<QPushButton> disconnectButton{tr("&Disconnect"), q()};
+    core::ConstPointer<l10n::Facade<QPushButton>> connectButton{LMRS_TR("&Connect"), q()};
+    core::ConstPointer<l10n::Facade<QPushButton>> disconnectButton{LMRS_TR("&Disconnect"), q()};
 
     QHash<DeviceFilter, QAbstractItemModel *> filteredDeviceModels;
     QPointer<core::Device> currentDevice;
@@ -514,7 +515,7 @@ DeviceConnectionView::DeviceConnectionView(QWidget *parent)
     d->powerSlider->setMaximumWidth(30);
     d->powerSlider->setRange(0, 1);
 
-    const auto powerLabel = new QLabel{tr("&Power:"), this};
+    const auto powerLabel = new l10n::Facade<QLabel>{LMRS_TR("&Power:"), this};
     powerLabel->setBuddy(d->powerSlider);
 
     d->updateDeviceFactories();

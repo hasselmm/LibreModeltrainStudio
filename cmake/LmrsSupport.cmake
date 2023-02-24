@@ -27,7 +27,7 @@ function(lmrs_add_translations TARGET)
     qt_add_translations(
         ${TARGET} TS_FILES ${translations} SOURCES ${sources}
         RESOURCE_PREFIX "/taschenorakel.de/${namespace}/l18n"
-        LUPDATE_OPTIONS -source-language en_US -locations none
+        LUPDATE_OPTIONS -source-language en_US -locations none -tr-function-alias tr+=LMRS_TR
     )
 endfunction()
 

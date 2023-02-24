@@ -19,9 +19,11 @@
 #include <lmrs/core/userliterals.h>
 
 #include <lmrs/gui/fontawesome.h>
+#include <lmrs/gui/localization.h>
 
 #include <lmrs/roco/z21appfilesharing.h>
 
+#include <lmrs/widgets/actionutils.h>
 #include <lmrs/widgets/documentmanager.h>
 #include <lmrs/widgets/navigationtoolbar.h>
 #include <lmrs/widgets/statusbar.h>
@@ -62,10 +64,15 @@ auto prettyFileSize(qint64 fileSize, PrettyFileSizeMode mode = PrettyFileSizeMod
     return result;
 }
 
-auto checkable(auto action)
+auto prettyUrl(QString url)
 {
-    action->setCheckable(true);
-    return action;
+    return url.replace("https://"_L1, QString{});
+}
+
+auto htmlLink(QString url) // FIXME: maybe move to HTML utility header
+{
+    auto text = prettyUrl(LMRS_HOMEPAGE_URL);
+    return R"(<a href="%1">%2</a>)"_L1.arg(std::move(url), std::move(text));
 }
 
 } // namespace
@@ -109,7 +116,10 @@ public:
     void onFileTransferRequested(FileTransferSession *session);
     void onFileSharingProgress(FileTransferSession *session, qint64 bytesReceived, qint64 totalBytes);
     void onFileSharingFinished(FileTransferSession *session);
-    void onFileSharingEnabled();
+    void onSettingsFileSharingChecked(bool checked);
+
+    void onAboutApplication();
+    void onAboutQt();
 
     QPointer<core::Device> currentDevice;
 
@@ -128,17 +138,19 @@ public:
     core::ConstPointer<AutomationView> automationView{q()}; // FIXME: we also handle response modules
     core::ConstPointer<StatusBar> statusBar{q()};
 
-    core::ConstPointer<QMenu> deviceMenu{tr("&Device"), q()->menuBar()};
     core::ConstPointer<QActionGroup> powerActionGroup{this};
-    core::ConstPointer<QAction> enablePowerAction{icon(gui::fontawesome::fasPlugCircleBolt), tr("&Enable track power"), powerActionGroup};
-    core::ConstPointer<QAction> disablePowerAction{icon(gui::fontawesome::fasPlugCircleMinus), tr("&Disable track power"), powerActionGroup};
-    core::ConstPointer<QAction> emergencyStopAction{icon(gui::fontawesome::fasPlugCircleXmark), tr("Emergency &stop"), powerActionGroup};
-    core::ConstPointer<QAction> shortcircutAction{icon(gui::fontawesome::fasPlugCircleExclamation), tr("Shortcircut"), powerActionGroup};
-    core::ConstPointer<QAction> serviceModeAction{icon(gui::fontawesome::fasScrewdriverWrench), tr("Service mode"), powerActionGroup};
+    core::ConstPointer<l10n::Action> enablePowerAction{icon(gui::fontawesome::fasPlugCircleBolt), LMRS_TR("&Enable track power"), powerActionGroup};
+    core::ConstPointer<l10n::Action> disablePowerAction{icon(gui::fontawesome::fasPlugCircleMinus), LMRS_TR("&Disable track power"), powerActionGroup};
+    core::ConstPointer<l10n::Action> emergencyStopAction{icon(gui::fontawesome::fasPlugCircleXmark), LMRS_TR("Emergency &stop"), powerActionGroup};
+    core::ConstPointer<l10n::Action> shortCircuitAction{icon(gui::fontawesome::fasPlugCircleExclamation), LMRS_TR("Short Circuit"), powerActionGroup};
+    core::ConstPointer<l10n::Action> serviceModeAction{icon(gui::fontawesome::fasScrewdriverWrench), LMRS_TR("Service mode"), powerActionGroup};
 
-    core::ConstPointer<QAction> fileSharingEnabledAction{checkable(q()->addAction(tr("&Z21 File Sharing"), this, &Private::onFileSharingEnabled))};
+    core::ConstPointer<l10n::Action> settingsLanguageMenuAction{LMRS_TR("&Language"), q()};
+    core::ConstPointer<l10n::Action> settingsFileSharingAction{LMRS_TR("&Z21 File Sharing"), this, &Private::onSettingsFileSharingChecked};
 
+    QPointer<l10n::LanguageManager> languageManager;
     core::ConstPointer<FileSharing> fileSharing{this};
+    core::ConstPointer<QActionGroup> settingsLanguageGroup{this};
 
     struct ActionCategory
     {
@@ -150,9 +162,26 @@ public:
 
     QHash<ActionCategory::Type, ActionCategory> actionCategories;
 
-    core::ConstPointer<QMenu> fileMenu{q()->menuBar()->addMenu(tr("&File"))};
-    core::ConstPointer<QMenu> editMenu{q()->menuBar()->addMenu(tr("&Edit"))};
-    core::ConstPointer<QMenu> viewMenu{q()->menuBar()->addMenu(tr("&View"))};
+    QMenu *addMenu(const l10n::String &text)
+    {
+        auto menu = std::make_unique<l10n::Facade<QMenu>>(text, q()->menuBar());
+        q()->menuBar()->addMenu(menu.get());
+        return menu.release();
+    }
+
+    template<class Parent, class... Args>
+    QAction *addAction(Parent *parent, Args... args)
+    {
+        auto action = std::make_unique<l10n::Action>(args...);
+        parent->addAction(action.get());
+        action->setParent(parent);
+        return action.release();
+    }
+
+    core::ConstPointer<QMenu> fileMenu{addMenu(LMRS_TR("&File"))};
+    core::ConstPointer<QMenu> editMenu{addMenu(LMRS_TR("&Edit"))};
+    core::ConstPointer<QMenu> viewMenu{addMenu(LMRS_TR("&View"))};
+    core::ConstPointer<QMenu> deviceMenu{addMenu(LMRS_TR("&Device"))};
 };
 
 void MainWindow::Private::setupActions()
@@ -162,7 +191,7 @@ void MainWindow::Private::setupActions()
 
     powerActionGroup->setExclusive(true);
     emergencyStopAction->setEnabled(false);
-    shortcircutAction->setEnabled(false);
+    shortCircuitAction->setEnabled(false);
     serviceModeAction->setEnabled(false);
 
     connect(disablePowerAction, &QAction::toggled, this, [this](auto toggled) {
@@ -180,12 +209,12 @@ void MainWindow::Private::setupViews()
 {
     connect(stack, &QStackedWidget::currentChanged, this, &Private::onCurrentViewChanged);
 
-    const auto notImplemented = new QLabel{tr("This screen has not been implemented yet"), q()};
+    const auto notImplemented = new l10n::Facade<QLabel>{LMRS_TR("This screen has not been implemented yet"), q()};
     notImplemented->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     notImplemented->setEnabled(false);
     notImplemented->setMargin(20);
 
-    const auto addView = [this](QIcon icon, QString text, QWidget *view) {
+    const auto addView = [this](QIcon icon, l10n::String text, QWidget *view) {
         if (const auto mainWindowView = dynamic_cast<MainWindowView *>(view)) {
             connect(mainWindowView, &MainWindowView::fileNameChanged, this, &Private::onFileNameChanged);
             connect(mainWindowView, &MainWindowView::modifiedChanged, this, &Private::onModifiedChanged);
@@ -196,33 +225,33 @@ void MainWindow::Private::setupViews()
         stack->addWidget(view);
     };
 
-    addView(icon(gui::fontawesome::fasPlug), tr("&Connect"), devicesView);
-    addView(icon(gui::fontawesome::fasTrain), tr("&Drive"), vehicleControlView);
-    addView(icon(gui::fontawesome::fasTrafficLight), tr("S&ignal Box"), accessoryControlView);
-    addView(icon(gui::fontawesome::fasGaugeHigh), tr("Speed&meter"), speedMeterView);
-    addView(icon(gui::fontawesome::fasScrewdriverWrench), tr("&Programming"), variableEditorView);
-    addView(icon(gui::fontawesome::fasBug), tr("De&bug"), debugView);
+    addView(icon(gui::fontawesome::fasPlug), LMRS_TR("&Connect"), devicesView);
+    addView(icon(gui::fontawesome::fasTrain), LMRS_TR("&Drive"), vehicleControlView);
+    addView(icon(gui::fontawesome::fasTrafficLight), LMRS_TR("S&ignal Box"), accessoryControlView);
+    addView(icon(gui::fontawesome::fasGaugeHigh), LMRS_TR("Speed&meter"), speedMeterView);
+    addView(icon(gui::fontawesome::fasScrewdriverWrench), LMRS_TR("&Programming"), variableEditorView);
+    addView(icon(gui::fontawesome::fasBug), LMRS_TR("De&bug"), debugView);
 
     navigation->addSeparator();
 
-    addView(icon(gui::fontawesome::fasCodeBranch), tr("&Track Plan"), trackPlanView);
-    addView(icon(gui::fontawesome::fasRobot), tr("&Automation"), automationView);
+    addView(icon(gui::fontawesome::fasCodeBranch), LMRS_TR("&Track Plan"), trackPlanView);
+    addView(icon(gui::fontawesome::fasRobot), LMRS_TR("&Automation"), automationView);
 
     navigation->addSeparator();
 
-    addView(icon(gui::fontawesome::fasCircleInfo), tr("&Summary"), notImplemented);
-    addView(icon(gui::fontawesome::fasTableList), tr("&Functions"), functionMappingView);
-    addView(icon(gui::fontawesome::fasVolumeHigh), tr("&Sounds"), notImplemented);
-    addView(icon(gui::fontawesome::fasFolderTree), tr("&Explorer"), notImplemented);
+    addView(icon(gui::fontawesome::fasCircleInfo), LMRS_TR("&Summary"), notImplemented);
+    addView(icon(gui::fontawesome::fasTableList), LMRS_TR("&Functions"), functionMappingView);
+    addView(icon(gui::fontawesome::fasVolumeHigh), LMRS_TR("&Sounds"), notImplemented);
+    addView(icon(gui::fontawesome::fasFolderTree), LMRS_TR("&Explorer"), notImplemented);
 
     navigation->addSeparator();
 
-    addView(icon(gui::fontawesome::fasBook), tr("&Decoder\nLibrary"), decoderDatabaseView);
+    addView(icon(gui::fontawesome::fasBook), LMRS_TR("&Decoder\nLibrary"), decoderDatabaseView);
 
     navigation->setCurrentView(stack->currentWidget());
     navigation->attachMainWidget(stack);
 
-    viewMenu->addActions(navigation->actions());
+    viewMenu->addActions(navigation->menuActions());
 
     connect(devicesView, &DeviceConnectionView::currentDeviceChanged, this, &Private::onCurrentDeviceChanged); // FIXME: this has to be done differently
 
@@ -241,7 +270,7 @@ void MainWindow::Private::setupMenuBar()
     actionCategories[ActionCategory::Type::FileOpen].placeholder = fileMenu->addSeparator();
     actionCategories[ActionCategory::Type::FileSave].placeholder = fileMenu->addSeparator();
 
-    fileMenu->addAction(tr("&Quit"), QKeySequence::Quit, qApp, &QApplication::quit);
+    addAction(fileMenu.get(), LMRS_TR("&Quit"), QKeySequence::Quit, qApp, &QApplication::quit);
 
     // -----------------------------------------------------------------------------------------------------------------
 
@@ -252,29 +281,26 @@ void MainWindow::Private::setupMenuBar()
 
     actionCategories[ActionCategory::Type::View].placeholder = viewMenu->addSeparator();
 
-    q()->menuBar()->addMenu(deviceMenu);
     deviceMenu->addActions(powerActionGroup->actions());
     deviceMenu->addSeparator();
-    deviceMenu->addAction(tr("Dis&connect"), devicesView.get(), &DeviceConnectionView::disconnectFromDevice);
 
-    const auto settingsMenu = q()->menuBar()->addMenu(tr("&Settings")); // ---------------------------------------------
+    addAction(deviceMenu.get(), LMRS_TR("Dis&connect"), devicesView.get(), &DeviceConnectionView::disconnectFromDevice);
 
-    settingsMenu->addAction(fileSharingEnabledAction);
+    const auto settingsMenu = addMenu(LMRS_TR("&Settings")); // --------------------------------------------------------
 
-    const auto helpMenu = q()->menuBar()->addMenu(tr("&Help")); // -----------------------------------------------------
+    settingsLanguageMenuAction->setMenu(new QMenu{q()});
+    settingsLanguageMenuAction->setVisible(false);
 
-    helpMenu->addAction(tr("&About %1...").arg(qApp->applicationDisplayName()), this, [this] {
-        auto title = tr("About %1").arg(qApp->applicationDisplayName());
-        auto text = tr("<p><b>%1 %2</b></p><p>Visit <a href=\"%3/\">%4</a> for information.</p>").
-                arg(qApp->applicationDisplayName(), qApp->applicationVersion(), LMRS_HOMEPAGE_URL,
-                    QString{LMRS_HOMEPAGE_URL}.replace("https://"_L1, QString{}));
+    settingsMenu->addAction(settingsLanguageMenuAction);
+    settingsMenu->addAction(settingsFileSharingAction);
 
-        QMessageBox::about(q(), std::move(title), std::move(text));
-    });
+    const auto helpMenu = addMenu(LMRS_TR("&Help")); // ----------------------------------------------------------------
 
-    helpMenu->addAction(tr("&About Qt..."), this, [this] {
-        QMessageBox::aboutQt(q());
-    });
+    addAction(helpMenu, LMRS_TR("&About %1...").filtered([](QString &text) {
+                  return text.arg(qApp->applicationDisplayName());
+              }), this, &Private::onAboutApplication);
+
+    addAction(helpMenu, LMRS_TR("About &Qt..."), this, &Private::onAboutQt);
 }
 
 void MainWindow::Private::setupStatusBar()
@@ -374,9 +400,9 @@ void MainWindow::Private::onFileSharingFinished(FileTransferSession *session)
     }
 }
 
-void MainWindow::Private::onFileSharingEnabled()
+void MainWindow::Private::onSettingsFileSharingChecked(bool checked)
 {
-    if (!fileSharingEnabledAction->isChecked()) {
+    if (!checked) {
         fileSharing->stopListening();
         statusBar->showTemporaryMessage(tr("File sharing with Roco Z21 App stopped."));
     } else if (fileSharing->startListening()) {
@@ -388,13 +414,29 @@ void MainWindow::Private::onFileSharingEnabled()
     QSettings{}.setValue(s_settings_fileSharingEnabled, fileSharing->isListening());
 }
 
+void MainWindow::Private::onAboutApplication()
+{
+    auto title = tr("About %1").arg(qApp->applicationDisplayName());
+    auto invitation = tr("Visit %1 for information.").arg(htmlLink(LMRS_HOMEPAGE_URL));
+    auto text = "<p><b>%1 %2</b></p><p>%3</p>"_L1.arg(qApp->applicationDisplayName(),
+                                                      qApp->applicationVersion(),
+                                                      std::move(invitation));
+
+    QMessageBox::about(q(), std::move(title), std::move(text));
+}
+
+void MainWindow::Private::onAboutQt()
+{
+    QMessageBox::aboutQt(q());
+}
+
 void MainWindow::Private::restoreSettings()
 {
     devicesView->restoreSettings();
 
     const auto settings = QSettings{};
 
-    fileSharingEnabledAction->setChecked(settings.value(s_settings_fileSharingEnabled, true).toBool());
+    settingsFileSharingAction->setChecked(settings.value(s_settings_fileSharingEnabled, true).toBool());
 }
 
 void MainWindow::Private::mergeActions(MainWindowView *view)
@@ -540,10 +582,10 @@ void MainWindow::Private::onPowerStateChanged()
     disablePowerAction->setChecked(state == core::PowerControl::State::PowerOff);
     enablePowerAction->setChecked(state == core::PowerControl::State::PowerOn);
     emergencyStopAction->setChecked(state == core::PowerControl::State::EmergencyStop);
-    shortcircutAction->setChecked(state == core::PowerControl::State::ShortCircuit);
+    shortCircuitAction->setChecked(state == core::PowerControl::State::ShortCircuit);
     serviceModeAction->setChecked(state == core::PowerControl::State::ServiceMode);
 
-    shortcircutAction->setVisible(shortcircutAction->isChecked());
+    shortCircuitAction->setVisible(shortCircuitAction->isChecked());
     serviceModeAction->setVisible(serviceModeAction->isChecked());
 }
 
@@ -565,13 +607,50 @@ MainWindow::MainWindow(QWidget *parent)
 
     // the following setup routines require settings being restored
     d->onCurrentViewChanged();
-    d->onFileSharingEnabled();
     d->onDeviceStateChanged(d->deviceState());
+    d->onSettingsFileSharingChecked(d->settingsFileSharingAction->isChecked());
 }
 
 MainWindow::~MainWindow()
 {
     delete d;
+}
+
+void MainWindow::setLanguageManager(l10n::LanguageManager *languageManager)
+{
+    if (std::exchange(d->languageManager, languageManager) == d->languageManager)
+        return;
+
+    const auto languageMenu = d->settingsLanguageMenuAction->menu();
+
+    languageMenu->clear();
+
+    for (auto action: d->settingsLanguageGroup->actions()) {
+        d->settingsLanguageGroup->removeAction(action);
+        delete action;
+    }
+
+    for (const auto &language: languageManager->availableLanguages()) {
+        auto text = language.nativeName + " ("_L1 + language.englishName + ")"_L1;
+        auto action = new QAction{std::move(text), d->settingsLanguageGroup};
+
+        action->setCheckable(true);
+        action->setChecked(language.id == languageManager->currentLanguage());
+
+        connect(action, &QAction::triggered, this, [this, language = language.id](bool checked) {
+            if (checked)
+                d->languageManager->setCurrentLanguage(language);
+        });
+
+        languageMenu->addAction(action);
+    }
+
+    d->settingsLanguageMenuAction->setVisible(!languageMenu->isEmpty());
+}
+
+l10n::LanguageManager *MainWindow::languageManager() const
+{
+    return d->languageManager;
 }
 
 QActionGroup *MainWindowView::actionGroup(ActionCategory) const
