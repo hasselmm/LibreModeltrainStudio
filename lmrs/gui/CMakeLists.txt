@@ -3,6 +3,8 @@ add_library (
     fontawesome.cpp
     fontawesome.h
     fontawesome.qrc
+    localization.cpp
+    localization.h
     symbolfonts.cpp
     symbolfonts.h
 )

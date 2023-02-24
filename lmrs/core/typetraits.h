@@ -249,6 +249,8 @@ class PrivateObject : public BaseType
 {
     friend PublicObject;
 
+    using PublicObjectType = PublicObject;
+
 protected:
     explicit PrivateObject(ConstructorArgs... args, PublicObject *parent)
         : BaseType{args..., parent} {}
@@ -260,14 +262,6 @@ protected:
 
     static auto &logger(auto) = delete; // purposefully not defined to catch errors
     static auto &logger() { return core::logger<PublicObject>(); }
-
-    template<ForwardDeclared<QIcon> Icon, typename... Args>
-    QAction *createAction(Icon icon, QString text, QString tooltip, Args... args)
-    {
-        const auto action = q()->addAction(std::move(icon), std::move(text), std::move(args)...);
-        action->setToolTip(std::move(tooltip));
-        return action;
-    }
 };
 
 template<class PublicObject, class BaseType>

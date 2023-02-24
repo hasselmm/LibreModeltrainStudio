@@ -42,7 +42,7 @@ void Application::staticConstructor()
 
 int Application::run()
 {
-    core::installTranslations(this);
+    const auto languages = std::make_unique<core::l10n::LanguageManager>(this);
 
     core::DeviceFactory::addDeviceFactory(new esu::lp2::DeviceFactory{this});
     core::DeviceFactory::addDeviceFactory(new kpfzeller::DeviceFactory{this});
@@ -53,6 +53,7 @@ int Application::run()
     core::registerFileFormat<roco::z21app::LayoutWriter>(core::FileFormat::z21Layout());
 
     const auto mainWindow = std::make_unique<MainWindow>();
+    mainWindow->setLanguageManager(languages.get());
     mainWindow->show();
 
     return exec();

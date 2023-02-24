@@ -9,6 +9,7 @@
 #include <lmrs/core/userliterals.h>
 
 #include <lmrs/gui/fontawesome.h>
+#include <lmrs/gui/localization.h>
 
 #include <lmrs/widgets/actionutils.h>
 #include <lmrs/widgets/documentmanager.h>
@@ -176,34 +177,35 @@ public:
 
     QHash<ActionCategory, QActionGroup *> actionGroups;
 
-    core::ConstPointer<QAction> fileNewAction = createAction(icon(gui::fontawesome::fasFile),
-                                                             tr("&New"), tr("Create new automation plan"),
-                                                             QKeySequence::New, this, &DocumentManager::reset);
-    core::ConstPointer<QAction> fileOpenAction = createAction(icon(gui::fontawesome::fasFolderOpen),
-                                                              tr("&Open..."), tr("Open automation plan from disk"),
-                                                              QKeySequence::Open, this, &DocumentManager::open);
-    core::ConstPointer<QAction> fileOpenRecentAction = q()->addAction(tr("Recent&ly used files"));
+    core::ConstPointer<l10n::Action> fileNewAction{icon(gui::fontawesome::fasFile),
+                LMRS_TR("&New"), LMRS_TR("Create new automation plan"),
+                QKeySequence::New, this, &DocumentManager::reset};
+    core::ConstPointer<l10n::Action> fileOpenAction{icon(gui::fontawesome::fasFolderOpen),
+                LMRS_TR("&Open..."), LMRS_TR("Open automation plan from disk"),
+                QKeySequence::Open, this, &DocumentManager::open};
 
-    core::ConstPointer<QAction> fileSaveAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
-                                                              tr("&Save"), tr("Save current automation plan to disk"),
-                                                              QKeySequence::Save, this, &DocumentManager::save);
-    core::ConstPointer<QAction> fileSaveAsAction = createAction(icon(gui::fontawesome::fasFloppyDisk),
-                                                                tr("Save &as..."), tr("Save current automation plan to disk, under new name"),
-                                                                QKeySequence::SaveAs, this, &DocumentManager::saveAs);
+    core::ConstPointer<l10n::Action> fileOpenRecentAction{LMRS_TR("Recent&ly used files"), this};
 
-    core::ConstPointer<QAction> editCutAction = createAction(icon(gui::fontawesome::fasScissors),
-                                                             tr("C&ut"), tr("Copy currently selected item to clipboard, and then delete from view"),
-                                                             QKeySequence::Cut, this, &Private::onEditCut);
-    core::ConstPointer<QAction> editCopyAction = createAction(icon(gui::fontawesome::fasCopy),
-                                                              tr("&Copy"), tr("Copy currently selected item to clipboard"),
-                                                              QKeySequence::Copy, this, &Private::onEditCopy);
-    core::ConstPointer<QAction> editPasteAction = createAction(icon(gui::fontawesome::fasPaste),
-                                                               tr("&Paste"), tr("Insert new item from clipboard"),
-                                                               QKeySequence::Paste, this, &Private::onEditPaste);
-    core::ConstPointer<QAction> editDeleteAction = createAction(icon(gui::fontawesome::fasTrashCan),
-                                                                tr("&Delete"), tr("Delete currently selected item"),
-                                                                Qt::ControlModifier | Qt::Key_Delete,
-                                                                this, &Private::onEditDelete);
+    core::ConstPointer<l10n::Action> fileSaveAction{icon(gui::fontawesome::fasFloppyDisk),
+                LMRS_TR("&Save"), LMRS_TR("Save current automation plan to disk"),
+                QKeySequence::Save, this, &DocumentManager::save};
+    core::ConstPointer<l10n::Action> fileSaveAsAction{icon(gui::fontawesome::fasFloppyDisk),
+                LMRS_TR("Save &as..."), LMRS_TR("Save current automation plan to disk, under new name"),
+                QKeySequence::SaveAs, this, &DocumentManager::saveAs};
+
+    core::ConstPointer<l10n::Action> editCutAction{icon(gui::fontawesome::fasScissors),
+                LMRS_TR("C&ut"), LMRS_TR("Copy currently selected item to clipboard, and then delete from view"),
+                QKeySequence::Cut, this, &Private::onEditCut};
+    core::ConstPointer<l10n::Action> editCopyAction{icon(gui::fontawesome::fasCopy),
+                LMRS_TR("&Copy"), LMRS_TR("Copy currently selected item to clipboard"),
+                QKeySequence::Copy, this, &Private::onEditCopy};
+    core::ConstPointer<l10n::Action> editPasteAction{icon(gui::fontawesome::fasPaste),
+                LMRS_TR("&Paste"), LMRS_TR("Insert new item from clipboard"),
+                QKeySequence::Paste, this, &Private::onEditPaste};
+    core::ConstPointer<l10n::Action> editDeleteAction{icon(gui::fontawesome::fasTrashCan),
+                LMRS_TR("&Delete"), LMRS_TR("Delete currently selected item"),
+                Qt::ControlModifier | Qt::Key_Delete,
+                this, &Private::onEditDelete};
 };
 
 AutomationView::AutomationView(QWidget *parent)
@@ -219,7 +221,7 @@ AutomationView::AutomationView(QWidget *parent)
     d->onClipboardChanged(QClipboard::Selection);
 
     const auto toolBar = new QToolBar{this};
-    const auto fileOpenToolBarAction = widgets::createProxyAction(d->fileOpenAction);
+    const auto fileOpenToolBarAction = widgets::createProxyAction(d->fileOpenAction.get());
 
     toolBar->addAction(d->fileNewAction);
     toolBar->addAction(fileOpenToolBarAction);

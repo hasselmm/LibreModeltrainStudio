@@ -1,8 +1,12 @@
 #include "navigationtoolbar.h"
 
+#include "actionutils.h"
+
 #include <lmrs/core/memory.h>
 #include <lmrs/core/typetraits.h>
 #include <lmrs/core/userliterals.h>
+
+#include <lmrs/gui/localization.h>
 
 #include <QActionGroup>
 #include <QEvent>
@@ -23,6 +27,16 @@ QKeySequence createShortcut(int index)
     return {};
 }
 
+auto makeButtonText(QString &text)
+{
+    return text.replace('/'_L1, "-\n"_L1);
+};
+
+auto makeMenuText(QString &text)
+{
+    return text.replace('/'_L1, QString{}).replace('\n'_L1, QString{});
+}
+
 } // namespace
 
 class NavigationToolBar::Private : public core::PrivateObject<NavigationToolBar>
@@ -33,6 +47,7 @@ public:
     void resizeButtonsToFullWidth();
 
     core::ConstPointer<QActionGroup> actionGroup{this};
+    core::ConstPointer<QActionGroup> menuActionGroup{this};
 
 protected:
     bool eventFilter(QObject *target, QEvent *event) override;
@@ -88,6 +103,7 @@ NavigationToolBar::NavigationToolBar(QWidget *parent)
         QToolButton {
             border: none;
             border-left: 0.25em solid transparent;
+            width: 4em;
         }
 
         QToolButton:hover {
@@ -108,8 +124,8 @@ NavigationToolBar::NavigationToolBar(QWidget *parent)
     setFloatable(false);
     setMovable(false);
 
-
     d->actionGroup->setExclusive(true);
+    d->menuActionGroup->setExclusive(true);
 }
 
 NavigationToolBar::~NavigationToolBar()
@@ -117,23 +133,38 @@ NavigationToolBar::~NavigationToolBar()
     delete d;
 }
 
-QAction *NavigationToolBar::addView(QIcon icon, QString text, QWidget *view)
+QAction *NavigationToolBar::addView(QIcon icon, l10n::String text, QWidget *view)
 {
     view->installEventFilter(d);
 
-    const auto action = new QAction{std::move(icon), std::move(text), d->actionGroup};
-    action->setShortcut(createShortcut(static_cast<int>(d->actionGroup->actions().count())));
-    action->setData(QVariant::fromValue(view));
-    action->setEnabled(view->isEnabled());
-    action->setCheckable(true);
-    addAction(action);
+    const auto buttonAction = new gui::l10n::Action{d->actionGroup};
+    buttonAction->setShortcut(createShortcut(static_cast<int>(d->actionGroup->actions().count())));
+    buttonAction->setData(QVariant::fromValue(view));
+    buttonAction->setEnabled(view->isEnabled());
+    buttonAction->setIcon(std::move(icon));
+    buttonAction->setCheckable(true);
+    addAction(buttonAction);
 
-    connect(action, &QAction::triggered, this, [this, action, view] {
-        if (action->isChecked())
+    connect(buttonAction, &QAction::triggered, this, [this, buttonAction, view] {
+        if (buttonAction->isChecked())
             emit currentViewChanged(view);
     });
 
-    return action;
+    const auto menuAction = createProxyAction(buttonAction, d->menuActionGroup);
+    d->menuActionGroup->addAction(menuAction);
+
+    buttonAction->setText({text, &makeButtonText});
+    menuAction->setText({text, &makeMenuText});
+
+    return buttonAction;
+}
+
+void NavigationToolBar::addSeparator()
+{
+    QToolBar::addSeparator();
+
+    const auto separator = new QAction{d->menuActionGroup};
+    separator->setSeparator(true);
 }
 
 void NavigationToolBar::setCurrentView(QWidget *view)
@@ -156,6 +187,11 @@ void NavigationToolBar::attachMainWidget(QStackedWidget *stack)
             stack, &QStackedWidget::setCurrentWidget);
     connect(stack, &QStackedWidget::currentChanged,
             this, std::move(onCurrentViewChanged));
+}
+
+QList<QAction *> NavigationToolBar::menuActions() const
+{
+    return d->menuActionGroup->actions();
 }
 
 bool NavigationToolBar::event(QEvent *event)

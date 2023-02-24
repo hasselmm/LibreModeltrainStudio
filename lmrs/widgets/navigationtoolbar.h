@@ -5,6 +5,10 @@
 
 class QStackedWidget;
 
+namespace lmrs::core::l10n {
+class String;
+}
+
 namespace lmrs::widgets {
 
 class NavigationToolBar : public QToolBar
@@ -15,10 +19,14 @@ public:
     explicit NavigationToolBar(QWidget *parent = {});
     ~NavigationToolBar() override;
 
-    QAction *addView(QIcon icon, QString text, QWidget *view);
+    QAction *addView(QIcon icon, core::l10n::String text, QWidget *view);
+    void addSeparator();
+
     void setCurrentView(QWidget *view);
 
     void attachMainWidget(QStackedWidget *stack);
+
+    QList<QAction *> menuActions() const;
 
 signals:
     void currentViewChanged(QWidget *view);
