@@ -84,21 +84,17 @@
     </message>
 </context>
 <context>
+    <name>lmrs::core::FileFormatHandler</name>
+    <message>
+        <source>The type of this file is not recognized, or it is not supported at all.</source>
+        <translation type="unfinished">Der Dateityp wurde nicht erkannt, oder wird nicht unterstützt.</translation>
+    </message>
+</context>
+<context>
     <name>lmrs::core::FrameStreamWriter::Private</name>
     <message>
         <source>Cannot write without device attached</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>lmrs::core::Localization</name>
-    <message>
-        <source>LANGUAGE_NAME_ENGLISH</source>
-        <translation>German</translation>
-    </message>
-    <message>
-        <source>LANGUAGE_NAME_NATIVE</source>
-        <translation>Deutsch</translation>
     </message>
 </context>
 <context>
@@ -322,6 +318,17 @@
     <message>
         <source>The type of this file is not recognized, or it is not supported at all.</source>
         <translation>Der Dateityp wurde nicht erkannt, oder wird nicht unterstützt.</translation>
+    </message>
+</context>
+<context>
+    <name>lmrs::core::l10n::LanguageManager::Private</name>
+    <message>
+        <source>LANGUAGE_NAME_ENGLISH</source>
+        <translation>German</translation>
+    </message>
+    <message>
+        <source>LANGUAGE_NAME_NATIVE</source>
+        <translation>Deutsch</translation>
     </message>
 </context>
 <context>

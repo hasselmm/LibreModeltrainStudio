@@ -245,6 +245,18 @@
         <source>Saving your automation plan &lt;b&gt;&quot;%1&quot;&lt;/b&gt; to &quot;%2&quot; has failed.&lt;br&gt;&lt;br&gt;%3</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>automation plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current automation plan to disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current automation plan to disk, under new name</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>lmrs::studio::ConnectedDeviceModel</name>
@@ -523,7 +535,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Shortcircut</source>
+        <source>Short Circuit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -679,6 +691,14 @@ Library</source>
         <source>Disconnected from %1</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&amp;Language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>foo</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>lmrs::studio::MappingConditionEditor</name>
@@ -802,6 +822,54 @@ Library</source>
     </message>
     <message>
         <source>&lt;p&gt;Could not read a track layout from &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>symbolic track plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset new symbolic track plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Open symbolic track plan from disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recent&amp;ly used files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current symbolic track plan to disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save &amp;as...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current symbolic track plan to disk, under new name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>S&amp;hare...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Share current symbolic track plan in the local network</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -48,7 +48,7 @@
     </message>
     <message>
         <source>ZIMO Commmand Station (MX1, MXUFL, ...)</source>
-        <translation>ZIMO-Digitalzentrale (MX1, MXUFL, ...)></translation>
+        <translation>ZIMO-Digitalzentrale (MX1, MXUFL, ...)</translation>
     </message>
     <message>
         <source>Serial &amp;port:</source>
