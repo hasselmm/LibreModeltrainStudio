@@ -2,6 +2,41 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="de_DE">
 <context>
+    <name>lmrs::widgets::DocumentManager</name>
+    <message>
+        <source>Open %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reading failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reading the %1 from &lt;b&gt;&quot;%2&quot;&lt;/b&gt; has failed.&lt;br&gt;&lt;br&gt;%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>There are unsaved changes to your %1. Do you want to save them first?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saving failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saving your %1 to &lt;b&gt;&quot;%2&quot;&lt;/b&gt; has failed.&lt;br&gt;&lt;br&gt;%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>lmrs::widgets::MultiBaseSpinBox</name>
     <message>
         <source>BIN</source>

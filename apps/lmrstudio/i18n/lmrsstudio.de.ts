@@ -245,6 +245,18 @@
         <source>Recent&amp;ly used files</source>
         <translation>Zu&amp;letzt bearbeitete Dateien</translation>
     </message>
+    <message>
+        <source>automation plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current automation plan to disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current automation plan to disk, under new name</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>lmrs::studio::ConnectedDeviceModel</name>
@@ -434,19 +446,19 @@
     <name>lmrs::studio::DeviceConnectionView</name>
     <message>
         <source>&amp;Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Aktualisieren</translation>
     </message>
     <message>
         <source>&amp;Connect</source>
-        <translation type="unfinished">&amp;Verbinden</translation>
+        <translation>&amp;Verbinden</translation>
     </message>
     <message>
         <source>&amp;Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Trennen</translation>
     </message>
     <message>
         <source>&amp;Power:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Stromversorgung</translation>
     </message>
 </context>
 <context>
@@ -505,7 +517,7 @@
     </message>
 </context>
 <context>
-    <name>lmrs::studio::MainWindow::Private</name>
+    <name>lmrs::studio::MainWindow</name>
     <message>
         <source>&amp;Device</source>
         <translation>&amp;Gerät</translation>
@@ -523,7 +535,7 @@
         <translation>&amp;Notaus</translation>
     </message>
     <message>
-        <source>Shortcircut</source>
+        <source>Short Circuit</source>
         <translation>Kurzschluss</translation>
     </message>
     <message>
@@ -568,8 +580,7 @@
     </message>
     <message>
         <source>&amp;Programming</source>
-        <translation type="unfinished">&amp;Program-
-mieren</translation>
+        <translation>&amp;Program/mieren</translation>
     </message>
     <message>
         <source>De&amp;bug</source>
@@ -581,8 +592,7 @@ mieren</translation>
     </message>
     <message>
         <source>&amp;Automation</source>
-        <translation type="unfinished">&amp;Automati­-
-sierung</translation>
+        <translation>&amp;Automati/sierung</translation>
     </message>
     <message>
         <source>&amp;Summary</source>
@@ -631,8 +641,8 @@ Bibliothek</translation>
         <translation>Über %1</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;b&gt;%1 %2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Visit &lt;a href=&quot;%3/&quot;&gt;%4&lt;/a&gt; for information.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>Visit %1 for information.</source>
+        <translation>Besuche Sie %1 für weitere Informationen.</translation>
     </message>
     <message>
         <source>&amp;About Qt...</source>
@@ -681,6 +691,10 @@ Bibliothek</translation>
     <message>
         <source>Disconnected from %1</source>
         <translation>Getrennt von %1</translation>
+    </message>
+    <message>
+        <source>&amp;Language</source>
+        <translation>&amp;Sprache</translation>
     </message>
 </context>
 <context>
@@ -765,23 +779,23 @@ Bibliothek</translation>
     </message>
     <message>
         <source>Empty</source>
-        <translation type="unfinished"></translation>
+        <translation>Leer</translation>
     </message>
     <message>
         <source>Symbol Gallery</source>
-        <translation type="unfinished"></translation>
+        <translation>Symbolgalerie</translation>
     </message>
     <message>
         <source>Various Loops</source>
-        <translation type="unfinished"></translation>
+        <translation>Verschiedene Kreise</translation>
     </message>
     <message>
         <source>Platforms and Roofs</source>
-        <translation type="unfinished"></translation>
+        <translation>Bahnsteige und Dächer</translation>
     </message>
     <message>
         <source>New page</source>
-        <translation type="unfinished"></translation>
+        <translation>Neue Seite</translation>
     </message>
     <message>
         <source>Zoom in</source>
@@ -805,6 +819,54 @@ Bibliothek</translation>
     </message>
     <message>
         <source>&lt;p&gt;Could not read a track layout from &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>symbolic track plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;New</source>
+        <translation type="unfinished">&amp;Neu</translation>
+    </message>
+    <message>
+        <source>Reset new symbolic track plan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation>&amp;Öffnen...</translation>
+    </message>
+    <message>
+        <source>&amp;Open symbolic track plan from disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recent&amp;ly used files</source>
+        <translation type="unfinished">Zu&amp;letzt bearbeitete Dateien</translation>
+    </message>
+    <message>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Speichern</translation>
+    </message>
+    <message>
+        <source>Save current symbolic track plan to disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save &amp;as...</source>
+        <translation type="unfinished">Speichern &amp;unter...</translation>
+    </message>
+    <message>
+        <source>Save current symbolic track plan to disk, under new name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>S&amp;hare...</source>
+        <translation>&amp;Teilen...</translation>
+    </message>
+    <message>
+        <source>Share current symbolic track plan in the local network</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
