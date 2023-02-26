@@ -75,6 +75,11 @@ auto htmlLink(QString url) // FIXME: maybe move to HTML utility header
     return R"(<a href="%1">%2</a>)"_L1.arg(std::move(url), std::move(text));
 }
 
+auto visibleActionCount(const QList<QAction *> &actions)
+{
+    return std::count_if(actions.begin(), actions.end(), std::mem_fn(&QAction::isVisible));
+}
+
 } // namespace
 
 class MainWindow::Private : public core::PrivateObject<MainWindow>
@@ -467,6 +472,8 @@ void MainWindow::Private::onCurrentViewChanged()
         }
 
         category.placeholder->setVisible(placeholderVisible);
+
+        editMenu->setEnabled(visibleActionCount(editMenu->actions()) > 0);
 
         onFileNameChanged();
         onModifiedChanged();
