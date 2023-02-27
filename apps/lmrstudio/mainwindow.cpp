@@ -86,6 +86,11 @@ class MainWindow::Private : public core::PrivateObject<MainWindow>
 {
     Q_OBJECT
 
+    static_assert(core::IsPrivateObject<Private>);
+    static_assert(&staticMetaObject == &MainWindow::Private::staticMetaObject);
+    static_assert(&staticMetaObject != &QObject::staticMetaObject);
+    static_assert(LMRS_STATIC_METAOBJECT == &MainWindow::staticMetaObject);
+
 public:
     using PrivateObject::PrivateObject;
 
