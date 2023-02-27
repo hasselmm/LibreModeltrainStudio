@@ -589,6 +589,18 @@ QAbstractItemModel *lmrs::studio::DeviceConnectionView::model(DeviceFilter filte
     return model;
 }
 
+void DeviceConnectionView::setCurrentDevice(core::Device *newDevice)
+{
+    if (const auto oldDevice = std::exchange(d->currentDevice, newDevice); oldDevice != newDevice) {
+        if (const auto deviceModel = dynamic_cast<const DeviceModelInterface *>(model())) {
+            auto index = deviceModel->indexOf(d->currentDevice);
+            d->connectedDevicesView->setCurrentIndex(std::move(index));
+        }
+
+        emit currentDeviceChanged(d->currentDevice, {});
+    }
+}
+
 QAbstractItemModel *DeviceConnectionView::model() const
 {
     return model(DeviceFilter::any());
