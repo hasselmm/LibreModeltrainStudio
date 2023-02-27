@@ -82,6 +82,16 @@ private:
     int m_currentIndex = -1;
 };
 
+class SpacerAction : public QWidgetAction
+{
+    Q_OBJECT
+
+public:
+    using QWidgetAction::QWidgetAction;
+
+    QWidget *createWidget(QWidget *parent) override;
+};
+
 } // namespace lmrs::widgets
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(lmrs::widgets::BindActionOptions)
