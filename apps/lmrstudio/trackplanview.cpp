@@ -1,3 +1,4 @@
+#include "deviceconnectionview.h"
 #include "trackplanview.h"
 
 #include <lmrs/core/algorithms.h>
@@ -67,16 +68,11 @@ public:
 
     SymbolicTrackPlanView *createView(SymbolicTrackPlanModel *model);
 
-    void onFileSharing();
-
-    void onZoomInAction();
-    void onZoomOutAction();
-
-    void onCurrentDeviceChanged();
+    void onFileSharingRequested();
     void onCurrentPageChanged();
-
     void onListeningChanged(bool isListening);
 
+    void setCurrentDevice(core::Device *newDevice);
     void attachCurrentDevice(widgets::SymbolicTrackPlanView *view);
     std::function<void()> makeResetAction(Preset preset);
     static l10n::String displayName(Preset preset);
@@ -93,20 +89,19 @@ public:
     core::ConstPointer<l10n::Action> fileSaveAction{icon(gui::fontawesome::fasFloppyDisk),
                 LMRS_TR("&Save"), LMRS_TR("Save current symbolic track plan to disk"),
                 QKeySequence::Save, this, &DocumentManager::save};
-    core::ConstPointer<l10n::Action> fileSaveAsAction{icon(gui::fontawesome::fasFloppyDisk),
+    core::ConstPointer<l10n::Action> fileSaveAsAction{
                 LMRS_TR("Save &as..."), LMRS_TR("Save current symbolic track plan to disk, under new name"),
                 QKeySequence::SaveAs, this, &DocumentManager::saveAs};
     core::ConstPointer<l10n::Action> fileSharingAction{icon(gui::fontawesome::fasShareNodes),
                 LMRS_TR("S&hare..."), LMRS_TR("Share current symbolic track plan in the local network"),
-                this, &Private::onFileSharing};
+                this, &Private::onFileSharingRequested};
 
     core::ConstPointer<QTabWidget> notebook{q()};
-    core::ConstPointer<QComboBox> deviceBox{q()}; // FIXME: move up in class hierachy
-    core::ConstPointer<QSpinBox> zoomBox{q()};
-
+    core::ConstPointer<widgets::ZoomActionGroup> zoomActions{this};
     QHash<ActionCategory, QActionGroup *> actionGroups;
 
     QPointer<FileSharing> fileSharing;
+    QPointer<core::Device> currentDevice;
 
     std::unique_ptr<core::SymbolicTrackPlanLayout> layout;
 };
@@ -157,27 +152,15 @@ SymbolicTrackPlanView *TrackPlanView::Private::createView(SymbolicTrackPlanModel
 
     connect(view, &SymbolicTrackPlanView::tileSizeChanged, this, [this, view](int tileSize) {
         if (view == currentView())
-            zoomBox->setValue(tileSize);
+            zoomActions->setCurrentZoom(tileSize);
     });
 
     return view;
 }
 
-void TrackPlanView::Private::onFileSharing()
+void TrackPlanView::Private::onFileSharingRequested()
 {
     Q_UNIMPLEMENTED();
-}
-
-void TrackPlanView::Private::onZoomInAction()
-{
-    if (const auto view = currentView())
-        view->setTileSize(qMin(25 * (1 << qFloor(log(view->tileSize() / 25.0) / log(2) + 1)), 400));
-}
-
-void TrackPlanView::Private::onZoomOutAction()
-{
-    if (const auto view = currentView())
-        view->setTileSize(qMax(25 * (1 << qFloor(log((view->tileSize() - 1) / 25.0) / log(2))), 25));
 }
 
 void TrackPlanView::Private::onListeningChanged(bool isListening)
@@ -187,24 +170,25 @@ void TrackPlanView::Private::onListeningChanged(bool isListening)
 
 void TrackPlanView::Private::attachCurrentDevice(SymbolicTrackPlanView *view)
 {
-    const auto device = qvariant_cast<core::Device * >(deviceBox->currentData());
-    const auto accessoryControl = device ? device->accessoryControl() : nullptr;
-    const auto detectorControl = device ? device->detectorControl() : nullptr;
+    const auto accessoryControl = currentDevice ? currentDevice->accessoryControl() : nullptr;
+    const auto detectorControl = currentDevice ? currentDevice->detectorControl() : nullptr;
 
     view->setAccessoryControl(accessoryControl);
     view->setDetectorControl(detectorControl);
 }
 
-void TrackPlanView::Private::onCurrentDeviceChanged()
+void TrackPlanView::Private::setCurrentDevice(core::Device *newDevice)
 {
-    for (auto i = 0; i < notebook->count(); ++i)
-        attachCurrentDevice(view(i));
+    if (const auto oldDevice = std::exchange(currentDevice, newDevice); oldDevice != newDevice) {
+        for (auto i = 0; i < notebook->count(); ++i)
+            attachCurrentDevice(view(i));
+    }
 }
 
 void TrackPlanView::Private::onCurrentPageChanged()
 {
     if (const auto view = currentView())
-        zoomBox->setValue(view->tileSize());
+        zoomActions->setCurrentZoom(view->tileSize());
 }
 
 std::function<void()> TrackPlanView::Private::makeResetAction(Preset preset)
@@ -257,7 +241,7 @@ auto numericMnemonicFunction(int index)
     return &addNumericMnemonic<10>;
 }
 
-TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
+TrackPlanView::TrackPlanView(QWidget *parent)
     : MainWindowView{parent}
     , d{new Private{"TrackPlanView"_L1, this}}
 {
@@ -274,69 +258,12 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     d->notebook->setCornerWidget(newPageButton, Qt::Corner::TopRightCorner);
     connect(d->notebook, &QTabWidget::currentChanged, d, &Private::onCurrentPageChanged);
 
-    d->zoomBox->setRange(25, 400);
-
-    connect(d->zoomBox, &QSpinBox::valueChanged, this, [this](auto tileSize) {
+    connect(d->zoomActions, &widgets::ZoomActionGroup::currentZoomChanged, this, [this](auto tileSize) {
         if (const auto view = d->currentView())
             view->setTileSize(tileSize);
     });
 
-    const auto toolBar = new QToolBar{this};
-    const auto fileOpenToolBarAction = widgets::createProxyAction(d->fileOpenAction.get());
-
-    toolBar->addAction(d->fileNewAction);
-    toolBar->addAction(fileOpenToolBarAction);
-    toolBar->addAction(d->fileSaveAction);
-    toolBar->addAction(d->fileSharingAction);
-
-    widgets::forceMenuButtonMode(toolBar, d->fileNewAction);
     d->recentFilesMenu()->bindMenuAction(d->fileOpenRecentAction);
-    d->recentFilesMenu()->bindToolBarAction(fileOpenToolBarAction, toolBar);
-
-    toolBar->addSeparator();
-    const auto zoomInAction = toolBar->addAction(icon(gui::fontawesome::fasMagnifyingGlassPlus),
-                                                 tr("Zoom in"), d, &Private::onZoomInAction);
-    const auto zoomOutAction = toolBar->addAction(icon(gui::fontawesome::fasMagnifyingGlassMinus),
-                                                  tr("Zoom out"), d, &Private::onZoomOutAction);
-    const auto zoomBoxAction = toolBar->addWidget(d->zoomBox);
-    zoomBoxAction->setPriority(QAction::LowPriority);
-
-    // FIXME: make this generic
-    const auto spacer = new QWidget{this};
-    const auto spacerLayout = new QHBoxLayout{spacer};
-    spacerLayout->addStretch(1);
-
-    // FIXME: make this generic
-    d->deviceBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    d->deviceBox->setModel(model);
-
-    toolBar->addWidget(spacer);
-    const auto deviceBoxAction = toolBar->addWidget(d->deviceBox);
-
-    const auto hideEmptyDeviceCombo = [deviceBoxAction, model] {
-        deviceBoxAction->setVisible(model->rowCount() > 0);
-    };
-
-    connect(model, &QAbstractItemModel::modelReset, this, hideEmptyDeviceCombo);
-    connect(model, &QAbstractItemModel::rowsInserted, this, hideEmptyDeviceCombo);
-    connect(model, &QAbstractItemModel::rowsRemoved, this, hideEmptyDeviceCombo);
-
-    hideEmptyDeviceCombo();
-
-    connect(d->deviceBox, &QComboBox::currentIndexChanged, d, &Private::onCurrentDeviceChanged);
-
-    // FIXME: make this generic
-    const auto dettachAction = toolBar->addAction(icon(gui::fontawesome::fasArrowUpRightFromSquare),
-                                                  "Detach from main window"_L1, this, [this] {
-        setParent(nullptr);
-        setWindowTitle(tr("Track Plan"));
-        setWindowFilePath(tr("Hello.txt"));
-        core::checked_cast<QAction *>(sender())->setVisible(false);
-        show();
-    });
-
-    dettachAction->setCheckable(true);
-    dettachAction->setPriority(QAction::HighPriority);
 
     d->fileNewAction->setMenu(new QMenu{this});
 
@@ -375,11 +302,12 @@ TrackPlanView::TrackPlanView(QAbstractItemModel *model, QWidget *parent)
     d->actionGroups[ActionCategory::EditCreate]->addAction(newPageAction);
 
     d->actionGroups[ActionCategory::View] = new QActionGroup{this};
-    d->actionGroups[ActionCategory::View]->addAction(zoomInAction);
-    d->actionGroups[ActionCategory::View]->addAction(zoomOutAction);
+
+    for (const auto actionList = d->zoomActions->actions(); const auto action: actionList)
+        d->actionGroups[ActionCategory::View]->addAction(action);
 
     const auto layout = new QVBoxLayout{this};
-    layout->addWidget(toolBar);
+
     layout->addWidget(d->notebook);
 
     d->onListeningChanged(false);
@@ -417,6 +345,18 @@ QString TrackPlanView::fileName() const
 bool TrackPlanView::isModified() const
 {
     return d->isModified();
+}
+
+void TrackPlanView::setCurrentDevice(core::Device *newDevice)
+{
+    d->setCurrentDevice(newDevice);
+}
+
+DeviceFilter TrackPlanView::deviceFilter() const
+{
+    return acceptAny<
+            DeviceFilter::Require<core::AccessoryControl>,
+            DeviceFilter::Require<core::DetectorControl>>();
 }
 
 bool TrackPlanView::open(QString newFileName)

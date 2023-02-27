@@ -166,7 +166,7 @@ public:
     core::ConstPointer<FunctionMappingView> functionMappingView{devicesView->model<core::VariableControl>(), q()};
     core::ConstPointer<MultiDeviceView<DebugView>> debugView{devicesView->model<core::DebugControl>(), q()};
     core::ConstPointer<DecoderDatabaseView> decoderDatabaseView{q()};
-    core::ConstPointer<TrackPlanView> trackPlanView{devicesView->model<core::AccessoryControl>(), q()}; // FIXME: we also handle response modules
+    core::ConstPointer<TrackPlanView> trackPlanView{q()};
     core::ConstPointer<AutomationView> automationView{q()};
     core::ConstPointer<QToolBar> toolBar{q()};
     core::ConstPointer<StatusBar> statusBar{q()};
