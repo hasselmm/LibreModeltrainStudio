@@ -1,11 +1,13 @@
 #ifndef LMRS_CORE_LOCALIZATION_H
 #define LMRS_CORE_LOCALIZATION_H
 
+#include "typetraits.h"
+
 #include <QCoreApplication>
 #include <QLocale>
 
 #define LMRS_TR(SourceText, ...) \
-    ::lmrs::core::l10n::String{&Private::PublicObjectType::staticMetaObject, (SourceText), __VA_ARGS__}
+    ::lmrs::core::l10n::String{LMRS_STATIC_METAOBJECT, (SourceText), __VA_ARGS__}
 
 namespace lmrs::core::l10n {
 

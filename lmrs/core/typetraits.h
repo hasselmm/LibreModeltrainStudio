@@ -249,16 +249,18 @@ class PrivateObject : public BaseType
 {
     friend PublicObject;
 
+public:
     using PublicObjectType = PublicObject;
 
-protected:
+private:
     explicit PrivateObject(ConstructorArgs... args, PublicObject *parent)
         : BaseType{args..., parent} {}
 
     auto q() const { return core::checked_cast<const PublicObject *>(BaseType::parent()); }
     auto q() { return core::checked_cast<PublicObject *>(BaseType::parent()); }
 
-    static QString tr(const char *s, const char *c = nullptr, int n = -1) { return PublicObject::tr(s, c, n); }
+    static constexpr const QMetaObject *publicMetaObject() { return &PublicObject::staticMetaObject; }
+    static QString tr(const char *s, const char *c = nullptr, int n = -1) { return publicMetaObject()->tr(s, c, n); }
 
     static auto &logger(auto) = delete; // purposefully not defined to catch errors
     static auto &logger() { return core::logger<PublicObject>(); }
@@ -270,10 +272,38 @@ const QLoggingCategory &logger(const PrivateObject<PublicObject, BaseType> *) = 
 template<class PublicObject, class BaseType>
 const QLoggingCategory &logger(PrivateObject<PublicObject, BaseType> *) = delete;
 
+template <class T>
+concept IsPrivateObject = requires { typename T::PublicObjectType; };
+
+namespace internal {
+
+struct Private { Private() = delete; };
+
+template <IsPrivateObject T>
+constexpr const QMetaObject *publicMetaObject() { return &T::PublicObjectType::staticMetaObject; }
+
+template <class T>
+constexpr const QMetaObject *publicMetaObject() { return nullptr; };
+
+template<class T>
+constexpr const QMetaObject *publicMetaObject(const QMetaObject *staticMetaObjectFromContext)
+{
+    if constexpr (publicMetaObject<T>())
+        return publicMetaObject<T>();
+
+    return staticMetaObjectFromContext;
+}
+
+} // namespace internal
+
+#define LMRS_STATIC_METAOBJECT ::lmrs::core::internal::publicMetaObject<Private>(&staticMetaObject)
+
 } // namespace lmrs::core
 
 template <typename T, typename Tag>
 struct std::underlying_type<lmrs::core::literal<T, Tag>>
         : public std::type_identity<T> {};
+
+using lmrs::core::internal::Private; // gross hack to make publicMetaObject<Private>() work, if no "Private" type is visible
 
 #endif // LMRS_CORE_TYPETRAITS_H
