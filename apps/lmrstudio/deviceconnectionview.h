@@ -9,6 +9,77 @@ namespace lmrs::studio {
 
 class DeviceParameterWidget;
 
+class DeviceFilter
+{
+public:
+    using Function = bool (*)(const core::Device *) noexcept;
+    using Key = const void *;
+
+    constexpr DeviceFilter(Function function) noexcept
+        : m_function{(function ? function : any())}
+    {}
+
+    constexpr bool operator()(const core::Device *device) const noexcept { return m_function(device); }
+    auto key() const { return reinterpret_cast<Key>(m_function); }
+
+    template<class T>
+    struct Convertable
+    {
+        constexpr operator Function() const { return &T::invoke; }
+        constexpr operator DeviceFilter() const { return {&T::invoke}; }
+    };
+
+    struct Any : public Convertable<Any>
+    {
+        static constexpr bool invoke(const core::Device *) noexcept { return true; }
+    };
+
+    struct None : public Convertable<None>
+    {
+        static constexpr bool invoke(const core::Device *) noexcept { return false; }
+    };
+
+    template<class T>
+    struct Require : public Convertable<Require<T>>
+    {
+        static constexpr bool invoke(const core::Device *device) noexcept {
+            return device && device->control<T>() != nullptr;
+        };
+    };
+
+    static constexpr Any any() noexcept { return {}; }
+    static constexpr None none() noexcept { return {}; }
+
+    template<class T>
+    static constexpr Require<T> require() noexcept { return {}; }
+
+private:
+    Function m_function = any();
+};
+
+template<typename... Filters>
+static constexpr DeviceFilter::Function acceptAny() noexcept {
+    return [](const core::Device *device) noexcept {
+        return (... || Filters::invoke(device));
+    };
+}
+
+template<typename... Filters>
+static constexpr DeviceFilter::Function requireAll() noexcept {
+    return [](const core::Device *device) noexcept {
+        return (... && Filters::invoke(device));
+    };
+}
+
+static_assert(std::invoke(DeviceFilter::any(), nullptr) == true);
+static_assert(std::invoke(DeviceFilter::none(), nullptr) == false);
+static_assert(std::invoke(acceptAny<DeviceFilter::Any, DeviceFilter::Any>(), nullptr) == true);
+static_assert(std::invoke(acceptAny<DeviceFilter::Any, DeviceFilter::None>(), nullptr) == true);
+static_assert(std::invoke(acceptAny<DeviceFilter::None, DeviceFilter::None>(), nullptr) == false);
+static_assert(std::invoke(requireAll<DeviceFilter::Any, DeviceFilter::Any>(), nullptr) == true);
+static_assert(std::invoke(requireAll<DeviceFilter::Any, DeviceFilter::None>(), nullptr) == false);
+static_assert(std::invoke(requireAll<DeviceFilter::None, DeviceFilter::None>(), nullptr) == false);
+
 class DeviceModelInterface
 {
     Q_GADGET
@@ -38,9 +109,9 @@ public:
     explicit DeviceConnectionView(QWidget *parent = nullptr);
     ~DeviceConnectionView() override;
 
-    using DeviceFilter = bool (*)(const core::Device *);
     QAbstractItemModel *model(DeviceFilter filter) const;
-    template<class T> QAbstractItemModel *model() const;
+    template<class T> QAbstractItemModel *model() const { return model(DeviceFilter::require<T>()); }
+
     QAbstractItemModel *model() const;
 
     core::Device *currentDevice() const;
@@ -58,22 +129,13 @@ public slots:
     void disconnectFromDevice();
 
 signals:
-    void currentDeviceChanged(lmrs::core::Device *currentDevice);
+    void currentDeviceChanged(lmrs::core::Device *currentDevice, QPrivateSignal);
     void currentWidgetChanged();
 
 private:
-
     class Private;
     Private *const d;
 };
-
-template<class T>
-QAbstractItemModel *DeviceConnectionView::model() const
-{
-    return model([](const core::Device *device) {
-        return device && device->control<T>() != nullptr;
-    });
-}
 
 } // namespace lmrs::studio
 
