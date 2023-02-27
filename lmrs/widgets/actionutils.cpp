@@ -17,28 +17,39 @@ struct ActionUtils
     Q_GADGET
 };
 
-auto triggered(QAbstractButton *)
+auto pointerToTriggerSignal(QAbstractButton *)
 {
     return &QAbstractButton::clicked;
 }
 
-auto triggered(QAction *)
+auto pointerToTriggerSignal(QAction *)
 {
     return &QAction::triggered;
 }
 
 template<class TargetType>
-TargetType *bindAction(TargetType *target, QAction *source)
+TargetType *bindAction(TargetType *target, QAction *source, BindActionOptions options)
 {
-    auto updateTarget = [source, target] {
-        target->setCheckable(source->isCheckable());
-        target->setIcon(source->icon());
-        target->setText(source->text());
-        target->setToolTip(source->toolTip());
+    auto updateTarget = [options, source, target] {
+        if (!options.testFlag(BindActionOption::IgnoreIcon))
+            target->setIcon(source->icon());
+        if (!options.testFlag(BindActionOption::IgnoreText))
+            target->setText(source->text());
+        if (!options.testFlag(BindActionOption::IgnoreToolTip))
+            target->setToolTip(source->toolTip());
     };
 
-    QAction::connect(target, triggered(target), source, &QAction::trigger);
+    auto updateVisible = [source, target] {
+        target->setVisible(source->isVisible());
+    };
+
     QAction::connect(source, &QAction::changed, target, updateTarget);
+    QAction::connect(source, &QAction::checkableChanged, target, &TargetType::setCheckable);
+    QAction::connect(source, &QAction::toggled, target, &TargetType::setChecked);
+    QAction::connect(source, &QAction::enabledChanged, target, &TargetType::setEnabled);
+    QAction::connect(source, &QAction::visibleChanged, target, updateVisible);
+
+    QAction::connect(target, pointerToTriggerSignal(target), source, &QAction::trigger);
 
     updateTarget();
     return target;
@@ -46,14 +57,14 @@ TargetType *bindAction(TargetType *target, QAction *source)
 
 } // namespace
 
-QAbstractButton *bindAction(QAbstractButton *target, QAction *action)
+QAbstractButton *bindAction(QAbstractButton *target, QAction *action, BindActionOptions options)
 {
-    return bindAction<QAbstractButton>(target, action);
+    return bindAction<QAbstractButton>(target, action, options);
 }
 
-QAction *bindAction(QAction *target, QAction *action)
+QAction *bindAction(QAction *target, QAction *action, BindActionOptions options)
 {
-    return bindAction<QAction>(target, action);
+    return bindAction<QAction>(target, action, options);
 }
 
 void forceMenuButtonMode(QToolBar *toolBar, QAction *action)
