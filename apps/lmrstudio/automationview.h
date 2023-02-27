@@ -18,6 +18,8 @@ public:
     QString fileName() const override;
     bool isModified() const override;
 
+    DeviceFilter deviceFilter() const override;
+
 public slots:
     bool open(QString newFileName);
 

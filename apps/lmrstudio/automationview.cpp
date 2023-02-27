@@ -1,4 +1,5 @@
 #include "automationview.h"
+#include "deviceconnectionview.h"
 
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/automationmodel.h>
@@ -17,16 +18,15 @@
 
 #include <QActionGroup>
 #include <QApplication>
+#include <QBoxLayout>
 #include <QClipboard>
 #include <QFileDialog>
-#include <QGridLayout>
 #include <QIdentityProxyModel>
 #include <QListView>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QQuickItem>
 #include <QQuickWidget>
-#include <QToolBar>
 
 namespace lmrs::studio {
 
@@ -189,7 +189,7 @@ public:
     core::ConstPointer<l10n::Action> fileSaveAction{icon(gui::fontawesome::fasFloppyDisk),
                 LMRS_TR("&Save"), LMRS_TR("Save current automation plan to disk"),
                 QKeySequence::Save, this, &DocumentManager::save};
-    core::ConstPointer<l10n::Action> fileSaveAsAction{icon(gui::fontawesome::fasFloppyDisk),
+    core::ConstPointer<l10n::Action> fileSaveAsAction{
                 LMRS_TR("Save &as..."), LMRS_TR("Save current automation plan to disk, under new name"),
                 QKeySequence::SaveAs, this, &DocumentManager::saveAs};
 
@@ -219,21 +219,7 @@ AutomationView::AutomationView(QWidget *parent)
 
     d->onCurrentIndexChanged();
     d->onClipboardChanged(QClipboard::Selection);
-
-    const auto toolBar = new QToolBar{this};
-    const auto fileOpenToolBarAction = widgets::createProxyAction(d->fileOpenAction.get());
-
-    toolBar->addAction(d->fileNewAction);
-    toolBar->addAction(fileOpenToolBarAction);
-    toolBar->addAction(d->fileSaveAction);
-    toolBar->addSeparator();
-    toolBar->addAction(d->editCutAction);
-    toolBar->addAction(d->editCopyAction);
-    toolBar->addAction(d->editPasteAction);
-    toolBar->addAction(d->editDeleteAction);
-
     d->recentFilesMenu()->bindMenuAction(d->fileOpenRecentAction);
-    d->recentFilesMenu()->bindToolBarAction(fileOpenToolBarAction, toolBar);
 
     const auto typesGroup = new QActionGroup{this};
 
@@ -300,11 +286,10 @@ AutomationView::AutomationView(QWidget *parent)
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    const auto layout = new QGridLayout{this};
+    const auto layout = new QHBoxLayout{this};
 
-    layout->addWidget(toolBar, 0, 0, 1, 2);
-    layout->addWidget(d->canvas, 1, 0);
-    layout->addWidget(typeSelector, 1, 1);
+    layout->addWidget(d->canvas, 1);
+    layout->addWidget(typeSelector);
 
     d->resetModified();
 }
@@ -322,6 +307,14 @@ QString AutomationView::fileName() const
 bool AutomationView::isModified() const
 {
     return d->isModified();
+}
+
+DeviceFilter AutomationView::deviceFilter() const
+{
+    return acceptAny<
+            DeviceFilter::Require<core::AccessoryControl>,
+            DeviceFilter::Require<core::DetectorControl>,
+            DeviceFilter::Require<core::VehicleControl>>();
 }
 
 bool AutomationView::open(QString newFileName)
