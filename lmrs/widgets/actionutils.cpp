@@ -5,6 +5,7 @@
 
 #include <lmrs/gui/localization.h>
 
+#include <QBoxLayout>
 #include <QComboBox>
 #include <QMenu>
 #include <QToolBar>
@@ -182,6 +183,14 @@ void ComboBoxAction::setCurrentIndex(int newIndex)
 void ComboBoxAction::updateVisiblity()
 {
     setVisible(m_model && m_model->rowCount() > 0);
+}
+
+QWidget *SpacerAction::createWidget(QWidget *parent)
+{
+    const auto spacer = new QWidget{parent};
+    const auto spacerLayout = new QHBoxLayout{spacer};
+    spacerLayout->addStretch();
+    return spacer;
 }
 
 } // namespace lmrs::widgets
