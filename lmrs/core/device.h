@@ -468,6 +468,8 @@ template<> inline const  AccessoryControl *Device::control() const { return acce
 template<> inline        AccessoryControl *Device::control()       { return accessoryControl(); }
 template<> inline const      DebugControl *Device::control() const { return debugControl(); }
 template<> inline            DebugControl *Device::control()       { return debugControl(); }
+template<> inline const   DetectorControl *Device::control() const { return detectorControl(); }
+template<> inline         DetectorControl *Device::control()       { return detectorControl(); }
 template<> inline const      PowerControl *Device::control() const { return powerControl(); }
 template<> inline            PowerControl *Device::control()       { return powerControl(); }
 template<> inline const SpeedMeterControl *Device::control() const { return speedMeterControl(); }
