@@ -23,6 +23,12 @@ Action::Action(core::l10n::String text, QKeySequence shortcut, QObject *parent)
     setShortcut(std::move(shortcut));
 }
 
+Action::Action(core::l10n::String text, core::l10n::String toolTip, QKeySequence shortcut, QObject *parent)
+    : Action{std::move(text), std::move(shortcut), parent}
+{
+    setToolTip(std::move(toolTip));
+}
+
 Action::Action(QIcon icon, core::l10n::String text, QObject *parent)
     : Action{std::move(text), parent}
 {

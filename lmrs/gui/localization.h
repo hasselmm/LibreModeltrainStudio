@@ -13,9 +13,13 @@ public:
     explicit Action(QObject *parent = nullptr);
     explicit Action(core::l10n::String text, QObject *parent = nullptr);
     explicit Action(core::l10n::String text, QKeySequence shortcut, QObject *parent = nullptr);
+    explicit Action(core::l10n::String text, core::l10n::String toolTip, QKeySequence shortcut,
+                    QObject *parent = nullptr);
+
     explicit Action(QIcon icon, core::l10n::String text, QObject *parent = nullptr);
     explicit Action(QIcon icon, core::l10n::String text, core::l10n::String toolTip, QObject *parent = nullptr);
-    explicit Action(QIcon icon, core::l10n::String text, core::l10n::String toolTip, QKeySequence shortcut, QObject *parent = nullptr);
+    explicit Action(QIcon icon, core::l10n::String text, core::l10n::String toolTip, QKeySequence shortcut,
+                    QObject *parent = nullptr);
 
     template <class Receiver, typename Slot>
     explicit Action(Receiver *receiver, Slot slot)
@@ -26,6 +30,12 @@ public:
     explicit Action(core::l10n::String text,
                     Receiver *receiver, Slot slot)
         : Action{std::move(text), receiver} { connect(receiver, slot); }
+
+    template <class Receiver, typename Slot>
+    explicit Action(core::l10n::String text, core::l10n::String toolTip,
+                    QKeySequence shortcut, Receiver *receiver, Slot slot)
+        : Action{std::move(text), std::move(toolTip), std::move(shortcut),
+                 receiver} { connect(receiver, slot); }
 
     template <class Receiver, typename Slot>
     explicit Action(QIcon icon, core::l10n::String text, core::l10n::String toolTip,
