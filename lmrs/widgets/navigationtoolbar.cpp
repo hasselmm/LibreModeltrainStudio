@@ -150,7 +150,7 @@ QAction *NavigationToolBar::addView(QIcon icon, l10n::String text, QWidget *view
             emit currentViewChanged(view);
     });
 
-    const auto menuAction = createProxyAction(buttonAction, d->menuActionGroup);
+    const auto menuAction = createProxyAction(buttonAction, BindActionOption::IgnoreText, d->menuActionGroup);
     d->menuActionGroup->addAction(menuAction);
 
     buttonAction->setText({text, &makeButtonText});
