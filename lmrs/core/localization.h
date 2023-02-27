@@ -74,9 +74,9 @@ public:
 protected:
     void applyText()
     {
-        if constexpr(requires() { T::text(); })
+        if constexpr (requires() { T::text(); })
             T::setText(m_text.toString());
-        else if constexpr(requires() { T::title(); })
+        else if constexpr (requires() { T::title(); })
             T::setTitle(m_text.toString());
     }
 
