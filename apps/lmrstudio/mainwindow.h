@@ -4,10 +4,13 @@
 #include <QFrame>
 #include <QMainWindow>
 
+namespace lmrs::core { class Device; }
 namespace lmrs::core::l10n { class LanguageManager; }
 namespace lmrs::widgets { class DocumentManager; }
 
 namespace lmrs::studio {
+
+class DeviceFilter;
 
 class MainWindowView : public QFrame
 {
@@ -31,6 +34,11 @@ public:
     virtual QActionGroup *actionGroup(ActionCategory category) const;
     virtual QString fileName() const;
     virtual bool isModified() const;
+
+    virtual void setCurrentDevice(core::Device *device);
+    virtual DeviceFilter deviceFilter() const;
+
+    virtual bool isDetachable() const;
 
 signals:
     void fileNameChanged(QString fileName, QPrivateSignal);

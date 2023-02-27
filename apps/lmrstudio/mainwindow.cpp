@@ -30,6 +30,7 @@
 
 #include <QActionGroup>
 #include <QApplication>
+#include <QBoxLayout>
 #include <QFileInfo>
 #include <QLabel>
 #include <QMenuBar>
@@ -75,9 +76,24 @@ auto htmlLink(QString url) // FIXME: maybe move to HTML utility header
     return R"(<a href="%1">%2</a>)"_L1.arg(std::move(url), std::move(text));
 }
 
-auto visibleActionCount(const QList<QAction *> &actions)
+auto visibleActionCount(const QList<QAction *>::const_iterator first, const QList<QAction *>::const_iterator last)
 {
-    return std::count_if(actions.begin(), actions.end(), std::mem_fn(&QAction::isVisible));
+    return std::count_if(first, last, std::mem_fn(&QAction::isVisible));
+}
+
+auto countVisibleActions(const QList<QAction *> &actions)
+{
+    return visibleActionCount(actions.begin(), actions.end());
+}
+
+template<typename T>
+requires std::is_pointer_v<T>
+T get_if(const QList<T> &list, int i)
+{
+    if (i < list.size())
+        return list.at(i);
+
+    return nullptr;
 }
 
 } // namespace
@@ -103,10 +119,13 @@ public:
     void setupActions();
     void setupViews();
     void setupMenuBar();
+    void setupToolBar();
     void setupStatusBar();
     void setupFileReceiver();
 
     void restoreSettings();
+
+    void updateToolBarVisibility();
 
 signals:
     void deviceInfoChanged(QList<lmrs::core::DeviceInfo> changedIds);
@@ -118,6 +137,7 @@ public:
     void onFileNameChanged();
     void onModifiedChanged();
 
+    void onCurrentDeviceIndexChanged(int newIndex);
     void onCurrentDeviceChanged(core::Device *newDevice);
     void onDeviceStateChanged(core::Device::State state);
     void onCurrentVehicleChanged(core::dcc::VehicleAddress address);
@@ -127,6 +147,8 @@ public:
     void onFileSharingProgress(FileTransferSession *session, qint64 bytesReceived, qint64 totalBytes);
     void onFileSharingFinished(FileTransferSession *session);
     void onSettingsFileSharingChecked(bool checked);
+
+    void onDetachView();
 
     void onAboutApplication();
     void onAboutQt();
@@ -146,6 +168,7 @@ public:
     core::ConstPointer<DecoderDatabaseView> decoderDatabaseView{q()};
     core::ConstPointer<TrackPlanView> trackPlanView{devicesView->model<core::AccessoryControl>(), q()}; // FIXME: we also handle response modules
     core::ConstPointer<AutomationView> automationView{q()}; // FIXME: we also handle response modules
+    core::ConstPointer<QToolBar> toolBar{q()};
     core::ConstPointer<StatusBar> statusBar{q()};
 
     core::ConstPointer<QActionGroup> powerActionGroup{this};
@@ -162,11 +185,18 @@ public:
     core::ConstPointer<FileSharing> fileSharing{this};
     core::ConstPointer<QActionGroup> settingsLanguageGroup{this};
 
+    core::ConstPointer<SpacerAction> deviceSpacerAction{toolBar};
+    core::ConstPointer<ComboBoxAction> deviceBoxAction{toolBar};
+    core::ConstPointer<l10n::Action> detachViewAction{icon(gui::fontawesome::fasArrowUpRightFromSquare),
+                LMRS_TR("&Detach view"), LMRS_TR("Detach current view from main window"),
+                this, &Private::onDetachView};
+
     struct ActionCategory
     {
         using Type = MainWindowView::ActionCategory;
 
-        QPointer<QAction> placeholder;
+        QPointer<QAction> menuPlaceholder;
+        QPointer<QAction> toolBarPlaceholder;
         QHash<QWidget *, QList<QPointer<QActionGroup>>> actionGroups;
     };
 
@@ -192,6 +222,8 @@ public:
     core::ConstPointer<QMenu> editMenu{addMenu(LMRS_TR("&Edit"))};
     core::ConstPointer<QMenu> viewMenu{addMenu(LMRS_TR("&View"))};
     core::ConstPointer<QMenu> deviceMenu{addMenu(LMRS_TR("&Device"))};
+
+    bool blockCurrentDeviceIndexChanged : 1 = false;
 };
 
 void MainWindow::Private::setupActions()
@@ -276,20 +308,20 @@ void MainWindow::Private::setupMenuBar()
 {
     // -----------------------------------------------------------------------------------------------------------------
 
-    actionCategories[ActionCategory::Type::FileNew].placeholder = fileMenu->addSeparator();
-    actionCategories[ActionCategory::Type::FileOpen].placeholder = fileMenu->addSeparator();
-    actionCategories[ActionCategory::Type::FileSave].placeholder = fileMenu->addSeparator();
+    actionCategories[ActionCategory::Type::FileNew].menuPlaceholder = fileMenu->addSeparator();
+    actionCategories[ActionCategory::Type::FileOpen].menuPlaceholder = fileMenu->addSeparator();
+    actionCategories[ActionCategory::Type::FileSave].menuPlaceholder = fileMenu->addSeparator();
 
     addAction(fileMenu.get(), LMRS_TR("&Quit"), QKeySequence::Quit, qApp, &QApplication::quit);
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    actionCategories[ActionCategory::Type::EditCreate].placeholder = editMenu->addSeparator();
-    actionCategories[ActionCategory::Type::EditClipboard].placeholder = editMenu->addSeparator();
+    actionCategories[ActionCategory::Type::EditCreate].menuPlaceholder = editMenu->addSeparator();
+    actionCategories[ActionCategory::Type::EditClipboard].menuPlaceholder = editMenu->addSeparator();
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    actionCategories[ActionCategory::Type::View].placeholder = viewMenu->addSeparator();
+    actionCategories[ActionCategory::Type::View].menuPlaceholder = viewMenu->addSeparator();
 
     deviceMenu->addActions(powerActionGroup->actions());
     deviceMenu->addSeparator();
@@ -311,6 +343,37 @@ void MainWindow::Private::setupMenuBar()
               }), this, &Private::onAboutApplication);
 
     addAction(helpMenu, LMRS_TR("About &Qt..."), this, &Private::onAboutQt);
+}
+
+void MainWindow::Private::setupToolBar()
+{
+    toolBar->setFloatable(false);
+    toolBar->setMovable(false);
+
+    actionCategories[ActionCategory::Type::FileNew].toolBarPlaceholder = toolBar->addSeparator();
+    actionCategories[ActionCategory::Type::FileOpen].toolBarPlaceholder = toolBar->addSeparator();
+    actionCategories[ActionCategory::Type::FileSave].toolBarPlaceholder = toolBar->addSeparator();
+    actionCategories[ActionCategory::Type::EditCreate].toolBarPlaceholder = toolBar->addSeparator();
+    actionCategories[ActionCategory::Type::EditClipboard].toolBarPlaceholder = toolBar->addSeparator();
+    actionCategories[ActionCategory::Type::View].toolBarPlaceholder = toolBar->addSeparator();
+
+    for (const auto &category: std::as_const(actionCategories))
+        if (const auto placeholder = category.toolBarPlaceholder)
+            placeholder->setVisible(false);
+
+    deviceBoxAction->setSizePolicy(QSizePolicy::MinimumExpanding);
+    deviceBoxAction->setMinimumContentsLength(25);
+
+    toolBar->addAction(deviceSpacerAction);
+    toolBar->addAction(deviceBoxAction);
+    toolBar->addAction(detachViewAction);
+
+    connect(deviceBoxAction, &QAction::visibleChanged, this, &Private::updateToolBarVisibility);
+    connect(detachViewAction, &QAction::enabledChanged, this, &Private::updateToolBarVisibility);
+
+    connect(deviceBoxAction, &ComboBoxAction::currentIndexChanged, this, &Private::onCurrentDeviceIndexChanged);
+
+    updateToolBarVisibility();
 }
 
 void MainWindow::Private::setupStatusBar()
@@ -424,6 +487,11 @@ void MainWindow::Private::onSettingsFileSharingChecked(bool checked)
     QSettings{}.setValue(s_settings_fileSharingEnabled, fileSharing->isListening());
 }
 
+void MainWindow::Private::onDetachView()
+{
+    // FIXME: implement detaching
+}
+
 void MainWindow::Private::onAboutApplication()
 {
     auto title = tr("About %1").arg(qApp->applicationDisplayName());
@@ -449,12 +517,50 @@ void MainWindow::Private::restoreSettings()
     settingsFileSharingAction->setChecked(settings.value(s_settings_fileSharingEnabled, true).toBool());
 }
 
+void MainWindow::Private::updateToolBarVisibility()
+{
+    const auto alwaysVisible = std::array{deviceSpacerAction.get<QAction>(), detachViewAction.get<QAction>()};
+    const auto alwaysVisibleActionCount = static_cast<int>(alwaysVisible.size());
+    const auto visibleActionCount = countVisibleActions(toolBar->actions());
+
+    toolBar->setVisible(visibleActionCount > alwaysVisibleActionCount || detachViewAction->isEnabled());
+    toolBar->setMinimumWidth(toolBar->isVisible() ? toolBar->sizeHint().width() : 0);
+}
+
 void MainWindow::Private::mergeActions(MainWindowView *view)
 {
     for (const auto &[type, settings]: actionCategories.asKeyValueRange()) {
         if (const auto actionGroup = view->actionGroup(type)) {
-            const auto menu = core::checked_cast<QMenu *>(settings.placeholder->parent());
-            menu->insertActions(settings.placeholder, actionGroup->actions());
+            if (const auto placeholder = settings.menuPlaceholder) {
+                const auto menu = core::checked_cast<QMenu *>(placeholder->parent());
+
+                for (const auto actionList = actionGroup->actions(); const auto action: actionList) {
+                    if (!dynamic_cast<QWidgetAction *>(action))
+                        menu->insertAction(placeholder, action);
+                }
+            }
+
+            if (const auto placeholder = settings.toolBarPlaceholder) {
+                const auto actions = actionGroup->actions();
+                for (auto i = 0; i < actions.size(); ++i) {
+                    auto currentAction = actions.at(i);
+
+                    if (currentAction->icon().isNull()
+                            && !dynamic_cast<QWidgetAction *>(currentAction))
+                        continue; // skip actions like "recently used files", that purposefully have no icon
+
+                    if (const auto nextAction = get_if(actions, i + 1)) {
+                        if (nextAction->menu()
+                            && nextAction->icon().isNull()) {
+                            currentAction = createProxyAction(currentAction, toolBar);
+                            currentAction->setMenu(nextAction->menu());
+                        }
+                    }
+
+                    toolBar->insertAction(placeholder, currentAction);
+                }
+            }
+
             actionCategories[type].actionGroups[view] += actionGroup;
         }
     }
@@ -462,6 +568,27 @@ void MainWindow::Private::mergeActions(MainWindowView *view)
 
 void MainWindow::Private::onCurrentViewChanged()
 {
+    // Update model and selection of the toolbar's device box.
+
+    blockCurrentDeviceIndexChanged = true; // Avoid that the globally selected device changes.
+
+    if (const auto mainWindowView = dynamic_cast<const MainWindowView *>(stack->currentWidget())) {
+        deviceBoxAction->setModel(devicesView->model(mainWindowView->deviceFilter()));
+        detachViewAction->setEnabled(mainWindowView->isDetachable());
+    } else {
+        deviceBoxAction->setModel(devicesView->model(DeviceFilter::none()));
+        detachViewAction->setEnabled(false);
+    }
+
+    if (const auto model = dynamic_cast<const DeviceModelInterface *>(deviceBoxAction->model())) {
+        auto index = model->indexOf(devicesView->currentDevice());
+        deviceBoxAction->setCurrentIndex(std::move(index));
+    }
+
+    blockCurrentDeviceIndexChanged = false; // Done. Restore the signal connection.
+
+    // Ensure, only the current view's actions are visible, hide all other actions.
+
     for (const auto &category: std::as_const(actionCategories)) {
         auto placeholderVisible = false;
 
@@ -476,13 +603,38 @@ void MainWindow::Private::onCurrentViewChanged()
             }
         }
 
-        category.placeholder->setVisible(placeholderVisible);
-
-        editMenu->setEnabled(visibleActionCount(editMenu->actions()) > 0);
-
-        onFileNameChanged();
-        onModifiedChanged();
+        category.menuPlaceholder->setVisible(placeholderVisible);
     }
+
+    // Disable the "Edit" menu, if there are no edit actions.
+
+    editMenu->setEnabled(countVisibleActions(editMenu->actions()) > 0);
+
+    // Show the neccessary toolbar separators.
+
+    const auto toolBarActions = toolBar->actions();
+    const auto findToolBarPlaceholder = [this, toolBarActions](auto categoryType) {
+        const auto placeHolder = actionCategories.value(categoryType).toolBarPlaceholder;
+        return toolBarActions.begin() + toolBarActions.indexOf(placeHolder);
+    };
+
+    const auto filePlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::FileSave);
+    const auto editPlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::EditClipboard);
+    const auto viewPlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::View);
+
+    const auto hasFileActions = (visibleActionCount(toolBarActions.begin(), filePlaceholderIter) > 0);
+    const auto hasEditActions = (visibleActionCount(filePlaceholderIter + 1, editPlaceholderIter) > 0);
+    const auto hasViewActions = (visibleActionCount(editPlaceholderIter + 1, viewPlaceholderIter) > 0);
+
+    (*filePlaceholderIter)->setVisible(hasFileActions && hasEditActions);
+    (*editPlaceholderIter)->setVisible(hasEditActions && hasViewActions);
+
+    // do not show the toolbar if not needed
+    updateToolBarVisibility();
+
+    // Update the window title and such with current filename.
+    onFileNameChanged();
+    onModifiedChanged();
 }
 
 void MainWindow::Private::onFileNameChanged()
@@ -506,6 +658,16 @@ void MainWindow::Private::onModifiedChanged()
         q()->setWindowModified(mainWindowView->isModified());
     else
         q()->setWindowModified(false);
+}
+
+void MainWindow::Private::onCurrentDeviceIndexChanged(int newIndex)
+{
+    if (blockCurrentDeviceIndexChanged)
+        return;
+
+    if (const auto model = deviceBoxAction->model())
+        if (const auto device = DeviceModelInterface::device(model->index(newIndex, 0)))
+            devicesView->setCurrentDevice(device);
 }
 
 void MainWindow::Private::onCurrentDeviceChanged(core::Device *newDevice)
@@ -540,6 +702,9 @@ void MainWindow::Private::onCurrentDeviceChanged(core::Device *newDevice)
             onDeviceStateChanged(deviceState());
             onPowerStateChanged();
         }
+
+        if (const auto model = dynamic_cast<DeviceModelInterface *>(deviceBoxAction->model()))
+            deviceBoxAction->setCurrentIndex(model->indexOf(newDevice));
     }
 }
 
@@ -606,11 +771,18 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow{parent}
     , d{new Private{this}}
 {
-    setCentralWidget(d->stack);
+    auto centralWidget = new QWidget{this};
+    auto centralLayout = new QVBoxLayout{centralWidget};
+    centralLayout->setContentsMargins({});
+    centralLayout->addWidget(d->toolBar);
+    centralLayout->addWidget(d->stack, 1);
+    setCentralWidget(centralWidget);
+
     addToolBar(Qt::LeftToolBarArea, d->navigation);
 
     d->setupActions();
     d->setupMenuBar();
+    d->setupToolBar();
     d->setupViews();
     d->setupStatusBar();
     d->setupFileReceiver();
@@ -676,6 +848,21 @@ QString MainWindowView::fileName() const
 }
 
 bool MainWindowView::isModified() const
+{
+    return false;
+}
+
+void MainWindowView::setCurrentDevice(core::Device *)
+{
+    // nothing to do by default
+}
+
+DeviceFilter MainWindowView::deviceFilter() const
+{
+    return DeviceFilter::none();
+}
+
+bool MainWindowView::isDetachable() const
 {
     return false;
 }
