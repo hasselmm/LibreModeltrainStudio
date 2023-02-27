@@ -114,6 +114,7 @@ public:
 
     QAbstractItemModel *model() const;
 
+    void setCurrentDevice(core::Device *newDevice);
     core::Device *currentDevice() const;
     bool hasAcceptableInput() const;
 
