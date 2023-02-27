@@ -295,6 +295,7 @@ public:
 
     auto operator*() const { return m_model ? m_model->index(m_row, 0) : QModelIndex{}; }
     auto &operator++() { ++m_row; return *this; }
+    auto operator-(const ItemModelIterator &rhs) const noexcept { return m_row - rhs.m_row; }
 
     auto fields() const noexcept { return std::tie(m_model, m_row); }
     auto operator==(const ItemModelIterator &rhs) const noexcept { return fields() == rhs.fields(); }
