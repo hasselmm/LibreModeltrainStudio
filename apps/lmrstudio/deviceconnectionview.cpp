@@ -164,11 +164,9 @@ QVariant ConnectedDeviceModel::data(const QModelIndex &index, int role) const
 class FilteredDeviceModel : public QSortFilterProxyModel, public DeviceModelInterface
 {
 public:
-    using DeviceFilter = DeviceConnectionView::DeviceFilter;
-
     explicit FilteredDeviceModel(DeviceFilter filter, QObject *parent = nullptr)
         : QSortFilterProxyModel{parent}
-        , m_filter{filter}
+        , m_filter{std::move(filter)}
     {}
 
     bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
@@ -331,7 +329,7 @@ public:
     core::ConstPointer<l10n::Facade<QPushButton>> connectButton{LMRS_TR("&Connect"), q()};
     core::ConstPointer<l10n::Facade<QPushButton>> disconnectButton{LMRS_TR("&Disconnect"), q()};
 
-    QHash<DeviceFilter, QAbstractItemModel *> filteredDeviceModels;
+    QHash<DeviceFilter::Key, QAbstractItemModel *> filteredDeviceModels;
     QPointer<core::Device> currentDevice;
 };
 
@@ -580,20 +578,20 @@ DeviceConnectionView::~DeviceConnectionView()
     delete d;
 }
 
-QAbstractItemModel *lmrs::studio::DeviceConnectionView::model(bool (*filter)(const core::Device *)) const
+QAbstractItemModel *lmrs::studio::DeviceConnectionView::model(DeviceFilter filter) const
 {
-    if (const auto model = d->filteredDeviceModels.value(filter))
+    if (const auto model = d->filteredDeviceModels.value(filter.key()))
         return model;
 
     const auto model = new FilteredDeviceModel{filter, d};
     model->setSourceModel(d->connectedDeviceModel());
-    d->filteredDeviceModels.insert(filter, model);
+    d->filteredDeviceModels.insert(filter.key(), model);
     return model;
 }
 
 QAbstractItemModel *DeviceConnectionView::model() const
 {
-    return model(nullptr);
+    return model(DeviceFilter::any());
 }
 
 core::Device *DeviceConnectionView::currentDevice() const
