@@ -2,6 +2,7 @@
 
 #include "deviceparameterwidget.h"
 
+#include <lmrs/core/algorithms.h>
 #include <lmrs/core/localization.h>
 #include <lmrs/core/logging.h>
 #include <lmrs/core/memory.h>
@@ -81,36 +82,25 @@ auto featureString(core::Device *device)
     return features;
 }
 
-class ConnectedDeviceModel : public QAbstractListModel
+class ConnectedDeviceModel : public QAbstractListModel, public DeviceModelInterface
 {
     Q_OBJECT
 
 public:
-    enum class Role {
-        Name = Qt::DisplayRole,
-        Icon = Qt::DecorationRole,
-        Device = Qt::UserRole,
-        Features,
-    };
-
     using QAbstractListModel::QAbstractListModel;
 
-    static core::Device *device(QModelIndex index);
     QModelIndex addDevice(core::Device *device);
-    QModelIndex findDevice(QString uniqueId) const;
 
 public: // QAbstractListModel interface
     int rowCount(const QModelIndex &parent = {}) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
+protected:
+    const QAbstractItemModel *model() const override { return this; }
+
 private:
     QList<QPointer<core::Device>> m_devices;
 };
-
-core::Device *ConnectedDeviceModel::device(QModelIndex index)
-{
-    return index.data(core::value(Role::Device)).value<core::Device *>();
-}
 
 QModelIndex ConnectedDeviceModel::addDevice(core::Device *device)
 {
@@ -138,18 +128,6 @@ QModelIndex ConnectedDeviceModel::addDevice(core::Device *device)
     endInsertRows();
 
     return index(row);
-}
-
-QModelIndex ConnectedDeviceModel::findDevice(QString uniqueId) const
-{
-    for (auto it = m_devices.begin(); it != m_devices.end(); ++it) {
-        if ((*it)->uniqueId() == uniqueId) {
-            const auto row = static_cast<int>(it - m_devices.begin());
-            return index(row);
-        }
-    }
-
-    return {};
 }
 
 int ConnectedDeviceModel::rowCount(const QModelIndex &parent) const
@@ -183,7 +161,7 @@ QVariant ConnectedDeviceModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-class FilteredDeviceModel : public QSortFilterProxyModel
+class FilteredDeviceModel : public QSortFilterProxyModel, public DeviceModelInterface
 {
 public:
     using DeviceFilter = DeviceConnectionView::DeviceFilter;
@@ -194,6 +172,9 @@ public:
     {}
 
     bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
+
+protected:
+    const QAbstractItemModel *model() const override { return this; }
 
 private:
     const DeviceFilter m_filter;
@@ -206,10 +187,8 @@ bool FilteredDeviceModel::filterAcceptsRow(int row, const QModelIndex &parent) c
 
     if (!device)
         return false;
-    if (m_filter && !m_filter(device))
-        return false;
 
-    return true;
+    return m_filter(device);
 }
 
 class ConnectedDeviceDelegate : public QStyledItemDelegate
@@ -276,6 +255,44 @@ QSize ConnectedDeviceDelegate::sizeHint(const QStyleOptionViewItem &option, cons
 }
 
 } // namespace
+
+core::Device *DeviceModelInterface::device(QModelIndex index)
+{
+    if (index.isValid()) {
+        if (LMRS_FAILED(core::logger<DeviceModelInterface>(), dynamic_cast<const DeviceModelInterface *>(index.model())))
+            return nullptr;
+
+        return index.data(core::value(Role::Device)).value<core::Device *>();
+    }
+
+    return nullptr;
+}
+
+QModelIndex DeviceModelInterface::findDevice(QString uniqueId) const
+{
+    const auto first = begin(model()), last = end(model());
+    const auto it = std::find_if(first, last, [uniqueId](QModelIndex index) {
+        return DeviceModelInterface::device(index)->uniqueId() == uniqueId;
+    });
+
+    if (it != last)
+        return model()->index(it - first, 0);
+
+    return {};
+}
+
+QModelIndex DeviceModelInterface::indexOf(const core::Device *device) const
+{
+    const auto first = begin(model()), last = end(model());
+    const auto it = std::find_if(first, last, [device](QModelIndex index) {
+        return DeviceModelInterface::device(index) == device;
+    });
+
+    if (it != last)
+        return model()->index(it - first, 0);
+
+    return {};
+}
 
 class DeviceConnectionView::Private : public core::PrivateObject<DeviceConnectionView>
 {
