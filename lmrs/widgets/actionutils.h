@@ -1,7 +1,8 @@
 #ifndef LMRS_WIDGETS_ACTIONUTILS_H
 #define LMRS_WIDGETS_ACTIONUTILS_H
 
-#include <QFlags>
+#include <QSizePolicy>
+#include <QWidgetAction>
 
 class QAbstractButton;
 class QAction;
@@ -45,6 +46,41 @@ inline auto createProxyAction(Action *prototype, BindActionOptions options = {})
 {
     return createProxyAction(prototype, options, prototype);
 }
+
+class ComboBoxAction : public QWidgetAction
+{
+    Q_OBJECT
+
+public:
+    using QWidgetAction::QWidgetAction;
+
+    QWidget *createWidget(QWidget *parent) override;
+
+    void setModel(QAbstractItemModel *newModel);
+    QAbstractItemModel *model() const;
+
+    void setSizePolicy(QSizePolicy::Policy newPolicy);
+    QSizePolicy::Policy sizePolicy() const;
+
+    void setMinimumContentsLength(int newLength);
+    int minimumContentsLength() const;
+
+    void setCurrentIndex(QModelIndex newIndex);
+    void setCurrentIndex(int newIndex);
+    int currentIndex() const;
+
+signals:
+    void modelChanged(QAbstractItemModel *model, QPrivateSignal);
+    void currentIndexChanged(int currentIndex, QPrivateSignal);
+
+private:
+    void updateVisiblity();
+
+    QPointer<QAbstractItemModel> m_model;
+    QSizePolicy::Policy m_sizePolicy = QSizePolicy::Fixed;
+    int m_minimumContentsLength = 3;
+    int m_currentIndex = -1;
+};
 
 } // namespace lmrs::widgets
 
