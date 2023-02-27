@@ -16,7 +16,7 @@ class TrackPlanView : public MainWindowView
     Q_OBJECT
 
 public:
-    explicit TrackPlanView(QAbstractItemModel *model, QWidget *parent = nullptr); // FIXME: pass model factory, not model
+    explicit TrackPlanView(QWidget *parent = nullptr);
 
     void setFileSharing(roco::z21app::FileSharing *newFileSharing);
     roco::z21app::FileSharing *fileSharing() const;
@@ -24,6 +24,9 @@ public:
     QActionGroup *actionGroup(ActionCategory category) const override;
     QString fileName() const override;
     bool isModified() const override;
+
+    void setCurrentDevice(core::Device *newDevice) override;
+    DeviceFilter deviceFilter() const override;
 
 public slots:
     bool open(QString newFileName);
