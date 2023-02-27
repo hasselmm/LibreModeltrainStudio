@@ -19,6 +19,9 @@ public:
     operator T *() { return m_ptr; }
     T *get() { return m_ptr; }
 
+    template<typename U>
+    U *get() { return static_cast<U *>(m_ptr); }
+
 private:
     T *const m_ptr;
 };
