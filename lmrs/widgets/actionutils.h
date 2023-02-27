@@ -1,6 +1,8 @@
 #ifndef LMRS_WIDGETS_ACTIONUTILS_H
 #define LMRS_WIDGETS_ACTIONUTILS_H
 
+#include <QAbstractItemModel>
+#include <QPointer>
 #include <QSizePolicy>
 #include <QWidgetAction>
 
@@ -90,6 +92,60 @@ public:
     using QWidgetAction::QWidgetAction;
 
     QWidget *createWidget(QWidget *parent) override;
+};
+
+class ZoomLevelModel : public QAbstractListModel
+{
+public:
+    explicit ZoomLevelModel(QObject *parent);
+
+    void setRange(int newMinimumZoom, int newMaximumZoom);
+
+    int minimumZoom() const;
+    int minimumLevel() const;
+
+    int maximumZoom() const;
+    int maximumLevel() const;
+
+    int toLevel(int value) const;
+    int toValue(int level) const;
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    int rowCount(const QModelIndex &parent = {}) const override;
+
+private:
+    int m_minimumLevel = 0;
+    int m_maximumLevel = 0;
+    int m_step = 25;
+};
+
+class ZoomActionGroup : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit ZoomActionGroup(QObject *parent);
+
+    void setCurrentZoom(int newCurrentZoom);
+    int currentZoom() const;
+
+    ZoomLevelModel *model() const;
+    QList<QAction *> actions() const;
+
+signals:
+    void currentZoomChanged(int currentZoom);
+
+private:
+    void onZoomIn();
+    void onZoomOut();
+
+    void setCurrentLevel(int newLevel);
+
+    int m_currentLevel = 0;
+
+    QAction *const m_zoomInAction;
+    QAction *const m_zoomOutAction;
+    ComboBoxAction *const m_pickerAction;
 };
 
 } // namespace lmrs::widgets
