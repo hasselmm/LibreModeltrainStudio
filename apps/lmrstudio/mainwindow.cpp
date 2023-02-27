@@ -703,15 +703,17 @@ void MainWindow::Private::onCurrentDeviceChanged(core::Device *newDevice)
             onPowerStateChanged();
         }
 
-        if (const auto model = dynamic_cast<DeviceModelInterface *>(deviceBoxAction->model()))
+        if (const auto model = dynamic_cast<DeviceModelInterface *>(deviceBoxAction->model())) {
+            qInfo() << Q_FUNC_INFO << "device found at" << model->indexOf(newDevice) << (newDevice ? newDevice->name() : "<null>"_L1);
             deviceBoxAction->setCurrentIndex(model->indexOf(newDevice));
+        }
     }
 }
 
 void MainWindow::Private::onDeviceStateChanged(core::Device::State state)
 {
     if (currentDevice) {
-        qCInfo(logger()) << "state changed to" << state << "for" << currentDevice->name();
+        qCInfo(logger(), "State changed to %s for \"%ls\"", core::key(state), qUtf16Printable(currentDevice->name()));
 
         switch (state) {
         case core::Device::State::Connecting:
@@ -728,7 +730,7 @@ void MainWindow::Private::onDeviceStateChanged(core::Device::State state)
             break;
         }
     } else {
-        qCInfo(logger()) << "state changed to" << state;
+        qCInfo(logger(), "State changed to %s without device", core::key(state));
     }
 
     deviceMenu->setEnabled(state == core::Device::State::Connected);
