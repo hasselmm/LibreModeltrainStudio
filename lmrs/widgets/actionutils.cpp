@@ -2,8 +2,10 @@
 
 #include <lmrs/core/logging.h>
 #include <lmrs/core/typetraits.h>
+#include <lmrs/core/userliterals.h>
 
 #include <lmrs/gui/localization.h>
+#include <lmrs/gui/fontawesome.h>
 
 #include <QBoxLayout>
 #include <QComboBox>
@@ -191,6 +193,161 @@ QWidget *SpacerAction::createWidget(QWidget *parent)
     const auto spacerLayout = new QHBoxLayout{spacer};
     spacerLayout->addStretch();
     return spacer;
+}
+
+ZoomLevelModel::ZoomLevelModel(QObject *parent)
+    : QAbstractListModel{parent}
+{
+    setRange(25, 400);
+}
+
+void ZoomLevelModel::setRange(int newMinimumZoom, int newMaximumZoom)
+{
+    const auto newMinimumLevel = toLevel(newMinimumZoom);
+    const auto newMaximumLevel = toLevel(newMaximumZoom);
+
+    if (newMinimumLevel != m_minimumLevel
+            || newMaximumLevel != m_maximumLevel) {
+        beginResetModel();
+        m_minimumLevel = newMinimumLevel;
+        m_maximumLevel = newMaximumLevel;
+        endResetModel();
+
+        /*
+        auto model = dynamic_cast<QStandardItemModel *>(pickerAction()->model());
+
+        if (model) {
+            model->clear();
+        } else {
+            model = new QStandardItemModel{this};
+        }
+
+        for (auto level = m_minimumLevel; level <= m_maximumLevel; ++level) {
+            const auto item = new QStandardItem{}
+            model->appendRow()
+                   }
+    */
+    }
+}
+
+int ZoomLevelModel::minimumZoom() const
+{
+    return toValue(m_minimumLevel);
+}
+
+int ZoomLevelModel::maximumZoom() const
+{
+    return toValue(m_maximumLevel);
+}
+
+int ZoomLevelModel::minimumLevel() const
+{
+    return m_minimumLevel;
+}
+
+int ZoomLevelModel::maximumLevel() const
+{
+    return m_maximumLevel;
+}
+
+int ZoomLevelModel::toLevel(int value) const
+{
+    return qRound(log(value / m_step) / log(2));
+    //    if (const auto view = currentView())
+    //        view->setTileSize(qMin(25 * (1 << qFloor(log(view->tileSize() / 25.0) / log(2) + 1)), 400));
+}
+
+int ZoomLevelModel::toValue(int level) const
+{
+    return (1 << level) * m_step;
+    //    if (const auto view = currentView())
+    //        view->setTileSize(qMax(25 * (1 << qFloor(log((view->tileSize() - 1) / 25.0) / log(2))), 25));
+}
+
+QVariant ZoomLevelModel::data(const QModelIndex &index, int role) const
+{
+    if (hasIndex(index.row(), index.column(), index.parent())) {
+        if (role == Qt::DisplayRole)
+            return (QLocale{}.toString(toValue(index.row()))) + u'\u202f' + u'%';
+        else if (role == Qt::UserRole)
+            return toValue(index.row());
+        else if (role == Qt::TextAlignmentRole)
+            return static_cast<int>(Qt::AlignRight | Qt::AlignVCenter);
+    }
+
+    return {};
+}
+
+int ZoomLevelModel::rowCount(const QModelIndex &parent) const
+{
+    if (Q_UNLIKELY(parent.isValid()))
+        return 0;
+
+    return m_maximumLevel + 1;
+}
+
+ZoomActionGroup::ZoomActionGroup(QObject *parent)
+    : QObject{parent}
+    , m_zoomInAction{new l10n::Action{icon(gui::fontawesome::fasMagnifyingGlassPlus),
+                     LMRS_TR("Zoom &in"), LMRS_TR("Zoom into the view"),
+                     this, &ZoomActionGroup::onZoomIn}}
+    , m_zoomOutAction{new l10n::Action{icon(gui::fontawesome::fasMagnifyingGlassMinus),
+                      LMRS_TR("Zoom &out"), LMRS_TR("Zoom out of the view"),
+                      this, &ZoomActionGroup::onZoomOut}}
+    , m_pickerAction{new ComboBoxAction{this}}
+{
+    m_pickerAction->setModel(new ZoomLevelModel{m_pickerAction});
+    m_pickerAction->setSizePolicy(QSizePolicy::Fixed);
+    m_pickerAction->setMinimumContentsLength(3);
+
+    connect(m_pickerAction, &ComboBoxAction::currentIndexChanged, this, &ZoomActionGroup::setCurrentLevel);
+
+    setCurrentLevel(model()->toLevel(100));
+}
+
+void ZoomActionGroup::setCurrentZoom(int newCurrentZoom)
+{
+    if (const auto zoomModel = model())
+        setCurrentLevel(zoomModel->toLevel(newCurrentZoom));
+}
+
+int ZoomActionGroup::currentZoom() const
+{
+    return model()->toValue(m_currentLevel);
+}
+
+ZoomLevelModel *ZoomActionGroup::model() const
+{
+    return core::checked_cast<ZoomLevelModel *>(m_pickerAction->model());
+}
+
+QList<QAction *> ZoomActionGroup::actions() const
+{
+    return {m_zoomOutAction, m_pickerAction, m_zoomInAction};
+}
+
+void ZoomActionGroup::onZoomIn()
+{
+    setCurrentLevel(m_currentLevel + 1);
+}
+
+void ZoomActionGroup::onZoomOut()
+{
+    setCurrentLevel(m_currentLevel - 1);
+}
+
+void ZoomActionGroup::setCurrentLevel(int newLevel)
+{
+    if (const auto zoomModel = model()) {
+        newLevel = qBound(zoomModel->minimumLevel(), newLevel, zoomModel->maximumLevel());
+        if (const auto oldLevel = std::exchange(m_currentLevel, newLevel); oldLevel != newLevel) {
+            const auto currentValue = zoomModel->toValue(m_currentLevel);
+            m_zoomInAction->setEnabled(currentValue < zoomModel->maximumZoom());
+            m_zoomOutAction->setEnabled(currentValue > zoomModel->minimumZoom());
+            m_pickerAction->setCurrentIndex(m_currentLevel);
+            emit currentZoomChanged(currentValue);
+        }
+    }
 }
 
 } // namespace lmrs::widgets
