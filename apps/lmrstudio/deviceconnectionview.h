@@ -9,6 +9,26 @@ namespace lmrs::studio {
 
 class DeviceParameterWidget;
 
+class DeviceModelInterface
+{
+    Q_GADGET
+
+public:
+    enum class Role {
+        Name = Qt::DisplayRole,
+        Icon = Qt::DecorationRole,
+        Device = Qt::UserRole,
+        Features,
+    };
+
+    static core::Device *device(QModelIndex index);
+    QModelIndex findDevice(QString uniqueId) const;
+    QModelIndex indexOf(const core::Device *device) const;
+
+protected:
+    virtual const QAbstractItemModel *model() const = 0;
+};
+
 class DeviceConnectionView : public QWidget
 {
     Q_OBJECT
