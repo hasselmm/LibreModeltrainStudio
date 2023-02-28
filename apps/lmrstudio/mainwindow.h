@@ -31,7 +31,7 @@ public:
 
     using QFrame::QFrame;
 
-    virtual QActionGroup *actionGroup(ActionCategory category) const;
+    virtual QList<QActionGroup *> actionGroups(ActionCategory category) const;
     virtual QString fileName() const;
     virtual bool isModified() const;
 

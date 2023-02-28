@@ -332,9 +332,9 @@ FileSharing *TrackPlanView::fileSharing() const
     return d->fileSharing;
 }
 
-QActionGroup *TrackPlanView::actionGroup(ActionCategory category) const
+QList<QActionGroup *> TrackPlanView::actionGroups(ActionCategory category) const
 {
-    return d->actionGroups[category];
+    return {d->actionGroups[category]};
 }
 
 QString TrackPlanView::fileName() const

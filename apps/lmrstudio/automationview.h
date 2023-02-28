@@ -14,7 +14,7 @@ class AutomationView : public MainWindowView
 public:
     explicit AutomationView(QWidget *parent = nullptr);
 
-    QActionGroup *actionGroup(ActionCategory category) const override;
+    QList<QActionGroup *> actionGroups(ActionCategory category) const override;
     QString fileName() const override;
     bool isModified() const override;
 

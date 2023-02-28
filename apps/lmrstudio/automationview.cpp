@@ -294,9 +294,9 @@ AutomationView::AutomationView(QWidget *parent)
     d->resetModified();
 }
 
-QActionGroup *AutomationView::actionGroup(ActionCategory category) const
+QList<QActionGroup *> AutomationView::actionGroups(ActionCategory category) const
 {
-    return d->actionGroups[category];
+    return {d->actionGroups[category]};
 }
 
 QString AutomationView::fileName() const
