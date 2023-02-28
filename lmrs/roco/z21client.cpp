@@ -1509,6 +1509,14 @@ void Client::Private::parseBroadcasts(Message message)
     }
 
     switch (message.length()) {
+    case 4:
+    case 11:
+    case 17:
+        if (const auto info = parseRailcomInfo(std::move(message)); info && info->isValid())
+            emit q()->railcomInfoReceived(info.value());
+
+        break;
+
     case 7:
         if (const auto xbusId = message.xbusMessageId();
                 xbusId == XBusMessageId::BroadcastPowerOff)
@@ -1551,13 +1559,6 @@ void Client::Private::parseBroadcasts(Message message)
             mergeLoconetDetectorInfo(info.value());
         else if (const auto info = parseAccessoryInfo(std::move(message)))
             emit q()->accessoryInfoReceived(info.value());
-
-        break;
-
-    case 11:
-    case 17:
-        if (const auto info = parseRailcomInfo(std::move(message)))
-            emit q()->railcomInfoReceived(info.value());
 
         break;
 
@@ -2155,6 +2156,8 @@ void Client::queryRailcom(quint16 address, std::function<void (RailcomInfo)> cal
                 callIfDefined(callback, info.value());
                 emit railcomInfoReceived(info.value());
                 return true;
+            } else if (!info->isValid()) {
+                return true; // FIXME: Seems we must better serialize these queries, as the empty no-railcom-message doesn't tell which request failed.
             }
         }
 
