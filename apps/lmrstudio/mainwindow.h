@@ -22,6 +22,7 @@ public:
         FileNew,
         FileOpen,
         FileSave,
+        FilePeripherals,
         EditCreate,
         EditClipboard,
         View,
