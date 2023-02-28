@@ -85,9 +85,15 @@ int fromBCD(quint8 byte)
 
 void updateChecksum(QByteArray *message)
 {
+    if (LMRS_FAILED_EQUALS(lcRequests(), static_cast<quint8>(message->at(0)), message->size())) {
+        qFatal("Bad request: %s", message->toHex(' ').constData());
+        return;
+    }
+
     const auto first = message->begin() + 5;
     const auto last = message->end() - 1;
-    quint8 checksum = 0;
+
+    auto checksum = quint8{};
 
     for (auto it = first; it != last; ++it)
         checksum ^= static_cast<quint8>(*it);
@@ -2141,7 +2147,7 @@ void Client::queryRailcom(quint16 address, std::function<void (RailcomInfo)> cal
 {
     auto request = "07 00 89 00 01 00 00"_hex;
     qToBigEndian<quint16>(address & 0x3fff, request.data() + 5);
-    updateChecksum(&request);
+    // there is no checksum in this request
 
     d->sendRequest(std::move(request), [this, address, callback](auto message) {
         if (const auto info = d->parseRailcomInfo(std::move(message))) {
