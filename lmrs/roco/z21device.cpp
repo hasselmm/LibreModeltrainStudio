@@ -70,6 +70,7 @@ public:
     void sendNativeFrame(QByteArray nativeFrame) const override;
 
     QString nativeProtocolName() const noexcept override { return tr("Z21 Protocol"); }
+    QList<QPair<QString, QByteArray>> nativeExampleFrames() const noexcept override;
 
 private:
     Client *client() const { return core::checked_cast<Client *>(parent()); }
@@ -292,6 +293,13 @@ void DebugControl::sendNativeFrame(QByteArray nativeFrame) const
     qInfo() << "NATIVE FRAME" << nativeFrame.toHex(' ');
     client()->sendRequest(std::move(nativeFrame));
     qInfo() << "NATIVE FRAME";
+}
+
+QList<QPair<QString, QByteArray>> DebugControl::nativeExampleFrames() const noexcept
+{
+    return {
+        {tr("Query Railcom information for DCC#2280"), "07 00 89 00 01 08 e8 e0"_hex},
+    };
 }
 
 // =====================================================================================================================
