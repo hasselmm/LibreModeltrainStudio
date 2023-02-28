@@ -471,13 +471,23 @@ void FunctionMappingView::Private::importFromDevice()
 void FunctionMappingView::Private::importFromFile()
 {
     // FIXME: Use proper documents folder from QDesktopServices, from QSettings
-    auto filters = core::FileFormat::openFileDialogFilter(esu::FunctionMappingModel::readableFileFormats());
+    auto filters = core::FileFormat::openFileDialogFilter(esu::FunctionMappingReader::fileFormats());
     const auto fileName = QFileDialog::getOpenFileName(q(), tr("Open Function Mapping"), {}, std::move(filters));
 
-    if (!fileName.isEmpty() && !model()->read(std::move(fileName))) {
+    if (fileName.isEmpty())
+        return;
+
+    const auto reader = esu::FunctionMappingReader::fromFile(std::move(fileName));
+
+    if (auto newModel = reader->read()) {
+        if (const auto oldModel = model())
+            oldModel->deleteLater();
+
+        tableView->setModel(newModel.release());
+    } else {
         QMessageBox::critical(q(), tr("Could not read function mapping"),
                               tr("<p>Could not read a function mappping from <b>%1</b>.</p><p>%2</p>").
-                              arg(QFileInfo{std::move(fileName)}.fileName(), model()->errorString()));
+                              arg(QFileInfo{reader->fileName()}.fileName(), reader->errorString()));
     }
 }
 
@@ -489,13 +499,18 @@ void FunctionMappingView::Private::exportToDevice()
 void FunctionMappingView::Private::exportToFile()
 {
     // FIXME: Use proper documents folder from QDesktopServices, from QSettings
-    auto filters = core::FileFormat::saveFileDialogFilter(esu::FunctionMappingModel::writableFileFormats());
+    auto filters = core::FileFormat::saveFileDialogFilter(esu::FunctionMappingWriter::fileFormats());
     const auto fileName = QFileDialog::getSaveFileName(q(), tr("Save Function Mapping"), {}, std::move(filters));
 
-    if (!fileName.isEmpty() && !model()->write(std::move(fileName))) {
+    if (fileName.isEmpty())
+        return;
+
+    const auto writer = esu::FunctionMappingWriter::fromFile(std::move(fileName));
+
+    if (!writer->write(model())) {
         QMessageBox::critical(q(), tr("Could not write function mapping"),
                               tr("<p>Could not write this function mapping to <b>%1</b>.</p><p>%2</p>").
-                              arg(QFileInfo{std::move(fileName)}.fileName(), model()->errorString()));
+                              arg(QFileInfo{writer->fileName()}.fileName(), writer->errorString()));
     }
 }
 

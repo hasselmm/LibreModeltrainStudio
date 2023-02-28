@@ -2,6 +2,7 @@
 #define LMRS_ESU_DCC_FUNCTIONMAPPINGMODEL_H
 
 #include <lmrs/core/dccconstants.h>
+#include <lmrs/core/fileformat.h>
 
 #include <QAbstractTableModel>
 
@@ -267,20 +268,18 @@ public:
 
     Q_ENUM(Preset)
 
+    using VariableValueMap = QMap<core::dcc::ExtendedVariableIndex, core::dcc::VariableValue>;
+
     explicit FunctionMappingModel(QObject *parent = {});
+    explicit FunctionMappingModel(VariableValueMap variables, QObject *parent = {});
 
     void reset(Preset preset = Preset::Empty);
 
     void read(core::VariableControl *variableControl, core::dcc::VehicleAddress address);
-    bool read(QString fileName);
-
     void write(core::VariableControl *variableControl, core::dcc::VehicleAddress address);
-    bool write(QString fileName);
-
-    static QList<core::FileFormat> readableFileFormats();
-    static QList<core::FileFormat> writableFileFormats();
 
     QString errorString() const;
+    VariableValueMap variables() const;
 
 signals:
     void errorOccured(QString errorString);
@@ -305,6 +304,9 @@ constexpr auto disabled(Condition::Variable variable) { return Condition{variabl
 
 [[nodiscard]] QString displayName(Condition::Variable variable);
 [[nodiscard]] QString displayName(FunctionMappingModel::Preset preset);
+
+using FunctionMappingReader = core::FileFormatReader<esu::FunctionMappingModel>;
+using FunctionMappingWriter = core::FileFormatWriter<esu::FunctionMappingModel>;
 
 } // namespace lmrs::esu
 
