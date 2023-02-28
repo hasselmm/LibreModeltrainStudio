@@ -80,4 +80,21 @@ bool logging::internal::reportFailure(const QLoggingCategory &category,
     return false;
 }
 
+bool logging::internal::reportFailure(const QLoggingCategory &category, bool assertion,
+                                      QString actual, QString expected, const char *expression,
+                                      const char *file, int line, const char *func)
+{
+    if (Q_UNLIKELY(!assertion)) {
+        if (category.isCriticalEnabled()) {
+            auto logger = QMessageLogger{file, line, func, category.categoryName()};
+            logger.critical("Assertion has failed: %s (actual value: %ls, expected value: %ls)",
+                            expression, qUtf16Printable(actual.trimmed()), qUtf16Printable(expected.trimmed()));
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 } // namespace lmrs::core
