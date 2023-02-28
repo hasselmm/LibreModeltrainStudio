@@ -3,16 +3,19 @@
 
 #include <lmrs/core/localization.h>
 
-#include <QAction>
+#include <QActionGroup>
 
 namespace lmrs::gui::l10n {
 
 class Action : public QAction
 {
+    Q_OBJECT
+
 public:
     explicit Action(QObject *parent = nullptr);
     explicit Action(core::l10n::String text, QObject *parent = nullptr);
     explicit Action(core::l10n::String text, QKeySequence shortcut, QObject *parent = nullptr);
+    explicit Action(core::l10n::String text, core::l10n::String toolTip, QObject *parent = nullptr);
     explicit Action(core::l10n::String text, core::l10n::String toolTip, QKeySequence shortcut,
                     QObject *parent = nullptr);
 
@@ -86,6 +89,17 @@ private:
 
     core::l10n::String m_text;
     core::l10n::String m_toolTip;
+};
+
+class ActionGroup : public QActionGroup
+{
+    Q_OBJECT
+
+public:
+    using QActionGroup::QActionGroup;
+
+    Action *addAction(Action *action);
+    Action *addAction(auto... args) { return addAction(new Action{args..., this}); }
 };
 
 } // namespace lmrs::gui::l10n
