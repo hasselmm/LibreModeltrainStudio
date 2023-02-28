@@ -207,8 +207,7 @@ public:
         return menu.release();
     }
 
-    template<class Parent, class... Args>
-    QAction *addAction(Parent *parent, Args... args)
+    QAction *addAction(auto *parent, auto... args)
     {
         auto action = std::make_unique<l10n::Action>(args...);
         parent->addAction(action.get());

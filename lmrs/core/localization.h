@@ -64,8 +64,7 @@ template<class T>
 class Facade : public T
 {
 public:
-    template<typename... Args>
-    explicit Facade(String text, Args... args)
+    explicit Facade(String text, auto... args)
         : T{std::move(args)...}
         , m_text(std::move(text))
     {

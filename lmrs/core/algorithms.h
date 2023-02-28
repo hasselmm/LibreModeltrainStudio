@@ -13,8 +13,8 @@
 
 namespace lmrs::core {
 
-template<class T, size_t N, typename... Args>
-std::array<T *, N> generateArray(Args... args)
+template<class T, size_t N>
+std::array<T *, N> generateArray(auto... args)
 {
     std::array<T *, N> array;
     std::generate(array.begin(), array.end(), [args...] { return new T{args...}; });
@@ -99,10 +99,9 @@ inline QStringList toStringList(const QList<T> &values)
     return result;
 }
 
-template<class T, class... Args>
-constexpr T coalesce(T value, Args... args)
+constexpr auto coalesce(auto value, auto... args)
 {
-    if constexpr(sizeof...(Args) > 0) {
+    if constexpr(sizeof...(args) > 0) {
         if (isEmpty(value))
             return coalesce(args...);
     }

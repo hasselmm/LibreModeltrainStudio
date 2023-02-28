@@ -7,8 +7,7 @@ template<typename T>
 class ConstPointer
 {
 public:
-    template<class... Args>
-    explicit ConstPointer(Args... args) : ConstPointer{new T{args...}} {}
+    explicit ConstPointer(auto... args) : ConstPointer{new T{args...}} {}
     ConstPointer(T *ptr) noexcept : m_ptr{ptr} {}
 
     const T *operator->() const { return m_ptr; }
