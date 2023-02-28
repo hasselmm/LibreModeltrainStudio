@@ -559,10 +559,15 @@ void MainWindow::Private::mergeActions(MainWindowView *view)
                         continue; // skip actions like "recently used files", that purposefully have no icon
 
                     if (const auto nextAction = get_if(actions, i + 1)) {
-                        if (nextAction->menu()
-                            && nextAction->icon().isNull()) {
+                        if (const auto menu = nextAction->menu(); menu && nextAction->icon().isNull()) {
                             currentAction = createProxyAction(currentAction, toolBar);
-                            currentAction->setMenu(nextAction->menu());
+
+                            const auto updateMenuVisible = [currentAction, menu, nextAction] {
+                                currentAction->setMenu(nextAction->isVisible() ? menu : nullptr);
+                            };
+
+                            connect(nextAction, &QAction::visibleChanged, menu, updateMenuVisible);
+                            updateMenuVisible();
                         }
                     }
 
