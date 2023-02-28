@@ -530,8 +530,17 @@ void MainWindow::Private::updateToolBarVisibility()
 void MainWindow::Private::mergeActions(MainWindowView *view)
 {
     for (const auto &[type, settings]: actionCategories.asKeyValueRange()) {
-        if (const auto actionGroup = view->actionGroup(type)) {
-            if (const auto placeholder = settings.menuPlaceholder) {
+        // Naively one would return just a single QActionGroup per category. Sadly action can only be member
+        // of exactly one action group. So by chosing that simple approach we'd forbid main window views to
+        // provide mutually exclusive actions.
+        for (const auto actionGroupList = view->actionGroups(type);
+             const auto actionGroup: actionGroupList) {
+            if (!actionGroup)
+                continue; // makes it easier to implement actionGroups() if we checkf or nullptr here
+
+            const auto toolbarOnly = actionGroup->property("toolbarOnly").toBool();
+
+            if (const auto placeholder = settings.menuPlaceholder; placeholder && !toolbarOnly) {
                 const auto menu = core::checked_cast<QMenu *>(placeholder->parent());
 
                 for (const auto actionList = actionGroup->actions(); const auto action: actionList) {
@@ -546,7 +555,8 @@ void MainWindow::Private::mergeActions(MainWindowView *view)
                     auto currentAction = actions.at(i);
 
                     if (currentAction->icon().isNull()
-                            && !dynamic_cast<QWidgetAction *>(currentAction))
+                            && !dynamic_cast<QWidgetAction *>(currentAction)
+                            && !toolbarOnly)
                         continue; // skip actions like "recently used files", that purposefully have no icon
 
                     if (const auto nextAction = get_if(actions, i + 1)) {
@@ -845,9 +855,9 @@ l10n::LanguageManager *MainWindow::languageManager() const
     return d->languageManager;
 }
 
-QActionGroup *MainWindowView::actionGroup(ActionCategory) const
+QList<QActionGroup *> MainWindowView::actionGroups(ActionCategory) const
 {
-    return nullptr;
+    return {};
 }
 
 QString MainWindowView::fileName() const

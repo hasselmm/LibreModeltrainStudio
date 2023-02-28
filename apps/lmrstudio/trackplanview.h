@@ -21,7 +21,7 @@ public:
     void setFileSharing(roco::z21app::FileSharing *newFileSharing);
     roco::z21app::FileSharing *fileSharing() const;
 
-    QActionGroup *actionGroup(ActionCategory category) const override;
+    QList<QActionGroup *> actionGroups(ActionCategory category) const override;
     QString fileName() const override;
     bool isModified() const override;
 
