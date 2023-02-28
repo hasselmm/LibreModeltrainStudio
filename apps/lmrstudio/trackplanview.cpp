@@ -72,7 +72,7 @@ public:
     void onCurrentPageChanged();
     void onListeningChanged(bool isListening);
 
-    void setCurrentDevice(core::Device *newDevice);
+    void setDevice(core::Device *newDevice);
     void attachCurrentDevice(widgets::SymbolicTrackPlanView *view);
     std::function<void()> makeResetAction(Preset preset);
     static l10n::String displayName(Preset preset);
@@ -177,7 +177,7 @@ void TrackPlanView::Private::attachCurrentDevice(SymbolicTrackPlanView *view)
     view->setDetectorControl(detectorControl);
 }
 
-void TrackPlanView::Private::setCurrentDevice(core::Device *newDevice)
+void TrackPlanView::Private::setDevice(core::Device *newDevice)
 {
     if (const auto oldDevice = std::exchange(currentDevice, newDevice); oldDevice != newDevice) {
         for (auto i = 0; i < notebook->count(); ++i)
@@ -347,9 +347,9 @@ bool TrackPlanView::isModified() const
     return d->isModified();
 }
 
-void TrackPlanView::setCurrentDevice(core::Device *newDevice)
+void TrackPlanView::setDevice(core::Device *newDevice)
 {
-    d->setCurrentDevice(newDevice);
+    d->setDevice(newDevice);
 }
 
 DeviceFilter TrackPlanView::deviceFilter() const

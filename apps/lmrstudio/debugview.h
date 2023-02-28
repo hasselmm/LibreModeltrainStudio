@@ -1,21 +1,24 @@
 #ifndef LMRS_STUDIO_DEBUGVIEW_H
 #define LMRS_STUDIO_DEBUGVIEW_H
 
-#include <lmrs/core/device.h>
+#include "mainwindow.h"
 
-#include <QWidget>
+namespace lmrs::core {
+class DebugControl;
+}
 
 namespace lmrs::studio {
 
-class DebugView : public QWidget
+class DebugView : public MainWindowView
 {
     Q_OBJECT
 
 public:
     explicit DebugView(QWidget *parent = nullptr);
 
-    void setDevice(core::Device *device) { setDebugControl(device->debugControl()); }
-    core::Device *device() const { return debugControl()->device(); }
+    DeviceFilter deviceFilter() const override;
+    void setDevice(core::Device *newDevice) override;
+    core::Device *device() const;
 
     void setDebugControl(core::DebugControl *newControl);
     core::DebugControl *debugControl() const;

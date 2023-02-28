@@ -35,7 +35,7 @@ public:
     virtual QString fileName() const;
     virtual bool isModified() const;
 
-    virtual void setCurrentDevice(core::Device *device);
+    virtual void setDevice(core::Device *newDevice);
     virtual DeviceFilter deviceFilter() const;
 
     virtual bool isDetachable() const;

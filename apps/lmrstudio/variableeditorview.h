@@ -1,10 +1,13 @@
 #ifndef LMRS_STUDIO_VARIABLEEDITORVIEW_H
 #define LMRS_STUDIO_VARIABLEEDITORVIEW_H
 
-#include <lmrs/core/dccconstants.h>
-#include <lmrs/core/device.h>
+#include "mainwindow.h"
 
-#include <QWidget>
+#include <lmrs/core/dccconstants.h>
+
+namespace lmrs::core {
+class VariableControl;
+}
 
 namespace lmrs::widgets {
 class StatusBar;
@@ -12,7 +15,7 @@ class StatusBar;
 
 namespace lmrs::studio {
 
-class VariableEditorView : public QWidget
+class VariableEditorView : public MainWindowView
 {
     Q_OBJECT
     Q_PROPERTY(lmrs::core::VariableControl *variableControl READ variableControl
@@ -22,8 +25,9 @@ public:
     explicit VariableEditorView(QWidget *parent = nullptr);
     ~VariableEditorView() override;
 
-    void setDevice(core::Device *device) { setVariableControl(device->variableControl()); }
-    core::Device *device() const { return variableControl()->device(); }
+    DeviceFilter deviceFilter() const override;
+    void setDevice(core::Device *newDevice) override;
+    core::Device *device() const;
 
     void setVariableControl(core::VariableControl *variableControl);
     core::VariableControl *variableControl() const;

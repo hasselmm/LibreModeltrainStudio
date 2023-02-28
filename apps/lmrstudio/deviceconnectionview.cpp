@@ -268,10 +268,15 @@ core::Device *DeviceModelInterface::device(QModelIndex index)
 
 QModelIndex DeviceModelInterface::findDevice(QString uniqueId) const
 {
+    auto compareByUniqueId = [uniqueId](QModelIndex index) {
+        if (const auto device = DeviceModelInterface::device(index))
+            return device->uniqueId() == uniqueId;
+
+        return false;
+    };
+
     const auto first = begin(model()), last = end(model());
-    const auto it = std::find_if(first, last, [uniqueId](QModelIndex index) {
-        return DeviceModelInterface::device(index)->uniqueId() == uniqueId;
-    });
+    const auto it = std::find_if(first, last, std::move(compareByUniqueId));
 
     if (it != last)
         return model()->index(it - first, 0);

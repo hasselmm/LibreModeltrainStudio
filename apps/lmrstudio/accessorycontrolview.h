@@ -1,13 +1,18 @@
 #ifndef LMRS_STUDIO_ACCESSORYCONTROLVIEW_H
 #define LMRS_STUDIO_ACCESSORYCONTROLVIEW_H
 
-#include <lmrs/core/device.h>
+#include "mainwindow.h"
 
-#include <QWidget>
+#include <lmrs/core/dccconstants.h>
+
+namespace lmrs::core {
+class AccessoryControl;
+class DetectorControl;
+}
 
 namespace lmrs::studio {
 
-class AccessoryControlView : public QWidget
+class AccessoryControlView : public MainWindowView
 {
     Q_OBJECT
     Q_PROPERTY(lmrs::core::AccessoryControl *accessoryControl READ accessoryControl
@@ -17,7 +22,8 @@ public:
     explicit AccessoryControlView(QWidget *parent = nullptr);
     ~AccessoryControlView() override;
 
-    void setDevice(core::Device *device);
+    DeviceFilter deviceFilter() const override;
+    void setDevice(core::Device *newDevice) override;
     core::Device *device() const;
 
     void setAccessoryControl(core::AccessoryControl *newControl);

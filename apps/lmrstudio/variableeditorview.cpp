@@ -1,5 +1,7 @@
 #include "variableeditorview.h"
 
+#include "deviceconnectionview.h"
+
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/dccconstants.h>
 #include <lmrs/core/decoderinfo.h>
@@ -370,7 +372,7 @@ void VariableEditorView::Private::onClearReadingsButtonClicked()
 }
 
 VariableEditorView::VariableEditorView(QWidget *parent)
-    : QWidget{parent}
+    : MainWindowView{parent}
     , d{new Private{this}}
 {
     setEnabled(false);
@@ -510,6 +512,21 @@ VariableEditorView::VariableEditorView(QWidget *parent)
 VariableEditorView::~VariableEditorView()
 {
     delete d;
+}
+
+DeviceFilter VariableEditorView::deviceFilter() const
+{
+    return DeviceFilter::require<VariableControl>();
+}
+
+void VariableEditorView::setDevice(core::Device *newDevice)
+{
+    setVariableControl(newDevice ? newDevice->variableControl() : nullptr);
+}
+
+Device *VariableEditorView::device() const
+{
+    return variableControl()->device();
 }
 
 void VariableEditorView::setVariableControl(VariableControl *variableControl)
