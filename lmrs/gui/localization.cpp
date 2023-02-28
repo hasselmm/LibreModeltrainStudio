@@ -23,6 +23,12 @@ Action::Action(core::l10n::String text, QKeySequence shortcut, QObject *parent)
     setShortcut(std::move(shortcut));
 }
 
+Action::Action(core::l10n::String text, core::l10n::String toolTip, QObject *parent)
+    : Action{std::move(text), parent}
+{
+    setToolTip(std::move(toolTip));
+}
+
 Action::Action(core::l10n::String text, core::l10n::String toolTip, QKeySequence shortcut, QObject *parent)
     : Action{std::move(text), std::move(shortcut), parent}
 {
@@ -77,6 +83,11 @@ bool Action::eventFilter(QObject *target, QEvent *event)
     }
 
     return false; // proceed with processing the event, do not stop it
+}
+
+Action *ActionGroup::addAction(Action *action)
+{
+    return static_cast<Action *>(QActionGroup::addAction(action));
 }
 
 } // namespace lmrs::gui::l10n
