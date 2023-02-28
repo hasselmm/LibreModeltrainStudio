@@ -514,14 +514,9 @@ DeviceFilter VariableEditorView::deviceFilter() const
     return DeviceFilter::require<VariableControl>();
 }
 
-void VariableEditorView::setDevice(core::Device *newDevice)
+void VariableEditorView::updateControls(core::Device *newDevice)
 {
     setVariableControl(newDevice ? newDevice->variableControl() : nullptr);
-}
-
-Device *VariableEditorView::device() const
-{
-    return variableControl()->device();
 }
 
 void VariableEditorView::setVariableControl(VariableControl *variableControl)

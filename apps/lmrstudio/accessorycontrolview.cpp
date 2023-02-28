@@ -354,20 +354,10 @@ DeviceFilter AccessoryControlView::deviceFilter() const
             DeviceFilter::Require<core::DetectorControl>>();
 }
 
-void AccessoryControlView::setDevice(core::Device *newDevice)
+void AccessoryControlView::updateControls(core::Device *newDevice)
 {
     setAccessoryControl(newDevice ? newDevice->accessoryControl() : nullptr);
     setDetectorControl(newDevice ? newDevice->detectorControl() : nullptr);
-}
-
-core::Device *AccessoryControlView::device() const
-{
-    if (const auto control = accessoryControl())
-        return control->device();
-    if (const auto control = detectorControl())
-        return control->device();
-
-    return nullptr;
 }
 
 void AccessoryControlView::setAccessoryControl(core::AccessoryControl *newControl)

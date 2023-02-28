@@ -15,13 +15,13 @@ class SpeedMeterView : public MainWindowView
 
 public:
     explicit SpeedMeterView(QWidget *parent = nullptr);
-
     DeviceFilter deviceFilter() const override;
-    void setDevice(core::Device *newDevice) override;
-    core::Device *device() const;
 
     void setSpeedMeter(core::SpeedMeterControl *newSpeedMeter);
     core::SpeedMeterControl *speedMeter() const;
+
+protected:
+    void updateControls(core::Device *newDevice) override;
 
 private:
     class Private;

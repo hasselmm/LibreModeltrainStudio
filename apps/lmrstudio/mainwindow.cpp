@@ -34,7 +34,6 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QPointer>
 #include <QSettings>
 #include <QStackedWidget>
 #include <QStatusBar>
@@ -870,7 +869,28 @@ bool MainWindowView::isModified() const
     return false;
 }
 
-void MainWindowView::setDevice(core::Device *)
+void MainWindowView::setDevice(core::Device *newDevice)
+{
+    if (const auto oldDevice = std::exchange(m_device, newDevice); oldDevice != newDevice) {
+        if (oldDevice)
+            oldDevice->disconnect(this);
+
+        if (newDevice) {
+            connect(newDevice, &core::Device::controlsChanged, this, [this, newDevice] {
+                updateControls(newDevice);
+            });
+        }
+
+        updateControls(newDevice);
+    }
+}
+
+core::Device *MainWindowView::device() const
+{
+    return m_device;
+}
+
+void MainWindowView::updateControls(core::Device *device)
 {
     // nothing to do by default
 }

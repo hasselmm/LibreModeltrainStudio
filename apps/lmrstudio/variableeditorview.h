@@ -24,8 +24,6 @@ class VariableEditorView : public MainWindowView
 public:
     explicit VariableEditorView(QWidget *parent = nullptr);
     DeviceFilter deviceFilter() const override;
-    void setDevice(core::Device *newDevice) override;
-    core::Device *device() const;
 
     void setVariableControl(core::VariableControl *variableControl);
     core::VariableControl *variableControl() const;
@@ -43,6 +41,7 @@ signals:
     void variableControlChanged(lmrs::core::VariableControl *variableControl);
 
 protected:
+    void updateControls(core::Device *newDevice) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:

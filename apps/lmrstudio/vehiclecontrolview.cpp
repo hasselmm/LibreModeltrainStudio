@@ -464,15 +464,10 @@ DeviceFilter VehicleControlView::deviceFilter() const
     return DeviceFilter::require<core::VehicleControl>();
 }
 
-void VehicleControlView::setDevice(core::Device *newDevice)
+void VehicleControlView::updateControls(core::Device *newDevice)
 {
     setVariableControl(newDevice ? newDevice->variableControl() : nullptr);
     setVehicleControl(newDevice ? newDevice->vehicleControl() : nullptr);
-}
-
-core::Device *VehicleControlView::device() const
-{
-    return vehicleControl()->device();
 }
 
 void VehicleControlView::setVariableControl(core::VariableControl *variableControl)

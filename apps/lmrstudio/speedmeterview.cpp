@@ -267,14 +267,9 @@ DeviceFilter SpeedMeterView::deviceFilter() const
     return DeviceFilter::require<core::SpeedMeterControl>();
 }
 
-void SpeedMeterView::setDevice(core::Device *newDevice)
+void SpeedMeterView::updateControls(core::Device *newDevice)
 {
     setSpeedMeter(newDevice ? newDevice->speedMeterControl() : nullptr);
-}
-
-core::Device *SpeedMeterView::device() const
-{
-    return speedMeter()->device();
 }
 
 void SpeedMeterView::setSpeedMeter(core::SpeedMeterControl *newSpeedMeter)

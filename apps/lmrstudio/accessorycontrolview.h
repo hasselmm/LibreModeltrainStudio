@@ -22,8 +22,6 @@ public:
     explicit AccessoryControlView(QWidget *parent = nullptr);
 
     DeviceFilter deviceFilter() const override;
-    void setDevice(core::Device *newDevice) override;
-    core::Device *device() const;
 
     void setAccessoryControl(core::AccessoryControl *newControl);
     core::AccessoryControl *accessoryControl() const;
@@ -38,6 +36,9 @@ signals:
     void currentAccessoryChanged(lmrs::core::dcc::AccessoryAddress address);
     void accessoryControlChanged(lmrs::core::AccessoryControl *accessoryControl);
     void detectorControlChanged(lmrs::core::DetectorControl *detectorControl);
+
+protected:
+    void updateControls(core::Device *newDevice) override;
 
 private:
     class Private;
