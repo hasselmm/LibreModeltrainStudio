@@ -14,8 +14,7 @@ public:
     using LoggingFactory = const QLoggingCategory &(*)();
     using StateHandler = bool (AbstractStreamParser::*)();
 
-    template <typename... Args>
-    explicit AbstractStreamParser(LoggingFactory logger, Args... args)
+    explicit AbstractStreamParser(LoggingFactory logger, auto... args)
         : m_logger{logger}
         , m_reader{args...}
     {}

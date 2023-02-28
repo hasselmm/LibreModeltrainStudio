@@ -17,8 +17,8 @@ namespace lmrs::studio {
 
 namespace {
 
-template<class LayoutType, typename... Args>
-[[nodiscard]] LayoutType *setupFrame(QFrame *frame, QString text, Args... args)
+template<class LayoutType>
+[[nodiscard]] LayoutType *setupFrame(QFrame *frame, QString text, auto... args)
 {
     const auto label = new QLabel{text, frame};
     label->setStyleSheet("font-weight: bold"_L1);
