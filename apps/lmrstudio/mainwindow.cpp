@@ -721,10 +721,8 @@ void MainWindow::Private::onCurrentDeviceChanged(core::Device *newDevice)
             onPowerStateChanged();
         }
 
-        if (const auto model = dynamic_cast<DeviceModelInterface *>(deviceBoxAction->model())) {
-            qInfo() << Q_FUNC_INFO << "device found at" << model->indexOf(newDevice) << (newDevice ? newDevice->name() : "<null>"_L1);
+        if (const auto model = dynamic_cast<DeviceModelInterface *>(deviceBoxAction->model()))
             deviceBoxAction->setCurrentIndex(model->indexOf(newDevice));
-        }
     }
 }
 

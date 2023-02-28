@@ -171,7 +171,6 @@ void ComboBoxAction::setCurrentIndex(QModelIndex newIndex)
 
 void ComboBoxAction::setCurrentIndex(int newIndex)
 {
-    qInfo() << Q_FUNC_INFO << newIndex;
     if (const auto oldIndex = std::exchange(m_currentIndex, newIndex); oldIndex != newIndex) {
         for (const auto widgetList = createdWidgets(); const auto widget: widgetList) {
             if (const auto comboBox = dynamic_cast<QComboBox *>(widget))
