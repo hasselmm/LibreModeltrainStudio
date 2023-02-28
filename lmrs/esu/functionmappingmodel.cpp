@@ -318,20 +318,6 @@ public:
 
     void reportError(QString errorString);
 
-    struct VariablesContext
-    {
-        ExtendedPageIndex page;
-        VariableValueMap variables;
-        int lineNumber = 1;
-    };
-
-    [[nodiscard]] bool readVariable(VariablesContext *context, QString variableText, QString valueText);
-    [[nodiscard]] bool readCommaSeparatedFile(QString fileName, QChar delimiter);
-    [[nodiscard]] bool readPlainTextFile(QString fileName);
-
-    [[nodiscard]] bool writeCommaSeparatedFile(QString fileName, QChar delimiter);
-    [[nodiscard]] bool writePlainTextFile(QString fileName);
-
     QList<Mapping> m_rows;
     QString m_errorString;
 };
@@ -341,6 +327,12 @@ FunctionMappingModel::FunctionMappingModel(QObject *parent)
     , d{new Private{this}}
 {
     reset(Preset::Lp5);
+}
+
+FunctionMappingModel::FunctionMappingModel(VariableValueMap variables, QObject *parent)
+    : FunctionMappingModel{parent}
+{
+    d->m_rows = mappingsFromVariables(std::move(variables));
 }
 
 void FunctionMappingModel::reset(Preset preset)
@@ -383,6 +375,11 @@ void FunctionMappingModel::reset(Preset preset)
     endResetModel();
 }
 
+FunctionMappingModel::VariableValueMap FunctionMappingModel::variables() const
+{
+    return variablesFromMappings(d->m_rows);
+}
+
 constexpr std::optional<int> extendedVariableOffset(core::Range<ExtendedVariableIndex> range, ExtendedVariableIndex variable)
 {
     if (range.contains(variable)) {
@@ -416,54 +413,140 @@ QString description(ExtendedVariableIndex variable)
     return {};
 }
 
-bool FunctionMappingModel::Private::readVariable(VariablesContext *context, QString variableText, QString valueText)
+class TextFileReaderBase : public FunctionMappingReader
+{
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
+    using FunctionMappingReader::FunctionMappingReader;
+
+protected:
+    bool readVariable(QString variableText, QString valueText);
+
+    ExtendedPageIndex page;
+    VariableValueMap variables;
+    int lineNumber = 1;
+};
+
+class DelimiterSeparatedFileReader : public TextFileReaderBase
+{
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
+    explicit DelimiterSeparatedFileReader(QString fileName, QChar delimiter = ';'_L1)
+        : TextFileReaderBase{std::move(fileName)}
+        , m_delimiter{delimiter}
+    {}
+
+    ModelPointer read() override;
+
+private:
+    QChar m_delimiter;
+};
+
+class PlainTextFileReader : public TextFileReaderBase
+{
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
+    using TextFileReaderBase::TextFileReaderBase;
+
+    ModelPointer read() override;
+};
+
+class EsuxFileReader : public FunctionMappingReader
+{
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
+    using FunctionMappingReader::FunctionMappingReader;
+
+    ModelPointer read() override
+    {
+        reportError(tr("Not implemented yet"));
+        return nullptr;
+    }
+};
+
+class DelimiterSeparatedFileWriter : public FunctionMappingWriter
+{
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
+    explicit DelimiterSeparatedFileWriter(QString fileName, QChar delimiter = ';'_L1)
+        : FunctionMappingWriter{std::move(fileName)}
+        , m_delimiter{delimiter}
+    {}
+
+    bool write(const FunctionMappingModel *model) override;
+
+private:
+    QChar m_delimiter;
+};
+
+class PlainTextFileWriter : public FunctionMappingWriter
+{
+    Q_GADGET
+    QT_TR_FUNCTIONS
+
+public:
+    using FunctionMappingWriter::FunctionMappingWriter;
+
+    bool write(const FunctionMappingModel *model) override;
+};
+
+bool TextFileReaderBase::readVariable(QString variableText, QString valueText)
 {
     const auto variable = core::parse<VariableIndex>(variableText);
     const auto value = core::parse<VariableValue>(valueText);
 
     if (!variable.has_value()) {
-        reportError(tr("Bad variable index in line %1.").arg(context->lineNumber));
+        reportError(tr("Bad variable index in line %1.").arg(lineNumber));
         return false;
     }
 
     if (!value.has_value()) {
-        reportError(tr("Bad value in line %1.").arg(context->lineNumber));
+        reportError(tr("Bad value in line %1.").arg(lineNumber));
         return false;
     }
 
     if (*variable == 31)
-        context->page = extendedPage(*value, cv32(context->page));
+        page = extendedPage(*value, cv32(page));
     else if (*variable == 32)
-        context->page = extendedPage(cv31(context->page), *value);
+        page = extendedPage(cv31(page), *value);
     else
-        context->variables[extendedVariable(*variable, context->page)] = *value;
+        variables[extendedVariable(*variable, page)] = *value;
 
     return true;
 }
 
-bool FunctionMappingModel::Private::readCommaSeparatedFile(QString fileName, QChar delimiter)
+DelimiterSeparatedFileReader::ModelPointer DelimiterSeparatedFileReader::read()
 {
-    auto file = QFile{std::move(fileName)};
+    auto file = QFile{fileName()};
 
     if (!file.open(QFile::ReadOnly)) {
         reportError(tr("Could not open file for reading: %1").arg(file.errorString()));
-        return false;
+        return nullptr;
     }
 
     auto stream = QTextStream{&file};
-    auto context = VariablesContext{};
 
-    const auto splitter = QRegularExpression{"\\s*"_L1 + QRegularExpression::escape(delimiter) + "\\s*"_L1};
+    const auto splitter = QRegularExpression{"\\s*"_L1 + QRegularExpression::escape(m_delimiter) + "\\s*"_L1};
     const auto header = stream.readLine().trimmed().toLower().split(splitter);
     const auto variableColumn = header.indexOf("cv"_L1);
     const auto valueColumn = header.indexOf("value"_L1);
 
     if (variableColumn < 0 || valueColumn < 0) {
         reportError(tr("Could not find required columns in file header."));
-        return false;
+        return nullptr;
     }
 
-    for (context.lineNumber = 2; !stream.atEnd(); ++context.lineNumber) {
+    for (lineNumber = 2; !stream.atEnd(); ++lineNumber) {
         const auto line = stream.readLine().trimmed().toLower();
 
         if (line.isEmpty())
@@ -472,36 +555,31 @@ bool FunctionMappingModel::Private::readCommaSeparatedFile(QString fileName, QCh
         const auto columns = line.split(splitter);
 
         if (variableColumn >= columns.count() || valueColumn >= columns.count()) {
-            reportError(tr("Unexpected number of columns in line %1.").arg(context.lineNumber));
-            return false;
+            reportError(tr("Unexpected number of columns in line %1.").arg(lineNumber));
+            return nullptr;
         }
 
-        if (!readVariable(&context, columns[variableColumn], columns[valueColumn]))
-            return false;
+        if (!readVariable(columns[variableColumn], columns[valueColumn]))
+            return nullptr;
     }
 
-    model()->beginResetModel();
-    m_rows = mappingsFromVariables(std::move(context.variables));
-    model()->endResetModel();
-
-    return true;
+    return std::make_unique<esu::FunctionMappingModel>(std::move(variables));
 }
 
-bool FunctionMappingModel::Private::readPlainTextFile(QString fileName)
+PlainTextFileReader::ModelPointer PlainTextFileReader::read()
 {
-    auto file = QFile{std::move(fileName)};
+    auto file = QFile{fileName()};
 
     if (!file.open(QFile::ReadOnly)) {
         reportError(tr("Could not open file for reading: %1").arg(file.errorString()));
-        return false;
+        return nullptr;
     }
 
     const auto pattern = QRegularExpression{R"(cv\s*(?<variable>\d+)\s*=\s*(?<value>\d+)\s*(?<continue>,\s*)?)"_L1};
 
     auto stream = QTextStream{&file};
-    auto context = VariablesContext{};
 
-    for (; !stream.atEnd(); ++context.lineNumber) {
+    for (; !stream.atEnd(); ++lineNumber) {
         const auto line = stream.readLine().trimmed().toLower();
 
         for (auto offset = qsizetype{0};; ) {
@@ -510,8 +588,8 @@ bool FunctionMappingModel::Private::readPlainTextFile(QString fileName)
             if (!result.hasMatch())
                 break;
 
-            if (!readVariable(&context, result.captured("variable"_L1), result.captured("value"_L1)))
-                return false;
+            if (!readVariable(result.captured("variable"_L1), result.captured("value"_L1)))
+                return nullptr;
 
             if (result.captured("continue"_L1).isEmpty())
                 break;
@@ -520,16 +598,12 @@ bool FunctionMappingModel::Private::readPlainTextFile(QString fileName)
         }
     }
 
-    model()->beginResetModel();
-    m_rows = mappingsFromVariables(std::move(context.variables));
-    model()->endResetModel();
-
-    return true;
+    return std::make_unique<esu::FunctionMappingModel>(std::move(variables));
 }
 
-bool FunctionMappingModel::Private::writeCommaSeparatedFile(QString fileName, QChar delimiter)
+bool DelimiterSeparatedFileWriter::write(const FunctionMappingModel *model)
 {
-    auto file = QFile{std::move(fileName)};
+    auto file = QFile{std::move(fileName())};
 
     if (!file.open(QFile::WriteOnly)) {
         reportError(tr("Could not open file for writing: %1").arg(file.errorString()));
@@ -538,27 +612,27 @@ bool FunctionMappingModel::Private::writeCommaSeparatedFile(QString fileName, QC
 
     auto stream = QTextStream{&file};
     auto currentPage = ExtendedPageIndex{0};
-    const auto variables = variablesFromMappings(m_rows);
+    const auto variables = model->variables();
 
-    stream << "CV" << delimiter << "Value" << delimiter << "Description" << Qt::endl;
+    stream << "CV" << m_delimiter << "Value" << m_delimiter << "Description" << Qt::endl;
 
     for (auto it = variables.begin(); it != variables.end(); ++it) {
         const auto page = extendedPage(it.key());
 
         if (std::exchange(currentPage, page) != page) {
-            stream << "31" << delimiter << cv31(page) << delimiter << tr("switch extended page") << Qt::endl;
-            stream << "32" << delimiter << cv32(page) << delimiter << Qt::endl;
+            stream << "31" << m_delimiter << cv31(page) << m_delimiter << tr("switch extended page") << Qt::endl;
+            stream << "32" << m_delimiter << cv32(page) << m_delimiter << Qt::endl;
         }
 
-        stream << variableIndex(it.key()) << delimiter << it.value() << delimiter << description(it.key()) << Qt::endl;
+        stream << variableIndex(it.key()) << m_delimiter << it.value() << m_delimiter << description(it.key()) << Qt::endl;
     }
 
     return true;
 }
 
-bool FunctionMappingModel::Private::writePlainTextFile(QString fileName)
+bool PlainTextFileWriter::write(const FunctionMappingModel *model)
 {
-    auto file = QFile{std::move(fileName)};
+    auto file = QFile{fileName()};
 
     if (!file.open(QFile::WriteOnly)) {
         reportError(tr("Could not open file for writing: %1").arg(file.errorString()));
@@ -567,7 +641,7 @@ bool FunctionMappingModel::Private::writePlainTextFile(QString fileName)
 
     auto stream = QTextStream{&file};
     auto currentPage = ExtendedPageIndex{0};
-    const auto variables = variablesFromMappings(m_rows);
+    const auto variables = model->variables();
 
     for (auto it = variables.begin(); it != variables.end(); ++it) {
         const auto page = extendedPage(it.key());
@@ -592,48 +666,9 @@ bool FunctionMappingModel::Private::writePlainTextFile(QString fileName)
     return true;
 }
 
-bool FunctionMappingModel::read(QString fileName)
-{
-    if (fileName.endsWith(".csv"_L1))
-        return d->readCommaSeparatedFile(std::move(fileName), ';'_L1);
-    if (fileName.endsWith(".txt"_L1))
-        return d->readPlainTextFile(std::move(fileName));
-
-    d->reportError(tr("The type of this file is not recognized, or it is not supported at all."));
-    return false;
-}
-
-bool FunctionMappingModel::write(QString fileName)
-{
-    if (fileName.endsWith(".csv"_L1))
-        return d->writeCommaSeparatedFile(std::move(fileName), ';'_L1);
-    if (fileName.endsWith(".txt"_L1))
-        return d->writePlainTextFile(std::move(fileName));
-
-    d->reportError(tr("The type of this file is not recognized, or it is not supported at all."));
-    return false;
-}
-
-QList<core::FileFormat> FunctionMappingModel::readableFileFormats()
-{
-    return {
-        core::FileFormat::plainText(),
-        core::FileFormat::lokProgrammer(),
-        core::FileFormat::z21Maintenance(),
-    };
-}
-
-QList<core::FileFormat> FunctionMappingModel::writableFileFormats()
-{
-    return {
-        core::FileFormat::plainText(),
-        core::FileFormat::z21Maintenance(),
-    };
-}
-
 QString FunctionMappingModel::errorString() const
 {
-    return d->m_errorString;
+    return d->m_errorString; // FIXME: extract features that need an error string
 }
 
 void FunctionMappingModel::read(core::VariableControl *variableControl, core::dcc::VehicleAddress address)
@@ -929,5 +964,30 @@ Condition::State Mapping::state(Condition::Variable variable) const
 }
 
 } // namespace lmrs::esu
+
+template<>
+lmrs::esu::FunctionMappingReader::Registry &lmrs::esu::FunctionMappingReader::registry()
+{
+    static auto formats = Registry {
+        {core::FileFormat::plainText(), std::make_unique<lmrs::esu::PlainTextFileReader, QString>},
+        {core::FileFormat::lokProgrammer(), std::make_unique<lmrs::esu::EsuxFileReader, QString>},
+        {core::FileFormat::z21Maintenance(), std::make_unique<lmrs::esu::DelimiterSeparatedFileReader, QString>},
+    };
+
+    return formats;
+}
+
+template<>
+lmrs::esu::FunctionMappingWriter::Registry &lmrs::esu::FunctionMappingWriter::registry()
+{
+    static auto formats = Registry {
+        {core::FileFormat::plainText(), std::make_unique<lmrs::esu::PlainTextFileWriter, QString>},
+        {core::FileFormat::z21Maintenance(), std::make_unique<lmrs::esu::DelimiterSeparatedFileWriter, QString>},
+    };
+
+    return formats;
+}
+
+#include "functionmappingmodel.moc"
 
 // YAMORAK - Yet Another Modelrail Toolkit
