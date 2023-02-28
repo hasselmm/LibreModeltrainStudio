@@ -7,10 +7,14 @@
 
 #define LMRS_FAILED(Logger, Assertion) \
     Q_UNLIKELY(::lmrs::core::logging::internal::reportFailure((Logger), (Assertion), #Assertion, \
-               QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC))
+                QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC))
 
 #define LMRS_FAILED_COMPARE(Logger, ActualValue, Operation, ExpectedValue) \
-    LMRS_FAILED((Logger), (ActualValue) Operation (ExpectedValue))
+    Q_UNLIKELY(::lmrs::core::logging::internal::reportFailure((Logger), (ActualValue), (ExpectedValue), \
+                [](const auto &actual, const auto &expected) { return actual Operation expected; }, \
+                "(" #ActualValue ") " #Operation " (" #ExpectedValue ")", \
+                QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC))
+
 #define LMRS_FAILED_EQUALS(Logger, ActualValue, ExpectedValue) \
     LMRS_FAILED_COMPARE((Logger), (ActualValue), ==, (ExpectedValue))
 #define LMRS_FAILED_LESS_OR_EQUAL(Logger, ActualValue, ExpectedValue) \
@@ -104,13 +108,40 @@ QDebug &operator<<(QDebug &debug, SeparatorState &separator);
 
 namespace logging::internal {
 
-bool reportFailure(const QLoggingCategory &category,
-                   bool assertion, const char *expression,
+template<typename T>
+inline QString toString(const T &value)
+{
+    auto string = QString{};
+    QDebug{&string} << value;
+    return string;
+}
+
+bool reportFailure(const QLoggingCategory &category, bool assertion, const char *expression,
                    const char *file, int line, const char *func);
+
+bool reportFailure(const QLoggingCategory &category, bool assertion,
+                   QString actual, QString expected, const char *expression,
+                   const char *file, int line, const char *func);
+
+template<typename T, typename U, typename Compare>
+inline bool reportFailure(const QLoggingCategory &category,
+                          const T &actualValue, const U &expectedValue,
+                          const Compare compare, const char *expression,
+                          const char *file, int line, const char *func)
+{
+    return reportFailure(category, compare(actualValue, expectedValue),
+                                   toString(actualValue), toString(expectedValue),
+                                   expression, file, line, func);
+}
 
 }
 
 } // namespace lmrs::core::logging::internal
+
+inline QDebug operator<<(QDebug debug, const QMetaType &type)
+{
+    return debug << "QMetaType(" << type.name() << ")";
+}
 
 template <typename T, typename Period>
 inline QDebug operator<<(QDebug debug, std::chrono::duration<T, Period> duration)
