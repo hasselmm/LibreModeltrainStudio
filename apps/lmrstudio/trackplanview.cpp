@@ -78,7 +78,7 @@ public:
     static l10n::String displayName(Preset preset);
 
     core::ConstPointer<l10n::Action> fileNewAction{icon(gui::fontawesome::fasFile),
-                LMRS_TR("&New"), LMRS_TR("Reset new symbolic track plan"),
+                LMRS_TR("&New"), LMRS_TR("Create new symbolic track plan"),
                 this, makeResetAction(Preset::Empty)};
     core::ConstPointer<l10n::Action> fileOpenAction{icon(gui::fontawesome::fasFolderOpen),
                 LMRS_TR("&Open"), LMRS_TR("&Open symbolic track plan from disk"),
@@ -264,7 +264,6 @@ TrackPlanView::TrackPlanView(QWidget *parent)
     });
 
     d->recentFilesMenu()->bindMenuAction(d->fileOpenRecentAction);
-
     d->fileNewAction->setMenu(new QMenu{this});
 
     for (const auto preset: QMetaTypeId<Preset>{}) {
