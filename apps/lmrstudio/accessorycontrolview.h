@@ -20,7 +20,6 @@ class AccessoryControlView : public MainWindowView
 
 public:
     explicit AccessoryControlView(QWidget *parent = nullptr);
-    ~AccessoryControlView() override;
 
     DeviceFilter deviceFilter() const override;
     void setDevice(core::Device *newDevice) override;

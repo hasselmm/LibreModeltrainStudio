@@ -459,11 +459,6 @@ VehicleControlView::VehicleControlView(QWidget *parent)
     d->onSpeedDialValueChanged(d->speedDial->value());
 }
 
-VehicleControlView::~VehicleControlView()
-{
-    delete d;
-}
-
 DeviceFilter VehicleControlView::deviceFilter() const
 {
     return DeviceFilter::require<core::VehicleControl>();

@@ -55,7 +55,6 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = {});
-    ~MainWindow() override;
 
     void setLanguageManager(core::l10n::LanguageManager *languageManager);
     core::l10n::LanguageManager *languageManager() const;

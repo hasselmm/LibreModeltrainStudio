@@ -818,11 +818,6 @@ MainWindow::MainWindow(QWidget *parent)
     d->onSettingsFileSharingChecked(d->settingsFileSharingAction->isChecked());
 }
 
-MainWindow::~MainWindow()
-{
-    delete d;
-}
-
 void MainWindow::setLanguageManager(l10n::LanguageManager *languageManager)
 {
     if (std::exchange(d->languageManager, languageManager) == d->languageManager)

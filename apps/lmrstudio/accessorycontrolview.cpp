@@ -347,11 +347,6 @@ AccessoryControlView::AccessoryControlView(QWidget *parent)
     d->simpleTurnoutButton->setChecked(true);
 }
 
-AccessoryControlView::~AccessoryControlView()
-{
-    delete d;
-}
-
 DeviceFilter AccessoryControlView::deviceFilter() const
 {
     return acceptAny<

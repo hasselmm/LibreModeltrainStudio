@@ -107,7 +107,6 @@ class DeviceConnectionView : public QWidget
 
 public:
     explicit DeviceConnectionView(QWidget *parent = nullptr);
-    ~DeviceConnectionView() override;
 
     QAbstractItemModel *model(DeviceFilter filter) const;
     template<class T> QAbstractItemModel *model() const { return model(DeviceFilter::require<T>()); }

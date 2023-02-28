@@ -509,11 +509,6 @@ VariableEditorView::VariableEditorView(QWidget *parent)
     d->onVariableBoxChanged();
 }
 
-VariableEditorView::~VariableEditorView()
-{
-    delete d;
-}
-
 DeviceFilter VariableEditorView::deviceFilter() const
 {
     return DeviceFilter::require<VariableControl>();

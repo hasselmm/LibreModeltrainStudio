@@ -128,11 +128,6 @@ NavigationToolBar::NavigationToolBar(QWidget *parent)
     d->menuActionGroup->setExclusive(true);
 }
 
-NavigationToolBar::~NavigationToolBar()
-{
-    delete d;
-}
-
 QAction *NavigationToolBar::addView(QIcon icon, l10n::String text, QWidget *view)
 {
     view->installEventFilter(d);

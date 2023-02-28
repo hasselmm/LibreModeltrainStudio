@@ -578,11 +578,6 @@ DeviceConnectionView::DeviceConnectionView(QWidget *parent)
     d->updateWidgetsEnabled();
 }
 
-DeviceConnectionView::~DeviceConnectionView()
-{
-    delete d;
-}
-
 QAbstractItemModel *lmrs::studio::DeviceConnectionView::model(DeviceFilter filter) const
 {
     if (const auto model = d->filteredDeviceModels.value(filter.key()))

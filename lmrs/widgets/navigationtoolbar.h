@@ -17,7 +17,6 @@ class NavigationToolBar : public QToolBar
 
 public:
     explicit NavigationToolBar(QWidget *parent = {});
-    ~NavigationToolBar() override;
 
     QAction *addView(QIcon icon, core::l10n::String text, QWidget *view);
     void addSeparator();

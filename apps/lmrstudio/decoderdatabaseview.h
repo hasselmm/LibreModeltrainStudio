@@ -11,7 +11,6 @@ class DecoderDatabaseView : public QWidget
 
 public:
     explicit DecoderDatabaseView(QWidget *parent = nullptr);
-    ~DecoderDatabaseView() override;
 
 private:
     class Private;

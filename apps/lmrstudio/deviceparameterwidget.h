@@ -15,7 +15,6 @@ class DeviceParameterWidget : public QWidget
 
 public:
     explicit DeviceParameterWidget(core::DeviceFactory *factory, QWidget *parent = nullptr);
-    ~DeviceParameterWidget() override;
 
     core::DeviceFactory *factory() const;
 

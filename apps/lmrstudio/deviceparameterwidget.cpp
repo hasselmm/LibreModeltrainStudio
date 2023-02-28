@@ -210,11 +210,6 @@ DeviceParameterWidget::DeviceParameterWidget(core::DeviceFactory *factory, QWidg
     d->revalidate();
 }
 
-DeviceParameterWidget::~DeviceParameterWidget()
-{
-    delete d;
-}
-
 core::DeviceFactory *DeviceParameterWidget::factory() const
 {
     return d->factory;
