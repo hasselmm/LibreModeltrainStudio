@@ -1,28 +1,29 @@
 #include "functionmappingview.h"
 
+#include "deviceconnectionview.h"
+
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/fileformat.h>
 #include <lmrs/core/memory.h>
 
 #include <lmrs/esu/functionmappingmodel.h>
+
 #include <lmrs/gui/fontawesome.h>
+#include <lmrs/gui/localization.h>
+
+#include <lmrs/widgets/documentmanager.h>
+#include <lmrs/widgets/recentfilemenu.h>
 
 #include <QActionGroup>
 #include <QBoxLayout>
-#include <QFileDialog>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QListView>
-#include <QMenu>
-#include <QMessageBox>
-#include <QPushButton>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
 #include <QTableView>
-#include <QToolBar>
-#include <QToolButton>
 
 namespace lmrs::studio {
 
@@ -381,137 +382,223 @@ void MappingItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 
 } // namespace
 
-class FunctionMappingView::Private : public core::PrivateObject<FunctionMappingView>
+class FunctionMappingView::Private : public core::PrivateObject<FunctionMappingView, widgets::DocumentManager, QString>
 {
 public:
-    explicit Private(QAbstractItemModel *devices, FunctionMappingView *parent)
-        : PrivateObject{parent}
-        , devices{devices}
-    {}
+    using PrivateObject::PrivateObject;
 
-    esu::FunctionMappingModel *model() const { return core::checked_cast<esu::FunctionMappingModel *>(tableView->model()); }
+    // widgets::DocumentManager interface ------------------------------------------------------------------------------
 
-    void importFromDevice();
-    void importFromFile();
+    QString documentType() const override { return tr("function mapping"); }
+    QList<core::FileFormat> readableFileFormats() const override { return esu::FunctionMappingReader::fileFormats(); }
+    QList<core::FileFormat> writableFileFormats() const override { return esu::FunctionMappingWriter::fileFormats(); }
 
-    void exportToDevice();
-    void exportToFile();
+    FileHandlerPointer readFile(QString fileName) override;
+    FileHandlerPointer writeFile(QString fileName) override;
+    void resetModel(QVariant model) override;
 
-    auto makeResetAction(esu::FunctionMappingModel::Preset preset)
+    // model handling --------------------------------------------------------------------------------------------------
+
+    using Preset = esu::FunctionMappingModel::Preset;
+
+    esu::FunctionMappingModel *currentModel() const
     {
-        return [this, preset] { model()->reset(preset); };
+        return core::checked_cast<esu::FunctionMappingModel *>(tableView->model());
+    }
+
+    void setupActions();
+
+    void onReadFromVehicle();
+    void onWriteToVehicle();
+
+    std::function<void()> makeResetAction(Preset preset)
+    {
+        return [this, preset] { currentModel()->reset(preset); };
     };
 
-    const QPointer<QAbstractItemModel> devices;
+    core::ConstPointer<l10n::Action> fileNewAction{icon(gui::fontawesome::fasFile),
+                LMRS_TR("&New"), LMRS_TR("Create new function mapping"),
+                this, makeResetAction(esu::FunctionMappingModel::Preset::Empty)};
+    core::ConstPointer<l10n::Action> fileOpenAction{icon(gui::fontawesome::fasFolderOpen),
+                LMRS_TR("&Open..."), LMRS_TR("Read a new function mapping from Disk"),
+                QKeySequence::Open, this, &DocumentManager::open};
+
+    core::ConstPointer<l10n::Action> fileOpenRecentAction{LMRS_TR("Recent&ly used files"), this};
+
+    core::ConstPointer<l10n::Action> fileSaveAction{icon(gui::fontawesome::fasFloppyDisk),
+                LMRS_TR("&Save"), LMRS_TR("Save current function mapping to Disk"),
+                QKeySequence::Save, this, &DocumentManager::save};
+    core::ConstPointer<l10n::Action> fileSaveAsAction{
+                LMRS_TR("Save &as..."), LMRS_TR("Save current function mapping to disk, under new name"),
+                QKeySequence::SaveAs, this, &DocumentManager::saveAs};
+
+    core::ConstPointer<l10n::Action> readFromVehicleAction{icon(gui::fontawesome::fasFileImport),
+                LMRS_TR("Read from Vehicle"), LMRS_TR("Read a new function from vehicle"),
+                this, &Private::onReadFromVehicle};
+
+    core::ConstPointer<l10n::Action> writeToVehicleAction{icon(gui::fontawesome::fasFileExport),
+                LMRS_TR("Write to Vehicle"), LMRS_TR("Write current new function to vehicle"),
+                this, &Private::onWriteToVehicle};
+
+    l10n::ActionGroup *makeActionGroup(ActionCategory category);
+
+    QHash<ActionCategory, QList<QActionGroup *>> actionGroups;
+
     core::ConstPointer<QTableView> tableView{q()};
+    QPointer<core::VariableControl> variableControl;
 };
 
-FunctionMappingView::FunctionMappingView(QAbstractItemModel *devices, QWidget *parent)
-    : QWidget{parent}
-    , d{new Private{devices, this}}
+void FunctionMappingView::Private::setupActions()
 {
+    recentFilesMenu()->bindMenuAction(fileOpenRecentAction);
+
+    fileNewAction->setMenu(new QMenu{q()});
+
+    for (const auto preset: QMetaTypeId<esu::FunctionMappingModel::Preset>{}) {
+        if (preset.value() != esu::FunctionMappingModel::Preset::Empty) {
+            fileNewAction->menu()->addAction(displayName(preset.value()),  // FIXME: use l10n::Action
+                                             this, makeResetAction(preset.value()));
+        }
+    }
+
+    const auto fileNewGroup = makeActionGroup(ActionCategory::FileNew);
+    fileNewGroup->addAction(fileNewAction.get());
+
+    const auto fileOpenGroup = makeActionGroup(ActionCategory::FileOpen);
+    fileOpenGroup->addAction(fileOpenAction.get());
+    fileOpenGroup->addAction(fileOpenRecentAction.get());
+
+    const auto fileSaveGroup = makeActionGroup(ActionCategory::FileSave);
+    fileSaveGroup->addAction(fileSaveAction.get());
+    fileSaveGroup->addAction(fileSaveAsAction.get());
+
+    const auto filePeripheralsGroup = makeActionGroup(ActionCategory::FilePeripherals);
+    filePeripheralsGroup->addAction(readFromVehicleAction.get());
+    filePeripheralsGroup->addAction(writeToVehicleAction.get());
+
+    const auto fileExportModeGroup = makeActionGroup(ActionCategory::FilePeripherals);
+    fileExportModeGroup->addAction(icon(gui::fontawesome::farRectangleXmark), LMRS_TR("Modified"),
+                                   LMRS_TR("Only send modified variables to vehicle"))->setCheckable(true);
+    fileExportModeGroup->addAction(icon(gui::fontawesome::farRectangleList), LMRS_TR("All"),
+                                   LMRS_TR("Send all variables to vehicle"))->setCheckable(true);
+    fileExportModeGroup->actions().constFirst()->setChecked(true);
+    fileExportModeGroup->setProperty("toolbarOnly", true);
+    fileExportModeGroup->setExclusive(true);
+
+    readFromVehicleAction->setEnabled(false);
+    writeToVehicleAction->setEnabled(false);
+
+    // FIXME: move to DocumentManger or connectDocumentManager()
+    connect(this, &Private::modifiedChanged, fileSaveAction, &QAction::setEnabled);
+    fileSaveAction->setEnabled(isModified());
+}
+
+FunctionMappingView::FunctionMappingView(QWidget *parent)
+    : MainWindowView{parent}
+    , d{new Private{"FunctionMappingView"_L1, this}}
+{
+    d->setupActions();
+
+    connectDocumentManager(d);
+
     d->tableView->setModel(new esu::FunctionMappingModel{this});
     d->tableView->setItemDelegate(new MappingItemDelegate{this});
     d->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
 
-    const auto toolbar = new QToolBar{this};
-    const auto fileNewAction = toolbar->addAction(icon(gui::fontawesome::fasFile), tr("Reset"),
-                                                  d, d->makeResetAction(esu::FunctionMappingModel::Preset::Empty));
-    const auto fileNewButton = core::checked_cast<QToolButton *>(toolbar->widgetForAction(fileNewAction));
-    fileNewButton->setPopupMode(QToolButton::MenuButtonPopup);
-    fileNewAction->setMenu(new QMenu{this});
-
-    for (const auto preset: QMetaTypeId<esu::FunctionMappingModel::Preset>{}) {
-        if (preset.value() != esu::FunctionMappingModel::Preset::Empty)
-            fileNewAction->menu()->addAction(displayName(preset.value()), d, d->makeResetAction(preset.value()));
-    }
-
-    toolbar->addSeparator();
-    toolbar->addAction(icon(gui::fontawesome::fasFolderOpen), tr("Open from Disk"), d, &Private::importFromFile);
-    toolbar->addAction(icon(gui::fontawesome::fasFloppyDisk), tr("Save to Disk"), d, &Private::exportToFile);
-    toolbar->addSeparator();
-    const auto readFromVehicleAction = toolbar->addAction(icon(gui::fontawesome::fasFileImport),
-                                                          tr("Read from Vehicle"), d, &Private::importFromDevice);
-    const auto writeToVehicleAction = toolbar->addAction(icon(gui::fontawesome::fasFileExport),
-                                                         tr("Write to Vehicle"), d, &Private::exportToDevice);
-    toolbar->addSeparator();
-
-    const auto variableSelection = new QActionGroup{this};
-    variableSelection->addAction(tr("All variables"))->setCheckable(true);
-    variableSelection->addAction(tr("Changed variables"))->setCheckable(true);
-    variableSelection->setExclusive(true);
-    variableSelection->actions().constFirst()->setChecked(true);
-    toolbar->addActions(variableSelection->actions());
-
     const auto layout = new QVBoxLayout{this};
-    layout->addWidget(toolbar);
     layout->addWidget(d->tableView, 1);
-
-    const auto updateVehicleActions = [this, readFromVehicleAction, writeToVehicleAction] {
-        qInfo() << d->devices->rowCount();
-        readFromVehicleAction->setEnabled(d->devices->rowCount() > 0);
-        writeToVehicleAction->setEnabled(d->devices->rowCount() > 0);
-    };
-
-    connect(d->devices, &QAbstractItemModel::rowsInserted, this, updateVehicleActions);
-    connect(d->devices, &QAbstractItemModel::rowsRemoved, this, updateVehicleActions);
-
-    updateVehicleActions();
 }
 
-void FunctionMappingView::Private::importFromDevice()
+QList<QActionGroup *> FunctionMappingView::actionGroups(ActionCategory category) const
+{
+    return d->actionGroups.value(category);
+}
+
+QString FunctionMappingView::fileName() const
+{
+    return d->fileName();
+}
+
+bool FunctionMappingView::isModified() const
+{
+    return d->isModified();
+}
+
+DeviceFilter FunctionMappingView::deviceFilter() const
+{
+    return DeviceFilter::require<core::VariableControl>();
+}
+
+void FunctionMappingView::setDevice(core::Device *newDevice)
+{
+    setVariableControl(newDevice ? newDevice->variableControl() : nullptr);
+}
+
+core::Device *FunctionMappingView::device() const
+{
+    return d->variableControl ? d->variableControl->device() : nullptr;
+}
+
+void FunctionMappingView::setVariableControl(core::VariableControl *newControl)
+{
+    if (const auto oldControl = std::exchange(d->variableControl, newControl); oldControl != newControl) {
+        d->readFromVehicleAction->setEnabled(newControl != nullptr);
+        d->writeToVehicleAction->setEnabled(newControl != nullptr);
+    }
+}
+
+core::VariableControl *FunctionMappingView::variableControl() const
+{
+    return d->variableControl;
+}
+
+void FunctionMappingView::Private::onReadFromVehicle()
 {
     // FIXME: Do proper dialog for device, address, and options
     // FIXME: Replace QVariant::value<T>() with qvariant_cast<> all over the place
-    const auto device = qvariant_cast<core::Device *>(devices->index(0, 0).data(Qt::UserRole));
 
-    model()->read(device->variableControl(), 1770); // FIXME: use variable address
+    if (variableControl)
+        currentModel()->read(variableControl, 1770); // FIXME: use variable address
 }
 
-void FunctionMappingView::Private::importFromFile()
+void FunctionMappingView::Private::onWriteToVehicle()
 {
-    // FIXME: Use proper documents folder from QDesktopServices, from QSettings
-    auto filters = core::FileFormat::openFileDialogFilter(esu::FunctionMappingReader::fileFormats());
-    const auto fileName = QFileDialog::getOpenFileName(q(), tr("Open Function Mapping"), {}, std::move(filters));
+    currentModel()->write(nullptr, 1770); // FIXME: use variable address
+}
 
-    if (fileName.isEmpty())
-        return;
+l10n::ActionGroup *FunctionMappingView::Private::makeActionGroup(ActionCategory category)
+{
+    const auto actionGroup = new l10n::ActionGroup{this};
+    actionGroups[category].append(actionGroup);
+    return actionGroup;
+}
 
-    const auto reader = esu::FunctionMappingReader::fromFile(std::move(fileName));
+FunctionMappingView::Private::FileHandlerPointer FunctionMappingView::Private::readFile(QString fileName)
+{
+    auto reader = esu::FunctionMappingReader::fromFile(std::move(fileName));
 
     if (auto newModel = reader->read()) {
-        if (const auto oldModel = model())
-            oldModel->deleteLater();
-
+        const auto oldModel = currentModel();
         tableView->setModel(newModel.release());
-    } else {
-        QMessageBox::critical(q(), tr("Could not read function mapping"),
-                              tr("<p>Could not read a function mappping from <b>%1</b>.</p><p>%2</p>").
-                              arg(QFileInfo{reader->fileName()}.fileName(), reader->errorString()));
+        delete oldModel;
     }
+
+    return reader;
 }
 
-void FunctionMappingView::Private::exportToDevice()
+FunctionMappingView::Private::FileHandlerPointer FunctionMappingView::Private::writeFile(QString fileName)
 {
-    model()->write(nullptr, 1770); // FIXME: use variable address
+    auto writer = esu::FunctionMappingWriter::fromFile(std::move(fileName));
+    const auto succeeded = writer->write(currentModel());
+    Q_ASSERT(succeeded == writer->succeeded());
+    return writer;
 }
 
-void FunctionMappingView::Private::exportToFile()
+void FunctionMappingView::Private::resetModel(QVariant model)
 {
-    // FIXME: Use proper documents folder from QDesktopServices, from QSettings
-    auto filters = core::FileFormat::saveFileDialogFilter(esu::FunctionMappingWriter::fileFormats());
-    const auto fileName = QFileDialog::getSaveFileName(q(), tr("Save Function Mapping"), {}, std::move(filters));
-
-    if (fileName.isEmpty())
-        return;
-
-    const auto writer = esu::FunctionMappingWriter::fromFile(std::move(fileName));
-
-    if (!writer->write(model())) {
-        QMessageBox::critical(q(), tr("Could not write function mapping"),
-                              tr("<p>Could not write this function mapping to <b>%1</b>.</p><p>%2</p>").
-                              arg(QFileInfo{writer->fileName()}.fileName(), writer->errorString()));
-    }
+    if (const auto preset = core::get_if<Preset>(std::move(model)))
+        if (const auto model = currentModel())
+            model->reset(preset.value());
 }
 
 } // namespace lmrs::studio

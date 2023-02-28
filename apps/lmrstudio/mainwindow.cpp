@@ -6,7 +6,6 @@
 #include "decoderdatabaseview.h"
 #include "deviceconnectionview.h"
 #include "functionmappingview.h"
-#include "multideviceview.h"
 #include "speedmeterview.h"
 #include "trackplanview.h"
 #include "variableeditorview.h"
@@ -162,8 +161,7 @@ public:
     core::ConstPointer<AccessoryControlView> accessoryControlView{q()};
     core::ConstPointer<SpeedMeterView> speedMeterView{q()};
     core::ConstPointer<VariableEditorView> variableEditorView{q()};
-// FIXME:    core::ConstPointer<MultiDeviceView<FunctionMappingView>> functionMappingView{devicesView->model<core::VariableControl>(), mainWindow()};
-    core::ConstPointer<FunctionMappingView> functionMappingView{devicesView->model<core::VariableControl>(), q()};
+    core::ConstPointer<FunctionMappingView> functionMappingView{q()};
     core::ConstPointer<DebugView> debugView{q()};
     core::ConstPointer<DecoderDatabaseView> decoderDatabaseView{q()};
     core::ConstPointer<TrackPlanView> trackPlanView{q()};
@@ -311,6 +309,7 @@ void MainWindow::Private::setupMenuBar()
     actionCategories[ActionCategory::Type::FileNew].menuPlaceholder = fileMenu->addSeparator();
     actionCategories[ActionCategory::Type::FileOpen].menuPlaceholder = fileMenu->addSeparator();
     actionCategories[ActionCategory::Type::FileSave].menuPlaceholder = fileMenu->addSeparator();
+    actionCategories[ActionCategory::Type::FilePeripherals].menuPlaceholder = fileMenu->addSeparator();
 
     addAction(fileMenu.get(), LMRS_TR("&Quit"), QKeySequence::Quit, qApp, &QApplication::quit);
 
@@ -353,6 +352,7 @@ void MainWindow::Private::setupToolBar()
     actionCategories[ActionCategory::Type::FileNew].toolBarPlaceholder = toolBar->addSeparator();
     actionCategories[ActionCategory::Type::FileOpen].toolBarPlaceholder = toolBar->addSeparator();
     actionCategories[ActionCategory::Type::FileSave].toolBarPlaceholder = toolBar->addSeparator();
+    actionCategories[ActionCategory::Type::FilePeripherals].toolBarPlaceholder = toolBar->addSeparator();
     actionCategories[ActionCategory::Type::EditCreate].toolBarPlaceholder = toolBar->addSeparator();
     actionCategories[ActionCategory::Type::EditClipboard].toolBarPlaceholder = toolBar->addSeparator();
     actionCategories[ActionCategory::Type::View].toolBarPlaceholder = toolBar->addSeparator();
@@ -629,14 +629,17 @@ void MainWindow::Private::onCurrentViewChanged()
     };
 
     const auto filePlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::FileSave);
+    const auto hardPlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::FilePeripherals);
     const auto editPlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::EditClipboard);
     const auto viewPlaceholderIter = findToolBarPlaceholder(ActionCategory::Type::View);
 
     const auto hasFileActions = (visibleActionCount(toolBarActions.begin(), filePlaceholderIter) > 0);
-    const auto hasEditActions = (visibleActionCount(filePlaceholderIter + 1, editPlaceholderIter) > 0);
+    const auto hasHardActions = (visibleActionCount(filePlaceholderIter + 1, hardPlaceholderIter) > 0);
+    const auto hasEditActions = (visibleActionCount(hardPlaceholderIter + 1, editPlaceholderIter) > 0);
     const auto hasViewActions = (visibleActionCount(editPlaceholderIter + 1, viewPlaceholderIter) > 0);
 
-    (*filePlaceholderIter)->setVisible(hasFileActions && hasEditActions);
+    (*filePlaceholderIter)->setVisible(hasFileActions && (hasHardActions || hasEditActions));
+    (*hardPlaceholderIter)->setVisible(hasHardActions && hasEditActions);
     (*editPlaceholderIter)->setVisible(hasEditActions && hasViewActions);
 
     // do not show the toolbar if not needed
