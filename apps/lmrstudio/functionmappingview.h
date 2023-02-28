@@ -24,11 +24,11 @@ public:
 
     DeviceFilter deviceFilter() const override;
 
-    void setDevice(core::Device *newDevice) override;
-    core::Device *device() const;
-
     void setVariableControl(core::VariableControl *newControl);
     core::VariableControl *variableControl() const;
+
+protected:
+    void updateControls(core::Device *newDevice) override;
 
 private:
     class Private;

@@ -633,7 +633,7 @@ Device::Device(QHostAddress address, DeviceFactory *factory, QObject *parent)
     connect(d->client, &Client::disconnected, d, &Private::onDisconnected);
     connect(d->client, &Client::isConnectedChanged, this, [this] { emit stateChanged(state()); });
     connect(d->client, &Client::subscriptionsChanged, this, [this] { emit stateChanged(state()); });
-    connect(d->client, &Client::lockStateChanged, this, [this] { emit vehicleControlChanged(vehicleControl()); });
+    connect(d->client, &Client::lockStateChanged, this, &Device::controlsChanged);
 
     // FIXME: why are these two responses missing sometimes?
     // z21.stream: received 14 00 84 00 05 00 03 00 13 00 1b 00 83 45 83 45 02 00 03 00

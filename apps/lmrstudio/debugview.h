@@ -15,13 +15,13 @@ class DebugView : public MainWindowView
 
 public:
     explicit DebugView(QWidget *parent = nullptr);
-
     DeviceFilter deviceFilter() const override;
-    void setDevice(core::Device *newDevice) override;
-    core::Device *device() const;
 
     void setDebugControl(core::DebugControl *newControl);
     core::DebugControl *debugControl() const;
+
+protected:
+    void updateControls(core::Device *newDevice) override;
 
 private:
     class Private;

@@ -17,6 +17,7 @@ class TrackPlanView : public MainWindowView
 
 public:
     explicit TrackPlanView(QWidget *parent = nullptr);
+    DeviceFilter deviceFilter() const override;
 
     void setFileSharing(roco::z21app::FileSharing *newFileSharing);
     roco::z21app::FileSharing *fileSharing() const;
@@ -25,11 +26,11 @@ public:
     QString fileName() const override;
     bool isModified() const override;
 
-    void setDevice(core::Device *newDevice) override;
-    DeviceFilter deviceFilter() const override;
-
 public slots:
     bool open(QString newFileName);
+
+protected:
+    void updateControls(core::Device *newDevice) override;
 
 private:
     class Private;

@@ -529,14 +529,9 @@ DeviceFilter FunctionMappingView::deviceFilter() const
     return DeviceFilter::require<core::VariableControl>();
 }
 
-void FunctionMappingView::setDevice(core::Device *newDevice)
+void FunctionMappingView::updateControls(core::Device *newDevice)
 {
     setVariableControl(newDevice ? newDevice->variableControl() : nullptr);
-}
-
-core::Device *FunctionMappingView::device() const
-{
-    return d->variableControl ? d->variableControl->device() : nullptr;
 }
 
 void FunctionMappingView::setVariableControl(core::VariableControl *newControl)

@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QMainWindow>
+#include <QPointer>
 
 namespace lmrs::core { class Device; }
 namespace lmrs::core::l10n { class LanguageManager; }
@@ -36,8 +37,9 @@ public:
     virtual QString fileName() const;
     virtual bool isModified() const;
 
-    virtual void setDevice(core::Device *newDevice);
     virtual DeviceFilter deviceFilter() const;
+    void setDevice(core::Device *newDevice);
+    core::Device *device() const;
 
     virtual bool isDetachable() const;
 
@@ -47,6 +49,10 @@ signals:
 
 protected:
     void connectDocumentManager(widgets::DocumentManager *manager);
+    virtual void updateControls(core::Device *device);
+
+private:
+    QPointer<core::Device> m_device;
 };
 
 class MainWindow : public QMainWindow

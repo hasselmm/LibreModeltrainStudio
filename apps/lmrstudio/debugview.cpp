@@ -198,14 +198,9 @@ DeviceFilter DebugView::deviceFilter() const
     return DeviceFilter::require<core::DebugControl>();
 }
 
-void DebugView::setDevice(core::Device *newDevice)
+void DebugView::updateControls(core::Device *newDevice)
 {
     setDebugControl(newDevice ? newDevice->debugControl() : nullptr);
-}
-
-core::Device *DebugView::device() const
-{
-    return debugControl()->device();
 }
 
 void DebugView::setDebugControl(core::DebugControl *newControl)

@@ -450,10 +450,8 @@ public:
 
 signals:
     void stateChanged(lmrs::core::Device::State state);
-    void powerControlChanged(lmrs::core::PowerControl *powerControl);
-    void variableControlChanged(lmrs::core::VariableControl *variableControl);
-    void vehicleControlChanged(lmrs::core::VehicleControl *vehicleControl);
     void deviceInfoChanged(QList<lmrs::core::DeviceInfo> changedIds);
+    void controlsChanged();
 
 protected:
     template<class Observable, typename T, typename U = T>

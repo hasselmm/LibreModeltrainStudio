@@ -22,8 +22,6 @@ public:
     explicit VehicleControlView(QWidget *parent = nullptr);
 
     DeviceFilter deviceFilter() const override;
-    void setDevice(core::Device *newDevice) override;
-    core::Device *device() const;
 
     void setVariableControl(core::VariableControl *variableControl);
     core::VariableControl *variableControl() const;
@@ -40,6 +38,7 @@ signals:
     void vehicleControlChanged(lmrs::core::VehicleControl *vehicleControl);
 
 protected:
+    void updateControls(core::Device *newDevice) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:
