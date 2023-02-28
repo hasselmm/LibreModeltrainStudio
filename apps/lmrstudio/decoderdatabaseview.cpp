@@ -461,11 +461,6 @@ DecoderDatabaseView::DecoderDatabaseView(QWidget *parent)
     d->onCurrentDecoderChanged(d->decoderBox->currentIndex());
 }
 
-DecoderDatabaseView::~DecoderDatabaseView()
-{
-    delete d;
-}
-
 } // namespace lmrs::studio
 
 #include "decoderdatabaseview.moc"

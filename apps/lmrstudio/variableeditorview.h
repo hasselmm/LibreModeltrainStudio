@@ -23,8 +23,6 @@ class VariableEditorView : public MainWindowView
 
 public:
     explicit VariableEditorView(QWidget *parent = nullptr);
-    ~VariableEditorView() override;
-
     DeviceFilter deviceFilter() const override;
     void setDevice(core::Device *newDevice) override;
     core::Device *device() const;

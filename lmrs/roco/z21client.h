@@ -499,7 +499,6 @@ public:
 
     // lifetime
     explicit Client(QObject *parent = {});
-    virtual ~Client();
 
     // attributes
     QHostAddress hostAddress() const;

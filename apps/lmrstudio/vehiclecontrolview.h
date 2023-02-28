@@ -20,7 +20,6 @@ class VehicleControlView : public MainWindowView
 
 public:
     explicit VehicleControlView(QWidget *parent = nullptr);
-    ~VehicleControlView() override;
 
     DeviceFilter deviceFilter() const override;
     void setDevice(core::Device *newDevice) override;

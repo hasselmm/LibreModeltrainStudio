@@ -1601,11 +1601,6 @@ Client::Client(QObject *parent)
     connect(this, &Client::rbusDetectorInfoReceived, this, &Client::detectorInfoReceived);
 }
 
-Client::~Client()
-{
-    delete d;
-}
-
 // attributes //
 
 Client::TrackStatus Client::trackStatus() const
