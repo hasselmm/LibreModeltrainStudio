@@ -1,6 +1,8 @@
 #include "accessorycontrolview.h"
+
 #include "accessorytablemodel.h"
 #include "detectorinfotablemodel.h"
+#include "deviceconnectionview.h"
 
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/logging.h>
@@ -218,7 +220,7 @@ void AccessoryControlView::Private::onSignalButtonClicked()
 }
 
 AccessoryControlView::AccessoryControlView(QWidget *parent)
-    : QWidget{parent}
+    : MainWindowView{parent}
     , d{new Private{this}}
 {
     setEnabled(false);
@@ -350,10 +352,17 @@ AccessoryControlView::~AccessoryControlView()
     delete d;
 }
 
-void AccessoryControlView::setDevice(core::Device *device)
+DeviceFilter AccessoryControlView::deviceFilter() const
 {
-    setAccessoryControl(device->accessoryControl());
-    setDetectorControl(device->detectorControl());
+    return acceptAny<
+            DeviceFilter::Require<core::AccessoryControl>,
+            DeviceFilter::Require<core::DetectorControl>>();
+}
+
+void AccessoryControlView::setDevice(core::Device *newDevice)
+{
+    setAccessoryControl(newDevice ? newDevice->accessoryControl() : nullptr);
+    setDetectorControl(newDevice ? newDevice->detectorControl() : nullptr);
 }
 
 core::Device *AccessoryControlView::device() const
@@ -410,3 +419,5 @@ core::dcc::AccessoryAddress AccessoryControlView::currentAccessory() const
 }
 
 } // namespace lmrs::studio
+
+#include "moc_accessorycontrolview.cpp"

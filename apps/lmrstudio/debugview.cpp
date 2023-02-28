@@ -1,5 +1,8 @@
 #include "debugview.h"
 
+#include "deviceconnectionview.h"
+
+#include <lmrs/core/device.h>
 #include <lmrs/core/memory.h>
 #include <lmrs/core/userliterals.h>
 
@@ -177,7 +180,7 @@ void DebugView::Private::onNativeSendButtonClicked()
 }
 
 DebugView::DebugView(QWidget *parent)
-    : QWidget{parent}
+    : MainWindowView{parent}
     , d{new Private{this}}
 {
     d->setupDccFrame();
@@ -188,6 +191,21 @@ DebugView::DebugView(QWidget *parent)
     layout->setAlignment(Qt::AlignTop);
     layout->addWidget(d->dccFrame);
     layout->addWidget(d->nativeFrame);
+}
+
+DeviceFilter DebugView::deviceFilter() const
+{
+    return DeviceFilter::require<core::DebugControl>();
+}
+
+void DebugView::setDevice(core::Device *newDevice)
+{
+    setDebugControl(newDevice ? newDevice->debugControl() : nullptr);
+}
+
+core::Device *DebugView::device() const
+{
+    return debugControl()->device();
 }
 
 void DebugView::setDebugControl(core::DebugControl *newControl)

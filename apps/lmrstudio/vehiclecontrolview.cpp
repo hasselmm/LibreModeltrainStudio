@@ -1,5 +1,7 @@
 #include "vehiclecontrolview.h"
 
+#include "deviceconnectionview.h"
+
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/device.h>
 #include <lmrs/core/memory.h>
@@ -353,7 +355,7 @@ void VehicleControlView::Private::onVehicleNameChanged(dcc::VehicleAddress addre
 }
 
 VehicleControlView::VehicleControlView(QWidget *parent)
-    : QWidget{parent}
+    : MainWindowView{parent}
     , d{new Private{this}}
 {
     setEnabled(false);
@@ -462,10 +464,15 @@ VehicleControlView::~VehicleControlView()
     delete d;
 }
 
-void VehicleControlView::setDevice(core::Device *device)
+DeviceFilter VehicleControlView::deviceFilter() const
 {
-    setVariableControl(device->variableControl());
-    setVehicleControl(device->vehicleControl());
+    return DeviceFilter::require<core::VehicleControl>();
+}
+
+void VehicleControlView::setDevice(core::Device *newDevice)
+{
+    setVariableControl(newDevice ? newDevice->variableControl() : nullptr);
+    setVehicleControl(newDevice ? newDevice->vehicleControl() : nullptr);
 }
 
 core::Device *VehicleControlView::device() const

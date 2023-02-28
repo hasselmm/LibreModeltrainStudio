@@ -25,7 +25,7 @@ public:
     QString fileName() const override;
     bool isModified() const override;
 
-    void setCurrentDevice(core::Device *newDevice) override;
+    void setDevice(core::Device *newDevice) override;
     DeviceFilter deviceFilter() const override;
 
 public slots:

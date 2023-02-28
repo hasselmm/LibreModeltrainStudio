@@ -158,13 +158,13 @@ public:
     core::ConstPointer<QStackedWidget> stack{q()};
     core::ConstPointer<NavigationToolBar> navigation{q()};
     core::ConstPointer<DeviceConnectionView> devicesView{q()};
-    core::ConstPointer<MultiDeviceView<VehicleControlView>> vehicleControlView{devicesView->model<core::VehicleControl>(), q()};
-    core::ConstPointer<MultiDeviceView<AccessoryControlView>> accessoryControlView{devicesView->model<core::AccessoryControl>(), q()};
-    core::ConstPointer<MultiDeviceView<SpeedMeterView>> speedMeterView{devicesView->model<core::SpeedMeterControl>(), q()};
-    core::ConstPointer<MultiDeviceView<VariableEditorView>> variableEditorView{devicesView->model<core::VariableControl>(), q()};
+    core::ConstPointer<VehicleControlView> vehicleControlView{q()};
+    core::ConstPointer<AccessoryControlView> accessoryControlView{q()};
+    core::ConstPointer<SpeedMeterView> speedMeterView{q()};
+    core::ConstPointer<VariableEditorView> variableEditorView{q()};
 // FIXME:    core::ConstPointer<MultiDeviceView<FunctionMappingView>> functionMappingView{devicesView->model<core::VariableControl>(), mainWindow()};
     core::ConstPointer<FunctionMappingView> functionMappingView{devicesView->model<core::VariableControl>(), q()};
-    core::ConstPointer<MultiDeviceView<DebugView>> debugView{devicesView->model<core::DebugControl>(), q()};
+    core::ConstPointer<DebugView> debugView{q()};
     core::ConstPointer<DecoderDatabaseView> decoderDatabaseView{q()};
     core::ConstPointer<TrackPlanView> trackPlanView{q()};
     core::ConstPointer<AutomationView> automationView{q()};
@@ -686,6 +686,12 @@ void MainWindow::Private::onCurrentDeviceChanged(core::Device *newDevice)
             oldDevice->disconnect(this);
         }
 
+        // FIXME: also make this work for detached views
+        for (auto i = 0; i < stack->count(); ++i) {
+            if (const auto view = dynamic_cast<MainWindowView *>(stack->widget(i)))
+                view->setDevice(newDevice);
+        }
+
         if (newDevice) {
             if (const auto control = newDevice->powerControl())
                 connect(control, &core::PowerControl::stateChanged, this, &Private::onPowerStateChanged);
@@ -854,7 +860,7 @@ bool MainWindowView::isModified() const
     return false;
 }
 
-void MainWindowView::setCurrentDevice(core::Device *)
+void MainWindowView::setDevice(core::Device *)
 {
     // nothing to do by default
 }

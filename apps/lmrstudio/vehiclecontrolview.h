@@ -1,14 +1,18 @@
 #ifndef LMRS_STUDIO_VEHICLECONTROLVIEW_H
 #define LMRS_STUDIO_VEHICLECONTROLVIEW_H
 
-#include <lmrs/core/dccconstants.h>
-#include <lmrs/core/device.h>
+#include "mainwindow.h"
 
-#include <QWidget>
+#include <lmrs/core/dccconstants.h>
+
+namespace lmrs::core {
+class VariableControl;
+class VehicleControl;
+}
 
 namespace lmrs::studio {
 
-class VehicleControlView : public QWidget
+class VehicleControlView : public MainWindowView
 {
     Q_OBJECT
     Q_PROPERTY(lmrs::core::VehicleControl *vehicleControl READ vehicleControl
@@ -18,7 +22,8 @@ public:
     explicit VehicleControlView(QWidget *parent = nullptr);
     ~VehicleControlView() override;
 
-    void setDevice(core::Device *device);
+    DeviceFilter deviceFilter() const override;
+    void setDevice(core::Device *newDevice) override;
     core::Device *device() const;
 
     void setVariableControl(core::VariableControl *variableControl);

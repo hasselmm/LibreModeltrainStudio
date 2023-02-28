@@ -1,5 +1,7 @@
 #include "speedmeterview.h"
 
+#include "deviceconnectionview.h"
+
 #include <lmrs/core/device.h>
 #include <lmrs/core/logging.h>
 #include <lmrs/core/memory.h>
@@ -166,7 +168,7 @@ void SpeedMeterView::Private::onPulsesChanged(core::hertz_f pulses)
 }
 
 SpeedMeterView::SpeedMeterView(QWidget *parent)
-    : QWidget{parent}
+    : MainWindowView{parent}
     , d{new Private{this}}
 {
     setEnabled(false);
@@ -260,6 +262,21 @@ SpeedMeterView::SpeedMeterView(QWidget *parent)
     layout->addWidget(d->chartView);
 }
 
+DeviceFilter SpeedMeterView::deviceFilter() const
+{
+    return DeviceFilter::require<core::SpeedMeterControl>();
+}
+
+void SpeedMeterView::setDevice(core::Device *newDevice)
+{
+    setSpeedMeter(newDevice ? newDevice->speedMeterControl() : nullptr);
+}
+
+core::Device *SpeedMeterView::device() const
+{
+    return speedMeter()->device();
+}
+
 void SpeedMeterView::setSpeedMeter(core::SpeedMeterControl *newSpeedMeter)
 {
     if (const auto oldSpeedMeter = std::exchange(d->speedMeter, newSpeedMeter); d->speedMeter != oldSpeedMeter) {
@@ -298,3 +315,5 @@ core::SpeedMeterControl *SpeedMeterView::speedMeter() const
 }
 
 } // lmrs::studio
+
+#include "moc_speedmeterview.cpp"

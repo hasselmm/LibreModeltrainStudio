@@ -1,21 +1,24 @@
 #ifndef LMRS_STUDIO_SPEEDMETERVIEW_H
 #define LMRS_STUDIO_SPEEDMETERVIEW_H
 
-#include <lmrs/core/device.h>
+#include "mainwindow.h"
 
-#include <QWidget>
+namespace lmrs::core {
+class SpeedMeterControl;
+}
 
 namespace lmrs::studio {
 
-class SpeedMeterView : public QWidget
+class SpeedMeterView : public MainWindowView
 {
     Q_OBJECT
 
 public:
     explicit SpeedMeterView(QWidget *parent = nullptr);
 
-    void setDevice(core::Device *device) { setSpeedMeter(device->speedMeterControl()); }
-    core::Device *device() const { return speedMeter()->device(); }
+    DeviceFilter deviceFilter() const override;
+    void setDevice(core::Device *newDevice) override;
+    core::Device *device() const;
 
     void setSpeedMeter(core::SpeedMeterControl *newSpeedMeter);
     core::SpeedMeterControl *speedMeter() const;
