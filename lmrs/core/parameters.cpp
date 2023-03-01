@@ -173,8 +173,8 @@ Parameter Parameter::choice(QByteArrayView key, QString name, parameters::Choice
 
     for (auto it = model.choices.begin(); it != model.choices.end(); ++it) {
         if (LMRS_FAILED_EQUALS(logger(), it->value.metaType(), model.valueType)) {
-            qCCritical(logger(), "Choice \"%ls\" at index %zd has invalid type %s (expected: %s)",
-                       qUtf16Printable(it->text), (it - model.choices.begin()),
+            qCCritical(logger(), "Choice \"%ls\" at index %d has invalid type %s (expected: %s)",
+                       qUtf16Printable(it->text), static_cast<int>(it - model.choices.begin()),
                       it->value.typeName(), model.valueType.name());
         }
     }

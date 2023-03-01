@@ -46,7 +46,7 @@ public:
     Sequence sequence() const;
     Identifier identifier() const;
     QByteArrayView data() const;
-    qsizetype dataSize() const;
+    int dataSize() const;
 
     QByteArray toByteArray() const;
 

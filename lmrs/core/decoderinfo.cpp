@@ -50,8 +50,8 @@ QJsonObject readDecoderDefinitions()
     const auto document = QJsonDocument::fromJson(json, &status);
 
     if (status.error != QJsonParseError::NoError) {
-        const auto lineNumber = json.left(status.offset).count('\n') + 1;
-        qCWarning(logger<DecoderInfo>(), "Could not read variable definitions: %ls (line %zd)",
+        const auto lineNumber = static_cast<int>(json.left(status.offset).count('\n') + 1);
+        qCWarning(logger<DecoderInfo>(), "Could not read variable definitions: %ls (line %d)",
                   qUtf16Printable(status.errorString()), lineNumber);
     }
 
