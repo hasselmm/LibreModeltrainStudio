@@ -99,7 +99,7 @@ inline QStringList toStringList(const QList<T> &values)
     return result;
 }
 
-constexpr auto coalesce(auto value, auto... args)
+constexpr auto coalesce(auto value, auto... args) -> decltype(value)
 {
     if constexpr(sizeof...(args) > 0) {
         if (isEmpty(value))
