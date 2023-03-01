@@ -890,7 +890,7 @@ core::Device *MainWindowView::device() const
     return m_device;
 }
 
-void MainWindowView::updateControls(core::Device *device)
+void MainWindowView::updateControls(core::Device *)
 {
     // nothing to do by default
 }
