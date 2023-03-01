@@ -64,8 +64,8 @@ endfunction()
 
 function(lmrs_install_target TARGET)
     # First of all install the target and the Qt runtime, this is easy
-    lmrs_install_qt_runtime(${TARGET})
     install(TARGETS ${TARGET})
+    lmrs_install_qt_runtime(${TARGET})
 
     # Now also install runtime dependencies of all the targets
     get_target_property(link_libraries ${TARGET} LINK_LIBRARIES)
