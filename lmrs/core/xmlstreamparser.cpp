@@ -12,9 +12,9 @@ bool AbstractStreamParser::parse()
     for (m_stack = {{{initalState(), m_reader.name().toString()}}}; !m_stack.empty(); m_stack.pop()) {
         while (m_reader.readNextStartElement()) {
             if (!(this->*m_stack.back().handler)()) {
-                qCWarning(m_logger, "Unexpected child <%ls> for element <%ls> at line %zd:",
+                qCWarning(m_logger, "Unexpected child <%ls> for element <%ls> at line %d:",
                           printable(m_reader.name().toString()), printable(m_stack.back().elementName),
-                          m_reader.lineNumber());
+                          static_cast<int>(m_reader.lineNumber()));
 
                 m_reader.skipCurrentElement();
             }

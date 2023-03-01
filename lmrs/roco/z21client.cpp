@@ -1291,7 +1291,7 @@ void Client::Private::parseDatagrams()
 
                     // add new observers added from callbacks while processing the current list
                     if (!pendingRequests.empty()) {
-                        qCDebug(lcStream, "Adding %zd observers from callbacks", pendingRequests.size());
+                        qCDebug(lcStream, "Adding %d observers from callbacks", static_cast<int>(pendingRequests.size()));
                         m_pendingRequests.reserve(m_pendingRequests.size() + pendingRequests.size());
                         std::copy(pendingRequests.begin(), pendingRequests.end(), std::back_inserter(m_pendingRequests));
                     }
@@ -1341,7 +1341,8 @@ void Client::Private::sendRequestsOnIdle()
         }
 
         if (!datagram.isEmpty()) {
-            qCDebug(lcStream, "sending %d request(s) in a datagram of %zd bytes", requestCount, datagram.size());
+            qCDebug(lcStream, "sending %d request(s) in a datagram of %d bytes",
+                    requestCount, static_cast<int>(datagram.size()));
             qCDebug(lcStream) << datagram.toHex(' ');
             m_socket->writeDatagram(std::move(datagram), m_hostAddress, m_hostPort);
         }
