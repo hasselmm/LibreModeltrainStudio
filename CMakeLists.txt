@@ -88,3 +88,10 @@ add_custom_target (
     cmake/FontAwesome.cmake
     cmake/LmrsSupport.cmake
 )
+
+add_custom_target (
+    github
+
+    SOURCES
+    .github/workflows/autobuild.yml
+)
