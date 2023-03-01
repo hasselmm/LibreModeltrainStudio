@@ -118,12 +118,12 @@ std::optional<DataType> Request::get() const
     }
 
     if (Q_UNLIKELY(dataSize() < DataType::MinimumSize)) {
-        qCWarning(core::logger(this), "Message too short (%zd byte(s))", dataSize());
+        qCWarning(core::logger(this), "Message too short (%d byte(s))", dataSize());
         return {};
     }
 
     if (Q_UNLIKELY(dataSize() > DataType::MaximumSize)) {
-        qCWarning(core::logger(this), "Message too long (%zd byte(s))", dataSize());
+        qCWarning(core::logger(this), "Message too long (%d byte(s))", dataSize());
         return {};
     }
 
