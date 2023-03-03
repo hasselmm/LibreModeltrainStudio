@@ -30,6 +30,9 @@ jobs:
       - name: Set up compiler cache
         uses: chocobo1/setup-ccache-action@v1
         with:
+          ccache_options: |
+            max_size=100M
+          override_cache_key: ccache-linux-clang-x86_64
           update_packager_index: false
 
       - name: Configure project
@@ -85,6 +88,9 @@ jobs:
       - name: Set up compiler cache
         uses: chocobo1/setup-ccache-action@v1
         with:
+          ccache_options: |
+            max_size=100M
+          override_cache_key: ccache-windows-mingw64
           windows_compile_environment: msvc # guess "windows_package_manager: choco" would be a better name
 
       - name: Configure project
