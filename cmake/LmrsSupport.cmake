@@ -36,11 +36,6 @@ endfunction()
 ## =====================================================================================================================
 
 function(lmrs_install_qt_runtime TARGET)
-    if (CMAKE_SYSTEM_NAME MATCHES Linux)
-        message(STATUS "Qt doesn't provide a deployment tool yet")
-        return()
-    endif()
-
     # Install instructions must be written to a CMake script as it depends on generator expressions
     set(deployment_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_${TARGET}.cmake")
 
@@ -76,7 +71,12 @@ function(lmrs_install_target TARGET)
 
     # Install the target and the Qt runtime
     install(TARGETS ${TARGET})
-    lmrs_install_qt_runtime(${TARGET})
+
+    # Still have to figure out what makes sense to bundle for Linux.
+    # Probably best to generate DEB and RPM archives instead of bundling "half" of Github's Linux runtime.
+    if (NOT CMAKE_SYSTEM_NAME MATCHES Linux)
+        lmrs_install_qt_runtime(${TARGET})
+    endif()
 
     # Install runtime dependencies of all the targets
     get_target_property(link_libraries ${TARGET} LINK_LIBRARIES)
