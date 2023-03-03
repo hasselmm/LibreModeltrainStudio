@@ -1,6 +1,8 @@
 #include "symbolictrackplanview.h"
 
+#include <lmrs/core/accessories.h>
 #include <lmrs/core/algorithms.h>
+#include <lmrs/core/detectors.h>
 #include <lmrs/core/device.h>
 #include <lmrs/core/logging.h>
 #include <lmrs/core/memory.h>
@@ -28,6 +30,9 @@ using core::TrackSymbolInstance;
 using core::SymbolicTrackPlanModel;
 using core::AccessoryControl;
 using core::DetectorControl;
+
+using namespace core::accessory;
+namespace dcc = core::dcc;
 
 constexpr auto s_bboxSize = QSizeF{10, 10};
 constexpr auto s_bboxMargins = QMarginsF{0.1, 0.1, 0.1, 0.1};
@@ -429,9 +434,9 @@ public:
 
     void onDataChanged(QModelIndex topLeft, QModelIndex bottomRight, QList<int> roles);
 
-    void onAccessoryInfoChanged(core::AccessoryInfo info);
-    void onDetectorInfoChanged(core::DetectorInfo info);
-    void onTurnoutInfoChanged(core::TurnoutInfo info);
+    void onAccessoryInfoChanged(AccessoryInfo info);
+    void onDetectorInfoChanged(DetectorInfo info);
+    void onTurnoutInfoChanged(TurnoutInfo info);
 
     QHash<TrackSymbol::Type, QList<QPointF>> labelPositions;    // FIXME: share among instances
     QHash<TrackSymbol, QPicture> pictures;                      // FIXME: share among instances
@@ -459,7 +464,7 @@ std::function<void ()> SymbolicTrackPlanView::Private::cellAction(CellPosition p
     };
 
     if (const auto turnoutState = core::turnoutState(newState);
-            turnoutState != core::dcc::TurnoutState::Unknown) {
+            turnoutState != dcc::TurnoutState::Unknown) {
         if (const auto address = cell.turnoutAddress()) {
             return [this, address, turnoutState, cellType = cell.symbol.type, fallbackAction] {
                 qCInfo(logger(), "switching %s with address %d to %s state",
@@ -716,19 +721,19 @@ void SymbolicTrackPlanView::Private::onDataChanged(QModelIndex topLeft, QModelIn
     q()->update(updateArea.marginsAdded({updateMargin, updateMargin, updateMargin, updateMargin}));
 }
 
-void SymbolicTrackPlanView::Private::onAccessoryInfoChanged(core::AccessoryInfo info)
+void SymbolicTrackPlanView::Private::onAccessoryInfoChanged(AccessoryInfo info)
 {
     qCInfo(logger()) << info;
 }
 
-void SymbolicTrackPlanView::Private::onDetectorInfoChanged(core::DetectorInfo info)
+void SymbolicTrackPlanView::Private::onDetectorInfoChanged(DetectorInfo info)
 {
     qCInfo(logger()) << info;
 
     if (!model)
         return;
 
-    using Occupancy = core::DetectorInfo::Occupancy;
+    using Occupancy = DetectorInfo::Occupancy;
     using SymbolState = TrackSymbol::State;
 
     const auto newState = info.occupancy() == Occupancy::Occupied ? SymbolState::Active : SymbolState::Undefined;
@@ -738,7 +743,7 @@ void SymbolicTrackPlanView::Private::onDetectorInfoChanged(core::DetectorInfo in
         model->setData(index, newStateVariant, SymbolicTrackPlanModel::DataRole::StateRole);
 }
 
-void SymbolicTrackPlanView::Private::onTurnoutInfoChanged(core::TurnoutInfo info)
+void SymbolicTrackPlanView::Private::onTurnoutInfoChanged(TurnoutInfo info)
 {
     qCInfo(logger()) << info;
 
@@ -752,7 +757,7 @@ void SymbolicTrackPlanView::Private::onTurnoutInfoChanged(core::TurnoutInfo info
         auto newState = cell.symbol.state;
 
         switch (info.state()) {
-        case core::dcc::TurnoutState::Straight:
+        case dcc::TurnoutState::Straight:
             for (auto state: {SymbolState::Straight, SymbolState::Left, SymbolState::Red, SymbolState::Stop}) {
                 if (states(cell.symbol.type) & state) {
                     newState = state;
@@ -762,7 +767,7 @@ void SymbolicTrackPlanView::Private::onTurnoutInfoChanged(core::TurnoutInfo info
 
             break;
 
-        case core::dcc::TurnoutState::Branched:
+        case dcc::TurnoutState::Branched:
             for (auto state: {SymbolState::Branched, SymbolState::Right, SymbolState::Green, SymbolState::Proceed}) {
                 if (states(cell.symbol.type) & state) {
                     newState = state;
@@ -772,8 +777,8 @@ void SymbolicTrackPlanView::Private::onTurnoutInfoChanged(core::TurnoutInfo info
 
             break;
 
-        case core::dcc::TurnoutState::Unknown:
-        case core::dcc::TurnoutState::Invalid:
+        case dcc::TurnoutState::Unknown:
+        case dcc::TurnoutState::Invalid:
             break;
         }
 

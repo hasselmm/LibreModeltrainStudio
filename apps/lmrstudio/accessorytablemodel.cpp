@@ -7,6 +7,9 @@ namespace lmrs::studio {
 
 namespace {
 
+using namespace core::accessory;
+namespace dcc = core::dcc;
+
 QString displayString(AccessoryTableModel::RowType type)
 {
     switch (type) {
@@ -23,17 +26,17 @@ QString displayString(AccessoryTableModel::RowType type)
 
 QString stateName(QVariant state)
 {
-    if (state.typeId() == qMetaTypeId<core::dcc::AccessoryState>()) {
-        return QString::number(qvariant_cast<core::dcc::AccessoryState>(state));
-    } else if (state.typeId() == qMetaTypeId<core::dcc::TurnoutState>()) {
-        switch (qvariant_cast<core::dcc::TurnoutState>(state)) {
-        case core::dcc::TurnoutState::Straight:
+    if (state.typeId() == qMetaTypeId<dcc::AccessoryState>()) {
+        return QString::number(qvariant_cast<dcc::AccessoryState>(state));
+    } else if (state.typeId() == qMetaTypeId<dcc::TurnoutState>()) {
+        switch (qvariant_cast<dcc::TurnoutState>(state)) {
+        case dcc::TurnoutState::Straight:
             return AccessoryTableModel::tr("straight/green");
-        case core::dcc::TurnoutState::Branched:
+        case dcc::TurnoutState::Branched:
             return AccessoryTableModel::tr("branched/red");
-        case core::dcc::TurnoutState::Unknown:
+        case dcc::TurnoutState::Unknown:
             return AccessoryTableModel::tr("unknown");
-        case core::dcc::TurnoutState::Invalid:
+        case dcc::TurnoutState::Invalid:
             break;
         }
     }
@@ -138,12 +141,12 @@ core::AccessoryControl *AccessoryTableModel::accessoryControl() const
     return m_control;
 }
 
-void AccessoryTableModel::onAccessoryInfoChanged(core::AccessoryInfo info)
+void AccessoryTableModel::onAccessoryInfoChanged(AccessoryInfo info)
 {
     onRowChanged(Row{info});
 }
 
-void AccessoryTableModel::onTurnoutInfoChanged(core::TurnoutInfo info)
+void AccessoryTableModel::onTurnoutInfoChanged(TurnoutInfo info)
 {
     onRowChanged(Row{info});
 }
@@ -174,9 +177,9 @@ void AccessoryTableModel::onRowChanged(Row row)
 
 AccessoryTableModel::RowType AccessoryTableModel::Row::type() const
 {
-    if (std::holds_alternative<core::AccessoryInfo>(value))
+    if (std::holds_alternative<AccessoryInfo>(value))
         return RowType::Accessory;
-    else if (std::holds_alternative<core::TurnoutInfo>(value))
+    else if (std::holds_alternative<TurnoutInfo>(value))
         return RowType::Turnout;
     else
         return RowType::Invalid;
@@ -184,9 +187,9 @@ AccessoryTableModel::RowType AccessoryTableModel::Row::type() const
 
 QVariant AccessoryTableModel::Row::address() const
 {
-    if (const auto info = std::get_if<core::AccessoryInfo>(&value))
+    if (const auto info = std::get_if<AccessoryInfo>(&value))
         return core::value(info->address());
-    if (const auto info = std::get_if<core::TurnoutInfo>(&value))
+    if (const auto info = std::get_if<TurnoutInfo>(&value))
         return core::value(info->address());
     else
         return {};
@@ -194,9 +197,9 @@ QVariant AccessoryTableModel::Row::address() const
 
 QVariant AccessoryTableModel::Row::state() const
 {
-    if (const auto info = std::get_if<core::AccessoryInfo>(&value))
+    if (const auto info = std::get_if<AccessoryInfo>(&value))
         return QVariant::fromValue(info->state());
-    if (const auto info = std::get_if<core::TurnoutInfo>(&value))
+    if (const auto info = std::get_if<TurnoutInfo>(&value))
         return QVariant::fromValue(info->state());
     else
         return {};

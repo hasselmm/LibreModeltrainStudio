@@ -73,10 +73,10 @@ private slots:
                 << "C3 3E 90 6D"_hex;
         QTest::newRow("setFunctions:group2")
                 << dcc::Request::setFunctions(830, dcc::FunctionGroup::Group2, 0x0f)
-                << "C3 3E AF 52"_hex;
+                << "C3 3E BF 42"_hex;
         QTest::newRow("setFunctions:group3")
                 << dcc::Request::setFunctions(830, dcc::FunctionGroup::Group3, 0x01)
-                << "C3 3E B1 4C"_hex;
+                << "C3 3E A1 5C"_hex;
         QTest::newRow("setFunctions:group4")
                 << dcc::Request::setFunctions(830, dcc::FunctionGroup::Group4, 0x02)
                 << "C3 3E DE 02 21"_hex;

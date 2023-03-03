@@ -93,7 +93,7 @@ public:
     {}
 };
 
-class Parameter
+struct Parameter
 {
     Q_GADGET
 

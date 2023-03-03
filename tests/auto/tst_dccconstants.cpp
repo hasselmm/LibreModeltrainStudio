@@ -1,9 +1,12 @@
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/dccconstants.h>
+#include <lmrs/core/detectors.h>
 
 #include <QtTest>
 
 namespace lmrs::core::dcc::tests {
+
+using namespace accessory;
 
 constexpr auto operator+(VehicleVariable lhs, ExtendedVariableIndex rhs)
 {
@@ -77,70 +80,70 @@ private slots:
     void testDetectorAddress_data()
     {
         QTest::addColumn<bool>("expectUniqueAddresses");
-        QTest::addColumn<rm::DetectorAddress::Type>("expectedType");
-        QTest::addColumn<rm::DetectorAddress>("firstAddress");
-        QTest::addColumn<rm::DetectorAddress>("secondAddress");
+        QTest::addColumn<DetectorAddress::Type>("expectedType");
+        QTest::addColumn<DetectorAddress>("firstAddress");
+        QTest::addColumn<DetectorAddress>("secondAddress");
 
-        for (const auto &entry: QMetaTypeId<rm::DetectorAddress::Type>{}) {
+        for (const auto &entry: QMetaTypeId<DetectorAddress::Type>{}) {
             switch (entry.value()) {
-            case rm::DetectorAddress::Type::Invalid:
+            case DetectorAddress::Type::Invalid:
                 QTest::newRow(entry.key()) << false << entry.value()
-                                           << rm::DetectorAddress{}
-                                           << rm::DetectorAddress{};
+                                           << DetectorAddress{}
+                                           << DetectorAddress{};
                 break;
 
-            case rm::DetectorAddress::Type::CanNetwork:
+            case DetectorAddress::Type::CanNetwork:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forCanNetwork(0xdc3f)
-                                           << rm::DetectorAddress::forCanNetwork(0xdc40);
+                                           << DetectorAddress::forCanNetwork(0xdc3f)
+                                           << DetectorAddress::forCanNetwork(0xdc40);
                 break;
 
-            case rm::DetectorAddress::Type::CanModule:
+            case DetectorAddress::Type::CanModule:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forCanModule(0xdc3f, 1)
-                                           << rm::DetectorAddress::forCanModule(0xdc3f, 2);
+                                           << DetectorAddress::forCanModule(0xdc3f, 1)
+                                           << DetectorAddress::forCanModule(0xdc3f, 2);
                 break;
 
-            case rm::DetectorAddress::Type::CanPort:
+            case DetectorAddress::Type::CanPort:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forCanPort(1, 1, 1)
-                                           << rm::DetectorAddress::forCanPort(1, 1, 2);
+                                           << DetectorAddress::forCanPort(1, 1, 1)
+                                           << DetectorAddress::forCanPort(1, 1, 2);
                 break;
 
-            case rm::DetectorAddress::Type::LissyModule:
+            case DetectorAddress::Type::LissyModule:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forLissyModule(0)
-                                           << rm::DetectorAddress::forLissyModule(1);
+                                           << DetectorAddress::forLissyModule(0)
+                                           << DetectorAddress::forLissyModule(1);
                 break;
 
-            case rm::DetectorAddress::Type::LoconetSIC:
+            case DetectorAddress::Type::LoconetSIC:
                 QTest::newRow(entry.key()) << false << entry.value()
-                                           << rm::DetectorAddress::forLoconetSIC()
-                                           << rm::DetectorAddress::forLoconetSIC();
+                                           << DetectorAddress::forLoconetSIC()
+                                           << DetectorAddress::forLoconetSIC();
                 break;
 
-            case rm::DetectorAddress::Type::LoconetModule:
+            case DetectorAddress::Type::LoconetModule:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forLoconetModule(0)
-                                           << rm::DetectorAddress::forLoconetModule(1);
+                                           << DetectorAddress::forLoconetModule(0)
+                                           << DetectorAddress::forLoconetModule(1);
                 break;
 
-            case rm::DetectorAddress::Type::RBusGroup:
+            case DetectorAddress::Type::RBusGroup:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forRBusGroup(0)
-                                           << rm::DetectorAddress::forRBusGroup(1);
+                                           << DetectorAddress::forRBusGroup(0)
+                                           << DetectorAddress::forRBusGroup(1);
                 break;
 
-            case rm::DetectorAddress::Type::RBusModule:
+            case DetectorAddress::Type::RBusModule:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forRBusModule(1)
-                                           << rm::DetectorAddress::forRBusModule(2);
+                                           << DetectorAddress::forRBusModule(1)
+                                           << DetectorAddress::forRBusModule(2);
                 break;
 
-            case rm::DetectorAddress::Type::RBusPort:
+            case DetectorAddress::Type::RBusPort:
                 QTest::newRow(entry.key()) << true << entry.value()
-                                           << rm::DetectorAddress::forRBusPort(1, 1)
-                                           << rm::DetectorAddress::forRBusPort(1, 2);
+                                           << DetectorAddress::forRBusPort(1, 1)
+                                           << DetectorAddress::forRBusPort(1, 2);
                 break;
             }
         }
@@ -149,9 +152,9 @@ private slots:
     void testDetectorAddress()
     {
         const QFETCH(bool, expectUniqueAddresses);
-        const QFETCH(rm::DetectorAddress::Type, expectedType);
-        const QFETCH(rm::DetectorAddress, firstAddress);
-        const QFETCH(rm::DetectorAddress, secondAddress);
+        const QFETCH(DetectorAddress::Type, expectedType);
+        const QFETCH(DetectorAddress, firstAddress);
+        const QFETCH(DetectorAddress, secondAddress);
 
         qInfo() << firstAddress;
 
@@ -161,15 +164,15 @@ private slots:
         QVERIFY(firstAddress == firstAddress);
         QVERIFY(qHash(firstAddress) == qHash(firstAddress));
 
-        if (expectedType != rm::DetectorAddress::Type::Invalid)
-            QVERIFY(firstAddress != rm::DetectorAddress{});
+        if (expectedType != DetectorAddress::Type::Invalid)
+            QVERIFY(firstAddress != DetectorAddress{});
         else
-            QVERIFY(firstAddress == rm::DetectorAddress{});
+            QVERIFY(firstAddress == DetectorAddress{});
 
         if (expectUniqueAddresses) {
             QVERIFY(firstAddress != secondAddress);
             QVERIFY(secondAddress != firstAddress);
-            QVERIFY(secondAddress != rm::DetectorAddress{});
+            QVERIFY(secondAddress != DetectorAddress{});
 
             QVERIFY(qHash(firstAddress) != qHash(secondAddress));
             QVERIFY(qHash(secondAddress) != qHash(firstAddress));

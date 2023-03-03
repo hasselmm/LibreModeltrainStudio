@@ -1,6 +1,7 @@
 #include "vehicleinfomodel.h"
 
 #include "algorithms.h"
+#include "logging.h"
 #include "userliterals.h"
 
 namespace lmrs::core {
@@ -210,6 +211,20 @@ QVariant VehicleInfoModel::headerData(int section, Qt::Orientation orientation, 
     }
 
     return {};
+}
+
+QDebug operator<<(QDebug debug, const VehicleInfo &info)
+{
+    const auto prettyPrinter = PrettyPrinter<decltype(info)>{debug};
+
+    debug.setVerbosity(0);
+    debug << "address=" << info.address()
+          << ", direction=" << info.direction()
+          << ", speed=" << info.speed()
+          << ", flags=" << info.flags()
+          << ", functionState=" << info.functionState();
+
+    return debug;
 }
 
 } // namespace lmrs::core

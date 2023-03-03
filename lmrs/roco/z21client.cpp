@@ -21,6 +21,8 @@ namespace lmrs::roco::z21 {
 
 namespace {
 
+using namespace accessory;
+
 using core::callIfDefined;
 
 auto &lcRequests() { struct Requests {}; return core::logger<Client, Requests>(); }
@@ -188,31 +190,31 @@ RBusDetectorInfo::RBusDetectorInfo(QByteArray data)
 
 bool RBusDetectorInfo::isValid() const
 {
-    return m_data.size() >= 1 + rm::rbus::ModulesPerGroup;
+    return m_data.size() >= 1 + rbus::ModulesPerGroup;
 }
 
-rm::rbus::GroupId RBusDetectorInfo::group() const
+rbus::GroupId RBusDetectorInfo::group() const
 {
     return static_cast<quint8>(m_data[0]);
 }
 
 QBitArray RBusDetectorInfo::occupancy() const
 {
-    return QBitArray::fromBits(m_data.constData() + 1, rm::rbus::PortsPerGroup);
+    return QBitArray::fromBits(m_data.constData() + 1, rbus::PortsPerGroup);
 }
 
-RBusDetectorInfo::operator QList<core::DetectorInfo>() const
+RBusDetectorInfo::operator QList<DetectorInfo>() const
 {
-    auto result = QList<core::DetectorInfo>{};
-    result.reserve(rm::rbus::PortsPerGroup);
+    auto result = QList<DetectorInfo>{};
+    result.reserve(rbus::PortsPerGroup);
 
-    auto address = rm::DetectorAddress::forRBusGroup(group());
-    const auto powerState = core::DetectorInfo::PowerState::Unknown;
+    auto address = DetectorAddress::forRBusGroup(group());
+    const auto powerState = DetectorInfo::PowerState::Unknown;
     const auto occupancyState = occupancy();
 
     for (auto port = 0; port < occupancyState.size(); ++port) {
-        const auto occupancy = occupancyState[port] ? core::DetectorInfo::Occupancy::Occupied
-                                                    : core::DetectorInfo::Occupancy::Free;
+        const auto occupancy = occupancyState[port] ? DetectorInfo::Occupancy::Occupied
+                                                    : DetectorInfo::Occupancy::Free;
 
         result.emplaceBack(std::move(address), occupancy, powerState);
     }
@@ -250,7 +252,7 @@ LoconetDetectorInfo::Type LoconetDetectorInfo::type() const
     return static_cast<Type>(m_data[0]);
 }
 
-rm::loconet::ReportAddress LoconetDetectorInfo::address() const
+loconet::ReportAddress LoconetDetectorInfo::address() const
 {
     return qFromLittleEndian<quint16>(m_data.constData() + 1);
 }
@@ -326,28 +328,28 @@ quint16 LoconetDetectorInfo::lissySpeed() const
     return {};
 }
 
-QList<core::DetectorInfo> LoconetDetectorInfo::merge(QList<LoconetDetectorInfo> /*infoList*/)
+QList<DetectorInfo> LoconetDetectorInfo::merge(QList<LoconetDetectorInfo> /*infoList*/)
 {
     return {};
 }
 
-std::pair<LoconetDetectorInfo::Query, quint16> LoconetDetectorInfo::address(const rm::DetectorAddress &address)
+std::pair<LoconetDetectorInfo::Query, quint16> LoconetDetectorInfo::address(const DetectorAddress &address)
 {
     switch (address.type()) {
-    case rm::DetectorAddress::Type::LoconetSIC:
+    case DetectorAddress::Type::LoconetSIC:
         return {Query::SIC, 0};
-    case rm::DetectorAddress::Type::LoconetModule:
+    case DetectorAddress::Type::LoconetModule:
         return {Query::Report, address.loconetModule()};
-    case rm::DetectorAddress::Type::LissyModule:
+    case DetectorAddress::Type::LissyModule:
         return {Query::Lissy, address.lissyModule()};
 
-    case rm::DetectorAddress::Type::CanModule:
-    case rm::DetectorAddress::Type::CanNetwork:
-    case rm::DetectorAddress::Type::CanPort:
-    case rm::DetectorAddress::Type::RBusGroup:
-    case rm::DetectorAddress::Type::RBusModule:
-    case rm::DetectorAddress::Type::RBusPort:
-    case rm::DetectorAddress::Type::Invalid:
+    case DetectorAddress::Type::CanModule:
+    case DetectorAddress::Type::CanNetwork:
+    case DetectorAddress::Type::CanPort:
+    case DetectorAddress::Type::RBusGroup:
+    case DetectorAddress::Type::RBusModule:
+    case DetectorAddress::Type::RBusPort:
+    case DetectorAddress::Type::Invalid:
         break;
     }
 
@@ -363,17 +365,17 @@ bool CanDetectorInfo::isValid() const
     return m_data.size() >= 10;
 }
 
-rm::can::NetworkId CanDetectorInfo::networkId() const
+can::NetworkId CanDetectorInfo::networkId() const
 {
     return qFromLittleEndian<quint16>(m_data.constData());
 }
 
-rm::can::ModuleId CanDetectorInfo::module() const
+can::ModuleId CanDetectorInfo::module() const
 {
     return qFromLittleEndian<quint16>(m_data.constData() + 2);
 }
 
-rm::can::PortIndex CanDetectorInfo::port() const
+can::PortIndex CanDetectorInfo::port() const
 {
     return static_cast<quint8>(m_data[4]);
 }
@@ -449,16 +451,16 @@ QList<dcc::Direction> CanDetectorInfo::directions() const
     return directions;
 }
 
-QList<core::DetectorInfo> CanDetectorInfo::merge(QList<CanDetectorInfo> infoList)
+QList<DetectorInfo> CanDetectorInfo::merge(QList<CanDetectorInfo> infoList)
 {
     struct GenericInfoChunk {
-        GenericInfoChunk(CanDetectorInfo::Key key, rm::DetectorAddress address)
+        GenericInfoChunk(CanDetectorInfo::Key key, DetectorAddress address)
             : key{std::move(key)}
             , info{std::move(address)}
         {}
 
         CanDetectorInfo::Key key;
-        core::DetectorInfo info;
+        DetectorInfo info;
     };
 
     auto genericInfoList = QList<GenericInfoChunk>{};
@@ -470,7 +472,7 @@ QList<core::DetectorInfo> CanDetectorInfo::merge(QList<CanDetectorInfo> infoList
         });
 
         if (it == genericInfoList.end()) {
-            auto address = rm::DetectorAddress::forCanPort(info.networkId(), info.module(), info.port());
+            auto address = DetectorAddress::forCanPort(info.networkId(), info.module(), info.port());
             it = genericInfoList.emplace(genericInfoList.end(), info.key(), std::move(address));
         }
 
@@ -503,7 +505,7 @@ QList<core::DetectorInfo> CanDetectorInfo::merge(QList<CanDetectorInfo> infoList
         qCWarning(core::logger<CanDetectorInfo>(), "Unsupported CAN info type: %d", core::value(info.type()));
     }
 
-    auto result = QList<core::DetectorInfo>{};
+    auto result = QList<DetectorInfo>{};
     result.reserve(genericInfoList.size());
 
     std::transform(genericInfoList.constBegin(), genericInfoList.constEnd(),
@@ -683,7 +685,7 @@ public:
     using Observer = std::function<bool(Message message)>;
     void sendRequest(QByteArray request, Observer observer);
 
-    void startFeedbackModuleProgramming(rm::rbus::ModuleId module);
+    void startFeedbackModuleProgramming(rbus::ModuleId module);
     void stopFeedbackModuleProgramming();
     void runFeedbackModuleProgramming();
 
@@ -713,7 +715,7 @@ public:
     void reportError(Error error);
 
     using CanDetectorInfoCallback = std::function<void(QList<CanDetectorInfo>)>;
-    void queueCanDetectorInfoCallback(rm::can::NetworkId networkId, CanDetectorInfoCallback callback);
+    void queueCanDetectorInfoCallback(can::NetworkId networkId, CanDetectorInfoCallback callback);
 
     using LoconetDetectorInfoCallback = std::function<void(QList<LoconetDetectorInfo>)>;
     void queueLoconetDetectorInfoCallback(LoconetDetectorInfo::Query type, quint16 address,
@@ -758,7 +760,7 @@ private:
     };
 
     void mergeCanDetectorInfo(CanDetectorInfo info);
-    void maybeEmitCanDetectorInfo(rm::can::NetworkId networkId, const CanNetworkState &networkState);
+    void maybeEmitCanDetectorInfo(can::NetworkId networkId, const CanNetworkState &networkState);
 
     void mergeLoconetDetectorInfo(LoconetDetectorInfo info);
     void emitPendingLoconetDetectorInfo();
@@ -822,8 +824,8 @@ private:
     Timer m_feedbackProgrammingTimer{this};
     QByteArray m_feedbackProgrammingRequest;
 
-    QHash<rm::can::NetworkId, CanNetworkState> m_canDetectorStates;
-    QHash<rm::can::NetworkId, QList<CanDetectorInfoCallback>> m_canDetectorCallbacks;
+    QHash<can::NetworkId, CanNetworkState> m_canDetectorStates;
+    QHash<can::NetworkId, QList<CanDetectorInfoCallback>> m_canDetectorCallbacks;
 
     QHash<quint32, QList<LoconetDetectorInfo>> m_pendingLoconetDetectorInfo;
     QHash<quint32, QList<LoconetDetectorInfoCallback>> m_loconetDetectorInfoCallbacks;
@@ -1007,7 +1009,7 @@ void Client::Private::sendRequest(QByteArray request, Observer observer)
     m_sendBuffer.append(std::move(request));
 }
 
-void Client::Private::startFeedbackModuleProgramming(rm::rbus::ModuleId module)
+void Client::Private::startFeedbackModuleProgramming(rbus::ModuleId module)
 {
     if (m_feedbackProgrammingTimer.start(1s)) {
         m_feedbackProgrammingRequest = "05 00 82 00 00"_hex;
@@ -1195,7 +1197,7 @@ void Client::Private::reportError(Error error)
     emit q()->errorOccured(error);
 }
 
-void Client::Private::queueCanDetectorInfoCallback(rm::can::NetworkId networkId, CanDetectorInfoCallback callback)
+void Client::Private::queueCanDetectorInfoCallback(can::NetworkId networkId, CanDetectorInfoCallback callback)
 {
     if (callback)
         m_canDetectorCallbacks[networkId] += std::move(callback);
@@ -1445,7 +1447,7 @@ bool Client::Private::CanNetworkState::isComplete() const noexcept
     return true;
 }
 
-void Client::Private::maybeEmitCanDetectorInfo(rm::can::NetworkId networkId, const CanNetworkState &networkState)
+void Client::Private::maybeEmitCanDetectorInfo(can::NetworkId networkId, const CanNetworkState &networkState)
 {
     //    Q_ASSERT(!infoList.isEmpty()); // FIXME: soft assert
 
@@ -1468,7 +1470,7 @@ void Client::Private::maybeEmitCanDetectorInfo(rm::can::NetworkId networkId, con
         return;
 
     const auto networkAndWildcardCallbacks = std::exchange(m_canDetectorCallbacks[networkId], {})
-            + std::exchange(m_canDetectorCallbacks[rm::can::NetworkIdAny], {});
+            + std::exchange(m_canDetectorCallbacks[can::NetworkIdAny], {});
 
     for (const auto &state: networkState.detectors) {
         qCInfo(lcCanDetector, "Emitting CAN detector info (network id: 0x%04x, module: %d, port: %d)",
@@ -2051,37 +2053,37 @@ void Client::queryTurnoutInfo(dcc::AccessoryAddress address, std::function<void 
     });
 }
 
-void Client::queryDetectorInfo(rm::DetectorAddress address, std::function<void(QList<core::DetectorInfo>)> callback)
+void Client::queryDetectorInfo(DetectorAddress address, std::function<void(QList<DetectorInfo>)> callback)
 {
     switch (address.type()) {
-    case rm::DetectorAddress::Type::RBusGroup:
-    case rm::DetectorAddress::Type::RBusModule:
-    case rm::DetectorAddress::Type::RBusPort:
+    case DetectorAddress::Type::RBusGroup:
+    case DetectorAddress::Type::RBusModule:
+    case DetectorAddress::Type::RBusPort:
         queryRBusDetectorInfo(address.rbusGroup(), [callback](RBusDetectorInfo info) {
             // FIXME: try filtering for the requested module and port
-            callIfDefined(callback, static_cast<QList<core::DetectorInfo>>(info));
+            callIfDefined(callback, static_cast<QList<DetectorInfo>>(info));
         });
 
         break;
 
-    case rm::DetectorAddress::Type::LoconetSIC:
+    case DetectorAddress::Type::LoconetSIC:
         Q_UNIMPLEMENTED();
 //        queryLoconetDetectorInfo(0x80, 0, std::move(callback));
         break;
 
-    case rm::DetectorAddress::Type::LoconetModule:
+    case DetectorAddress::Type::LoconetModule:
         Q_UNIMPLEMENTED();
 //        queryLoconetDetectorInfo(0x81, address.reportAddress, std::move(callback));
         break;
 
-    case rm::DetectorAddress::Type::LissyModule:
+    case DetectorAddress::Type::LissyModule:
         Q_UNIMPLEMENTED();
 //        queryLoconetDetectorInfo(0x82, address.lissyAddress, std::move(callback));
         break;
 
-    case rm::DetectorAddress::Type::CanNetwork:
-    case rm::DetectorAddress::Type::CanModule:
-    case rm::DetectorAddress::Type::CanPort:
+    case DetectorAddress::Type::CanNetwork:
+    case DetectorAddress::Type::CanModule:
+    case DetectorAddress::Type::CanPort:
         queryCanDetectorInfo(address.canNetwork(), [callback](QList<CanDetectorInfo> info) {
             // FIXME: try filtering for the requested module and port
             callIfDefined(callback, {CanDetectorInfo::merge(std::move(info))});
@@ -2089,12 +2091,12 @@ void Client::queryDetectorInfo(rm::DetectorAddress address, std::function<void(Q
 
         break;
 
-    case rm::DetectorAddress::Type::Invalid:
+    case DetectorAddress::Type::Invalid:
         break;
     }
 }
 
-void Client::queryRBusDetectorInfo(rm::rbus::GroupId group, std::function<void(RBusDetectorInfo)> callback)
+void Client::queryRBusDetectorInfo(rbus::GroupId group, std::function<void(RBusDetectorInfo)> callback)
 {
     auto request = "05 00 81 00 00"_hex;
     qToBigEndian(static_cast<quint8>(group), request.data() + 4);
@@ -2130,7 +2132,7 @@ void Client::queryLoconetDetectorInfo(LoconetDetectorInfo::Query type, quint16 a
     d->sendRequest(std::move(request), {});
 }
 
-void Client::queryCanDetectorInfo(rm::can::NetworkId networkId, std::function<void(QList<CanDetectorInfo>)> callback)
+void Client::queryCanDetectorInfo(can::NetworkId networkId, std::function<void(QList<CanDetectorInfo>)> callback)
 {
     auto request = "07 00 C4 00 00 00 00"_hex;
     qToLittleEndian<quint16>(networkId, request.data() + 5);
@@ -2306,7 +2308,7 @@ void Client::readVariables(quint16 address, QList<quint16> indices,
     }
 }
 
-void Client::startDetectorProgramming(rm::rbus::ModuleId module)
+void Client::startDetectorProgramming(rbus::ModuleId module)
 {
     d->startFeedbackModuleProgramming(module);
 }
@@ -2328,7 +2330,7 @@ void Client::connectToHost(Subscriptions subscriptions, QHostAddress host, quint
         emit connected();
 
         // FIXME: maybe only do for black Z21
-        queryCanDetectorInfo(rm::can::NetworkIdAny, {});
+        queryCanDetectorInfo(can::NetworkIdAny, {});
     });
 }
 
