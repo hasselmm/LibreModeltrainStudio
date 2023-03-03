@@ -907,7 +907,7 @@ public:
 
     constexpr DetectorAddress() noexcept = default;
 
-    auto type() const { return Type{static_cast<int>(m_value.index())}; }
+    constexpr auto type() const { return Type{static_cast<int>(m_value.index())}; }
 
 public slots:
     can::NetworkId canNetwork() const;
@@ -956,6 +956,8 @@ private:
 
     value_type m_value;
 };
+
+static_assert(DetectorAddress{}.type() == DetectorAddress::Type::Invalid);
 
 QDebug operator<<(QDebug debug, const DetectorAddress &address);
 
