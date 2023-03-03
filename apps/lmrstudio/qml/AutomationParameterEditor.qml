@@ -49,7 +49,10 @@ Item {
 
             onCurrentIndexChanged: {
                 // FIXME: handle optional parameters
-                editor.setValue(model[currentIndex].value);
+                const newValue = model[currentIndex].value;
+
+                if (newValue !== editor.value)
+                    editor.setValue(newValue);
             }
         }
     }
