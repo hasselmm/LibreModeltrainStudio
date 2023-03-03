@@ -345,9 +345,9 @@ Request Request::vehicleControl(dcc::VehicleAddress address, dcc::Speed speed,
                     static_cast<quint8>((63 & (address.value >> 8)) | AddressType::DCC),
                     static_cast<quint8>(255 & address.value),
                     static_cast<quint8>(rawSpeed),
-                    static_cast<quint8>((direction == dcc::Direction::Reverse ? 0x20 : 0x00)
-                                        | (functions.test(0) ? 0x10 : 0x00)
-                                        | (speedSystem)),
+                    static_cast<quint8>((direction == dcc::Direction::Reverse ? 0x20_u8 : 0x00_u8)
+                                        | (functions.test(0) ? 0x10_u8 : 0x00_u8)
+                                        | core::value(speedSystem)),
                     static_cast<quint8>(255 & (functions >> 1).to_ulong()),
                     static_cast<quint8>(15  & (functions >> 9).to_ulong()),
                     static_cast<quint8>(255 & (functions >> 13).to_ulong()),

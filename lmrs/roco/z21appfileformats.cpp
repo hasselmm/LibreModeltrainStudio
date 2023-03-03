@@ -250,7 +250,9 @@ bool LayoutReaderContext::readPages()
         if (!pageContext.readPageBounds()
                 || !pageContext.readControls()
                 || !pageContext.readNotes()
-                || !pageContext.readResponseModules())
+                || !pageContext.readResponseModules()
+                || !pageContext.readRoutes()
+                || !pageContext.readSignals())
             return false;
 
         layout->pages.emplace_back(std::move(pageContext.page));

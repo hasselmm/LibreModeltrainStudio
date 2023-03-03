@@ -15,9 +15,17 @@ struct Public
     {
         using PublicObjectType = Public;
 
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_GCC("-Wtautological-compare")
+
         static_assert(&staticMetaObject == &Base::staticMetaObject);
+
+        QT_WARNING_POP
+
+#ifndef Q_CC_GNU
         static_assert(LMRS_STATIC_METAOBJECT != &Base::staticMetaObject);
         static_assert(LMRS_STATIC_METAOBJECT == &Public::staticMetaObject);
+#endif
     };
 
     static_assert(IsPrivateObject<Private>);
