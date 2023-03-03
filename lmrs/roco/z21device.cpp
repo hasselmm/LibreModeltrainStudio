@@ -822,5 +822,4 @@ core::Device *DeviceFactory::create(QVariantMap parameters, QObject *parent)
     return {};
 }
 
-
 } // namespace lmrs::roco::z21
