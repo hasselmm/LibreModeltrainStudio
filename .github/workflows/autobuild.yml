@@ -43,8 +43,9 @@ jobs:
           -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-14
           -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache
           -DCMAKE_MAKE_PROGRAM:FILEPATH=$IQTA_TOOLS/Ninja/ninja
+          -DCPACK_BINARY_DEB:BOOL=ON
           -DCPACK_BINARY_STGZ:BOOL=OFF
-          -DCPACK_BINARY_TGZ:BOOL=ON
+          -DCPACK_BINARY_TGZ:BOOL=OFF
           -DCPACK_BINARY_TZ:BOOL=OFF
           ..
 
@@ -63,8 +64,8 @@ jobs:
       - name: Archive packages
         uses: actions/upload-artifact@v3
         with:
-          name: packages
-          path: build/*.tar.gz
+          name: packages-linux-x86_64
+          path: build/*.deb
           retention-days: 3
 
   Build-on-Windows:
@@ -120,6 +121,6 @@ jobs:
       - name: Archive packages
         uses: actions/upload-artifact@v3
         with:
-          name: packages
+          name: packages-windows-x86_64
           path: build/*.zip
           retention-days: 3

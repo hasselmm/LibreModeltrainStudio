@@ -6,6 +6,8 @@ project(
     LANGUAGES CXX
 )
 
+set(CPACK_PACKAGE_CONTACT "Mathias Hasselmann <mathias+lmrs@taschenorakel.de>")
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(LmrsSupport)
 
