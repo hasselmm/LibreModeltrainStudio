@@ -36,6 +36,11 @@ endfunction()
 ## =====================================================================================================================
 
 function(lmrs_install_qt_runtime TARGET)
+    if (CMAKE_SYSTEM_NAME MATCHES Linux)
+        message(STATUS "Qt doesn't provide a deployment tool yet")
+        return()
+    endif()
+
     # Install instructions must be written to a CMake script as it depends on generator expressions
     set(deployment_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_${TARGET}.cmake")
 
