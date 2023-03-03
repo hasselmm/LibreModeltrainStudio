@@ -433,16 +433,16 @@ public:
 
     [[nodiscard]] virtual const AccessoryControl *accessoryControl() const { return const_cast<Device *>(this)->accessoryControl(); }
     [[nodiscard]] virtual const DebugControl *debugControl() const { return const_cast<Device *>(this)->debugControl(); }
-    [[nodiscard]] virtual const PowerControl *powerControl() const { return const_cast<Device *>(this)->powerControl(); }
     [[nodiscard]] virtual const DetectorControl *detectorControl() const { return const_cast<Device *>(this)->detectorControl(); }
+    [[nodiscard]] virtual const PowerControl *powerControl() const { return const_cast<Device *>(this)->powerControl(); }
     [[nodiscard]] virtual const SpeedMeterControl *speedMeterControl() const { return const_cast<Device *>(this)->speedMeterControl(); }
     [[nodiscard]] virtual const VariableControl *variableControl() const { return const_cast<Device *>(this)->variableControl(); }
     [[nodiscard]] virtual const VehicleControl *vehicleControl() const { return const_cast<Device *>(this)->vehicleControl(); }
 
     [[nodiscard]] virtual AccessoryControl *accessoryControl() { return nullptr; }
     [[nodiscard]] virtual DebugControl *debugControl() { return nullptr; }
-    [[nodiscard]] virtual PowerControl *powerControl() { return nullptr; }
     [[nodiscard]] virtual DetectorControl *detectorControl() { return nullptr; }
+    [[nodiscard]] virtual PowerControl *powerControl() { return nullptr; }
     [[nodiscard]] virtual SpeedMeterControl *speedMeterControl() { return nullptr; }
     [[nodiscard]] virtual VariableControl *variableControl() { return nullptr; }
     [[nodiscard]] virtual VehicleControl *vehicleControl() { return nullptr; }
