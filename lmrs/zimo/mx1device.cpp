@@ -77,9 +77,10 @@ struct RequestKey
     constexpr RequestKey(const RequestKey &) noexcept = default;
     constexpr RequestKey(Request::SequenceNumber sequence, Request::Code code)
         : sequence{sequence}, code{code} {}
-    constexpr RequestKey(const Request &request)
+
+    RequestKey(const Request &request)
         : RequestKey{request.sequence(), request.code()} {}
-    constexpr RequestKey(const Response &response)
+    RequestKey(const Response &response)
         : RequestKey{response.requestSequence(), response.requestCode()} {}
 };
 
