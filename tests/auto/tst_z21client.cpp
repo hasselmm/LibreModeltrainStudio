@@ -11,6 +11,7 @@ template<typename T> QList(int, const T &) -> QList<T>;
 
 namespace lmrs::roco::z21::tests {
 
+using namespace core::accessory;
 using namespace std::chrono_literals;
 using std::chrono::milliseconds;
 
@@ -230,10 +231,9 @@ private slots:
     {
         using dcc::Direction;
         using dcc::VehicleAddress;
-        using rm::DetectorAddress;
 
-        using Occupancy = core::DetectorInfo::Occupancy;
-        using PowerState = core::DetectorInfo::PowerState;
+        using Occupancy = DetectorInfo::Occupancy;
+        using PowerState = DetectorInfo::PowerState;
 
         QTest::addColumn<DetectorAddress>("genericAddress");
         QTest::addColumn<QList<DetectorAddress>>("expectedModules");
@@ -244,10 +244,10 @@ private slots:
         QTest::addColumn<QList<QList<Direction>>>("expectedDirections");
 
         QTest::newRow("rbus:group")
-                << rm::DetectorAddress::forRBusGroup(1)
-                << QList{rm::rbus::PortsPerGroup, rm::DetectorAddress::forRBusGroup(1)}
-                << iota<int>(rm::rbus::PortsPerGroup)
-                << (QList{rm::rbus::PortsPerGroup, Occupancy::Free}
+                << DetectorAddress::forRBusGroup(1)
+                << QList{rbus::PortsPerGroup, DetectorAddress::forRBusGroup(1)}
+                << iota<int>(rbus::PortsPerGroup)
+                << (QList{rbus::PortsPerGroup, Occupancy::Free}
                     | Patch{0, Occupancy::Occupied}
                     | Patch{9, Occupancy::Occupied}
                     | Patch{18, Occupancy::Occupied}
@@ -260,9 +260,9 @@ private slots:
                     | Patch{68, Occupancy::Occupied}
                     | Patch{73, Occupancy::Occupied}
                     | Patch{77, Occupancy::Occupied})
-                << QList{rm::rbus::PortsPerGroup, PowerState::Unknown}
-                << QList{rm::rbus::PortsPerGroup, QList<VehicleAddress>{}}
-                << QList{rm::rbus::PortsPerGroup, QList<Direction>{}};
+                << QList{rbus::PortsPerGroup, PowerState::Unknown}
+                << QList{rbus::PortsPerGroup, QList<VehicleAddress>{}}
+                << QList{rbus::PortsPerGroup, QList<Direction>{}};
 
         QTest::newRow("loconet:SIC")
                 << DetectorAddress::forLoconetSIC()
@@ -295,7 +295,7 @@ private slots:
         const auto canModuleTwo = DetectorAddress::forCanModule(0x5678, 257);
 
         QTest::newRow("can:all")
-                << DetectorAddress::forCanNetwork(rm::can::NetworkIdAny)
+                << DetectorAddress::forCanNetwork(can::NetworkIdAny)
                 << QList{canModuleOne, canModuleOne, canModuleTwo}
                 << QList{0, 1, 0, }
                 << QList{Occupancy::Free, Occupancy::Occupied, Occupancy::Occupied}
@@ -324,11 +324,11 @@ private slots:
 
     void testQueryDetectorInfo()
     {
-        QFETCH(rm::DetectorAddress,                     genericAddress);
-        QFETCH(QList<rm::DetectorAddress>,              expectedModules);
+        QFETCH(DetectorAddress,                     genericAddress);
+        QFETCH(QList<DetectorAddress>,              expectedModules);
         QFETCH(QList<int>,                              expectedPorts);
-        QFETCH(QList<core::DetectorInfo::Occupancy>,    expectedOccupancies);
-        QFETCH(QList<core::DetectorInfo::PowerState>,   expectedPowerStates);
+        QFETCH(QList<DetectorInfo::Occupancy>,    expectedOccupancies);
+        QFETCH(QList<DetectorInfo::PowerState>,   expectedPowerStates);
         QFETCH(QList<QList<dcc::VehicleAddress>>,       expectedVehicles);
         QFETCH(QList<QList<dcc::Direction>>,            expectedDirections);
 
@@ -353,10 +353,10 @@ private slots:
         auto actualCanInfo = QList<QList<CanDetectorInfo>>{};
         auto actualLoconetInfo = QList<QList<LoconetDetectorInfo>>{};
         auto actualRBusInfo = QList<RBusDetectorInfo>{};
-        auto actualDetectorInfo = QList<core::DetectorInfo>{};
+        auto actualDetectorInfo = QList<DetectorInfo>{};
 
         // run native queries
-        if (genericAddress.type() == rm::DetectorAddress::Type::CanNetwork) {
+        if (genericAddress.type() == DetectorAddress::Type::CanNetwork) {
             client->queryCanDetectorInfo(genericAddress.canNetwork(), [&actualDetectorInfo, &actualCanInfo](auto info) {
                 actualDetectorInfo += CanDetectorInfo::merge(info);
                 actualCanInfo += std::move(info);
@@ -365,7 +365,7 @@ private slots:
             QVERIFY(QTest::qWaitFor([&actualCanInfo] {
                 return !actualCanInfo.isEmpty();
             }, milliseconds(1s).count()));
-        } else if (genericAddress.type() == rm::DetectorAddress::Type::RBusModule) {
+        } else if (genericAddress.type() == DetectorAddress::Type::RBusModule) {
             client->queryRBusDetectorInfo(genericAddress.rbusGroup(), [&actualDetectorInfo, &actualRBusInfo](auto info) {
                 actualDetectorInfo += info;
                 actualRBusInfo += std::move(info);
@@ -378,7 +378,7 @@ private slots:
             auto expectedOccupancyState = QBitArray{expectedOccupancies.size()};
 
             for (auto i = 0; i < expectedOccupancies.size(); ++i)
-                expectedOccupancyState[i] = (expectedOccupancies[i] == core::DetectorInfo::Occupancy::Occupied);
+                expectedOccupancyState[i] = (expectedOccupancies[i] == DetectorInfo::Occupancy::Occupied);
 
             QCOMPARE(actualRBusInfo.count(), 1);
 
@@ -405,7 +405,7 @@ private slots:
         QCOMPARE(flatten<CanDetectorInfo>(canDetectorInfoReceived), flatten(actualCanInfo));
         QCOMPARE(flatten<LoconetDetectorInfo>(loconetDetectorInfoReceived), flatten(actualLoconetInfo));
         QCOMPARE(flatten<RBusDetectorInfo>(rbusDetectorInfoReceived), actualRBusInfo);
-        QCOMPARE(flatten<core::DetectorInfo>(detectorInfoReceived), actualDetectorInfo);
+        QCOMPARE(flatten<DetectorInfo>(detectorInfoReceived), actualDetectorInfo);
 
         // verify we received sufficient generic detector info
         QCOMPARE(actualDetectorInfo.count(), expectedModules.count());

@@ -2,12 +2,13 @@
 #define LMRS_CORE_AUTOMATIONMODEL_H
 
 #include "dccconstants.h"
+#include "detectors.h"
 #include "fileformat.h"
 
 #include <QAbstractListModel>
 
 namespace lmrs::core::parameters {
-class Parameter;
+struct Parameter;
 }
 
 namespace lmrs::core::automation {
@@ -271,7 +272,7 @@ class DetectorEvent : public Event
 {
     Q_OBJECT
 
-    Q_PROPERTY(lmrs::core::rm::DetectorAddress detector READ detector NOTIFY detectorChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::DetectorAddress detector READ detector NOTIFY detectorChanged FINAL)
     Q_PROPERTY(bool hasDetector READ hasDetector NOTIFY detectorChanged FINAL)
 
     Q_PROPERTY(QList<lmrs::core::dcc::VehicleAddress> vehicles READ vehicles WRITE setVehicles NOTIFY vehiclesChanged FINAL)
@@ -290,7 +291,7 @@ public:
 
     QList<Parameter> parameters() const override;
 
-    virtual rm::DetectorAddress detector() const = 0;
+    virtual accessory::DetectorAddress detector() const = 0;
     virtual bool hasDetector() const = 0;
 
     void setVehicles(QList<dcc::VehicleAddress> newVehicles);
@@ -300,7 +301,7 @@ public:
     Type type() const;
 
 signals:
-    void detectorChanged(lmrs::core::rm::DetectorAddress detector, QPrivateSignal);
+    void detectorChanged(lmrs::core::accessory::DetectorAddress detector, QPrivateSignal);
     void vehiclesChanged(QList<lmrs::core::dcc::VehicleAddress> vehicles, QPrivateSignal);
     void typeChanged(lmrs::core::automation::DetectorEvent::Type type, QPrivateSignal);
 
@@ -315,13 +316,13 @@ class CanDetectorEvent : public DetectorEvent
 {
     Q_OBJECT
 
-    Q_PROPERTY(lmrs::core::rm::can::NetworkId network READ network WRITE setNetwork RESET resetNetwork NOTIFY networkChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::can::NetworkId network READ network WRITE setNetwork RESET resetNetwork NOTIFY networkChanged FINAL)
     Q_PROPERTY(bool hasNetwork READ hasNetwork NOTIFY networkChanged FINAL)
 
-    Q_PROPERTY(lmrs::core::rm::can::ModuleId module READ module WRITE setModule RESET resetModule NOTIFY moduleChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::can::ModuleId module READ module WRITE setModule RESET resetModule NOTIFY moduleChanged FINAL)
     Q_PROPERTY(bool hasModule READ hasModule NOTIFY moduleChanged FINAL)
 
-    Q_PROPERTY(lmrs::core::rm::can::PortIndex port READ port WRITE setPort RESET resetPort NOTIFY portChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::can::PortIndex port READ port WRITE setPort RESET resetPort NOTIFY portChanged FINAL)
     Q_PROPERTY(bool hasPort READ hasPort NOTIFY portChanged FINAL)
 
 public:
@@ -330,19 +331,19 @@ public:
     QString name() const override;
     QList<Parameter> parameters() const override;
 
-    rm::DetectorAddress detector() const override;
+    accessory::DetectorAddress detector() const override;
     bool hasDetector() const override;
 
-    void setNetwork(rm::can::NetworkId newNetwork);
-    rm::can::NetworkId network() const;
+    void setNetwork(accessory::can::NetworkId newNetwork);
+    accessory::can::NetworkId network() const;
     bool hasNetwork() const;
 
-    void setModule(rm::can::ModuleId newModule);
-    rm::can::ModuleId module() const;
+    void setModule(accessory::can::ModuleId newModule);
+    accessory::can::ModuleId module() const;
     bool hasModule() const;
 
-    void setPort(rm::can::PortIndex newPort);
-    rm::can::PortIndex port() const;
+    void setPort(accessory::can::PortIndex newPort);
+    accessory::can::PortIndex port() const;
     bool hasPort() const;
 
 public slots:
@@ -351,14 +352,14 @@ public slots:
     void resetPort();
 
 signals:
-    void networkChanged(lmrs::core::rm::can::NetworkId network, QPrivateSignal);
-    void moduleChanged(lmrs::core::rm::can::ModuleId module, QPrivateSignal);
-    void portChanged(lmrs::core::rm::can::PortIndex port, QPrivateSignal);
+    void networkChanged(lmrs::core::accessory::can::NetworkId network, QPrivateSignal);
+    void moduleChanged(lmrs::core::accessory::can::ModuleId module, QPrivateSignal);
+    void portChanged(lmrs::core::accessory::can::PortIndex port, QPrivateSignal);
 
 private:
-    std::optional<rm::can::NetworkId> m_network;
-    std::optional<rm::can::ModuleId> m_module;
-    std::optional<rm::can::PortIndex> m_port;
+    std::optional<accessory::can::NetworkId> m_network;
+    std::optional<accessory::can::ModuleId> m_module;
+    std::optional<accessory::can::PortIndex> m_port;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -367,7 +368,7 @@ class RBusDetectorGroupEvent : public DetectorEvent
 {
     Q_OBJECT
 
-    Q_PROPERTY(lmrs::core::rm::rbus::GroupId group READ group WRITE setGroup RESET resetGroup NOTIFY groupChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::rbus::GroupId group READ group WRITE setGroup RESET resetGroup NOTIFY groupChanged FINAL)
     Q_PROPERTY(bool hasGroup READ hasGroup NOTIFY groupChanged FINAL)
 
 public:
@@ -376,21 +377,21 @@ public:
     QString name() const override;
     QList<Parameter> parameters() const override;
 
-    rm::DetectorAddress detector() const override;
+    accessory::DetectorAddress detector() const override;
     bool hasDetector() const override;
 
-    void setGroup(rm::rbus::GroupId newGroup);
-    rm::rbus::GroupId group() const;
+    void setGroup(accessory::rbus::GroupId newGroup);
+    accessory::rbus::GroupId group() const;
     bool hasGroup() const;
 
 public slots:
     void resetGroup();
 
 signals:
-    void groupChanged(lmrs::core::rm::rbus::GroupId group, QPrivateSignal);
+    void groupChanged(lmrs::core::accessory::rbus::GroupId group, QPrivateSignal);
 
 private:
-    std::optional<rm::rbus::GroupId> m_group;
+    std::optional<accessory::rbus::GroupId> m_group;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -399,10 +400,10 @@ class RBusDetectorEvent : public DetectorEvent
 {
     Q_OBJECT
 
-    Q_PROPERTY(lmrs::core::rm::rbus::ModuleId module READ module WRITE setModule RESET resetModule NOTIFY moduleChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::rbus::ModuleId module READ module WRITE setModule RESET resetModule NOTIFY moduleChanged FINAL)
     Q_PROPERTY(bool hasModule READ hasModule NOTIFY moduleChanged FINAL)
 
-    Q_PROPERTY(lmrs::core::rm::rbus::PortIndex port READ port WRITE setPort RESET resetPort NOTIFY portChanged FINAL)
+    Q_PROPERTY(lmrs::core::accessory::rbus::PortIndex port READ port WRITE setPort RESET resetPort NOTIFY portChanged FINAL)
     Q_PROPERTY(bool hasPort READ hasPort NOTIFY portChanged FINAL)
 
 public:
@@ -411,15 +412,15 @@ public:
     QString name() const override;
     QList<Parameter> parameters() const override;
 
-    rm::DetectorAddress detector() const override;
+    accessory::DetectorAddress detector() const override;
     bool hasDetector() const override;
 
-    void setModule(rm::rbus::ModuleId newModule);
-    rm::rbus::ModuleId module() const;
+    void setModule(accessory::rbus::ModuleId newModule);
+    accessory::rbus::ModuleId module() const;
     bool hasModule() const;
 
-    void setPort(rm::rbus::PortIndex newPort);
-    rm::rbus::PortIndex port() const;
+    void setPort(accessory::rbus::PortIndex newPort);
+    accessory::rbus::PortIndex port() const;
     bool hasPort() const;
 
 public slots:
@@ -427,12 +428,12 @@ public slots:
     void resetPort();
 
 signals:
-    void moduleChanged(lmrs::core::rm::rbus::ModuleId module, QPrivateSignal);
-    void portChanged(lmrs::core::rm::rbus::PortIndex port, QPrivateSignal);
+    void moduleChanged(lmrs::core::accessory::rbus::ModuleId module, QPrivateSignal);
+    void portChanged(lmrs::core::accessory::rbus::PortIndex port, QPrivateSignal);
 
 private:
-    std::optional<rm::rbus::ModuleId> m_module;
-    std::optional<rm::rbus::PortIndex> m_port;
+    std::optional<accessory::rbus::ModuleId> m_module;
+    std::optional<accessory::rbus::PortIndex> m_port;
 };
 
 // =====================================================================================================================

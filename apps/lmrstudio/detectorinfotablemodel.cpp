@@ -7,120 +7,120 @@ namespace lmrs::studio {
 
 namespace {
 
-namespace rm = core::rm;
+using namespace core::accessory;
 
-QString displayString(rm::DetectorAddress::Type type)
+QString displayString(DetectorAddress::Type type)
 {
     switch (type) {
-    case rm::DetectorAddress::Type::CanModule:
-    case rm::DetectorAddress::Type::CanNetwork:
-    case rm::DetectorAddress::Type::CanPort:
+    case DetectorAddress::Type::CanModule:
+    case DetectorAddress::Type::CanNetwork:
+    case DetectorAddress::Type::CanPort:
         return DetectorInfoTableModel::tr("CAN");
 
-    case rm::DetectorAddress::Type::RBusGroup:
-    case rm::DetectorAddress::Type::RBusModule:
-    case rm::DetectorAddress::Type::RBusPort:
+    case DetectorAddress::Type::RBusGroup:
+    case DetectorAddress::Type::RBusModule:
+    case DetectorAddress::Type::RBusPort:
         return DetectorInfoTableModel::tr("RBus");
 
-    case rm::DetectorAddress::Type::LoconetSIC:
-    case rm::DetectorAddress::Type::LoconetModule:
+    case DetectorAddress::Type::LoconetSIC:
+    case DetectorAddress::Type::LoconetModule:
         return DetectorInfoTableModel::tr("LocoNet");
 
-    case rm::DetectorAddress::Type::LissyModule:
+    case DetectorAddress::Type::LissyModule:
         return DetectorInfoTableModel::tr("Lissy");
 
-    case rm::DetectorAddress::Type::Invalid:
+    case DetectorAddress::Type::Invalid:
         break;
     }
 
     return {};
 }
 
-QString displayString(core::DetectorInfo::Occupancy occupancy)
+QString displayString(DetectorInfo::Occupancy occupancy)
 {
     switch (occupancy) {
-    case core::DetectorInfo::Occupancy::Free:
+    case DetectorInfo::Occupancy::Free:
         return DetectorInfoTableModel::tr("free");
-    case core::DetectorInfo::Occupancy::Occupied:
+    case DetectorInfo::Occupancy::Occupied:
         return DetectorInfoTableModel::tr("occupied");
-    case core::DetectorInfo::Occupancy::Unknown:
+    case DetectorInfo::Occupancy::Unknown:
         return DetectorInfoTableModel::tr("unknown");
-    case core::DetectorInfo::Occupancy::Invalid:
+    case DetectorInfo::Occupancy::Invalid:
         break;
     }
 
     return {};
 }
 
-QString displayString(core::DetectorInfo::PowerState powerState)
+QString displayString(DetectorInfo::PowerState powerState)
 {
     switch (powerState) {
-    case core::DetectorInfo::PowerState::Off:
+    case DetectorInfo::PowerState::Off:
         return DetectorInfoTableModel::tr("off");
-    case core::DetectorInfo::PowerState::On:
+    case DetectorInfo::PowerState::On:
         return DetectorInfoTableModel::tr("on");
-    case core::DetectorInfo::PowerState::Overload:
+    case DetectorInfo::PowerState::Overload:
         return DetectorInfoTableModel::tr("overload");
-    case core::DetectorInfo::PowerState::Unknown:
+    case DetectorInfo::PowerState::Unknown:
         return DetectorInfoTableModel::tr("unknown");
     }
 
     return {};
 }
 
-QString moduleName(const core::rm::DetectorAddress &address)
+QString moduleName(const DetectorAddress &address)
 {
     switch (address.type()) {
-    case rm::DetectorAddress::Type::CanModule:
-    case rm::DetectorAddress::Type::CanPort:
+    case DetectorAddress::Type::CanModule:
+    case DetectorAddress::Type::CanPort:
         return "0x"_L1 + QString::number(address.canNetwork(), 16) + '/'_L1
                 + QString::number(address.canModule());
-    case rm::DetectorAddress::Type::CanNetwork:
+    case DetectorAddress::Type::CanNetwork:
         return "0x"_L1 + QString::number(address.canNetwork(), 16);
 
-    case rm::DetectorAddress::Type::RBusGroup:
+    case DetectorAddress::Type::RBusGroup:
         return DetectorInfoTableModel::tr("Group #%1").arg(address.rbusGroup());
-    case rm::DetectorAddress::Type::RBusModule:
-    case rm::DetectorAddress::Type::RBusPort:
+    case DetectorAddress::Type::RBusModule:
+    case DetectorAddress::Type::RBusPort:
         return DetectorInfoTableModel::tr("Module #%1").arg(address.rbusModule());
 
-    case rm::DetectorAddress::Type::LoconetSIC:
+    case DetectorAddress::Type::LoconetSIC:
         return DetectorInfoTableModel::tr("SIC");
-    case rm::DetectorAddress::Type::LoconetModule:
+    case DetectorAddress::Type::LoconetModule:
         return QString::number(address.loconetModule());
-    case rm::DetectorAddress::Type::LissyModule:
+    case DetectorAddress::Type::LissyModule:
         return QString::number(address.lissyModule());
 
-    case rm::DetectorAddress::Type::Invalid:
+    case DetectorAddress::Type::Invalid:
         break;
     }
 
     return {};
 }
 
-QVariant portNumber(const core::rm::DetectorAddress &address)
+QVariant portNumber(const DetectorAddress &address)
 {
     switch (address.type()) {
-    case rm::DetectorAddress::Type::CanPort:
+    case DetectorAddress::Type::CanPort:
         return address.canPort().value;
-    case rm::DetectorAddress::Type::RBusPort:
+    case DetectorAddress::Type::RBusPort:
         return address.rbusPort().value;
 
-    case rm::DetectorAddress::Type::CanModule:
-    case rm::DetectorAddress::Type::CanNetwork:
-    case rm::DetectorAddress::Type::LissyModule:
-    case rm::DetectorAddress::Type::LoconetSIC:
-    case rm::DetectorAddress::Type::LoconetModule:
-    case rm::DetectorAddress::Type::RBusGroup:
-    case rm::DetectorAddress::Type::RBusModule:
-    case rm::DetectorAddress::Type::Invalid:
+    case DetectorAddress::Type::CanModule:
+    case DetectorAddress::Type::CanNetwork:
+    case DetectorAddress::Type::LissyModule:
+    case DetectorAddress::Type::LoconetSIC:
+    case DetectorAddress::Type::LoconetModule:
+    case DetectorAddress::Type::RBusGroup:
+    case DetectorAddress::Type::RBusModule:
+    case DetectorAddress::Type::Invalid:
         break;
     }
 
     return {};
 }
 
-QString portName(const core::rm::DetectorAddress &address)
+QString portName(const DetectorAddress &address)
 {
     if (const auto port = portNumber(address); !port.isNull())
         return QString::number(port.toInt());
@@ -128,7 +128,7 @@ QString portName(const core::rm::DetectorAddress &address)
     return {};
 }
 
-QString vehicleDescription(const core::DetectorInfo &info)
+QString vehicleDescription(const DetectorInfo &info)
 {
     auto result = QStringList{};
 
@@ -286,9 +286,9 @@ core::DetectorControl *DetectorInfoTableModel::detectorControl() const
     return m_control;
 }
 
-void DetectorInfoTableModel::onDetectorInfoChanged(core::DetectorInfo info)
+void DetectorInfoTableModel::onDetectorInfoChanged(DetectorInfo info)
 {
-    const auto it = std::find_if(m_rows.begin(), m_rows.end(), [info](const core::DetectorInfo &row) {
+    const auto it = std::find_if(m_rows.begin(), m_rows.end(), [info](const DetectorInfo &row) {
         return info.address() == row.address();
     });
 

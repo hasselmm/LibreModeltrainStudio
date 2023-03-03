@@ -1,7 +1,7 @@
 #ifndef LMRS_STUDIO_DETECTORINFOTABLEMODEL_H
 #define LMRS_STUDIO_DETECTORINFOTABLEMODEL_H
 
-#include <lmrs/core/model.h>
+#include <lmrs/core/detectors.h>
 
 #include <QAbstractTableModel>
 #include <QPointer>
@@ -42,10 +42,10 @@ signals:
     void detectorControlChanged(lmrs::core::DetectorControl *detectorControl);
 
 private:
-    void onDetectorInfoChanged(core::DetectorInfo info);
+    void onDetectorInfoChanged(core::accessory::DetectorInfo info);
 
     QPointer<core::DetectorControl> m_control;
-    QList<core::DetectorInfo> m_rows;
+    QList<core::accessory::DetectorInfo> m_rows;
 };
 
 } // namespace lmrs::studio

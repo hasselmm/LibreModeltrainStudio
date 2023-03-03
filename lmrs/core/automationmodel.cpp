@@ -17,6 +17,8 @@ namespace lmrs::core::automation {
 
 namespace {
 
+using namespace accessory;
+
 const auto s_schemaBaseUrl = "https://taschenorakel.de/"_url;
 
 constexpr auto s_actions = "$actions"_L1;
@@ -331,19 +333,19 @@ QString CanDetectorEvent::name() const
 QList<Parameter> CanDetectorEvent::parameters() const
 {
     return QList {
-        Parameter::number<rm::can::NetworkId>("network", tr("Network"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
-        Parameter::number<rm::can::ModuleId>("module", tr("Module"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
-        Parameter::number<rm::can::PortIndex>("port", tr("Port"), Parameter::Flag::Optional),
+        Parameter::number<can::NetworkId>("network", tr("Network"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
+        Parameter::number<can::ModuleId>("module", tr("Module"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
+        Parameter::number<can::PortIndex>("port", tr("Port"), Parameter::Flag::Optional),
     } + DetectorEvent::parameters();
 }
 
-rm::DetectorAddress CanDetectorEvent::detector() const
+DetectorAddress CanDetectorEvent::detector() const
 {
     if (m_network.has_value()) {
         if (m_module.has_value())
-            return rm::DetectorAddress::forCanModule(m_network.value(), m_module.value());
+            return DetectorAddress::forCanModule(m_network.value(), m_module.value());
         else
-            return rm::DetectorAddress::forCanNetwork(m_network.value());
+            return DetectorAddress::forCanNetwork(m_network.value());
     }
 
     return {};
@@ -354,7 +356,7 @@ bool CanDetectorEvent::hasDetector() const
     return m_network.has_value();
 }
 
-void CanDetectorEvent::setNetwork(rm::can::NetworkId newNetwork)
+void CanDetectorEvent::setNetwork(can::NetworkId newNetwork)
 {
     if (std::exchange(m_network, std::move(newNetwork)) != m_network)
         emit networkChanged(m_network.value(), {});
@@ -368,7 +370,7 @@ void CanDetectorEvent::resetNetwork()
         emit networkChanged({}, {});
 }
 
-rm::can::NetworkId CanDetectorEvent::network() const
+can::NetworkId CanDetectorEvent::network() const
 {
     if (m_network.has_value())
         return m_network.value();
@@ -381,7 +383,7 @@ bool CanDetectorEvent::hasNetwork() const
     return m_network.has_value();
 }
 
-void CanDetectorEvent::setModule(rm::can::ModuleId newModule)
+void CanDetectorEvent::setModule(can::ModuleId newModule)
 {
     if (std::exchange(m_module, std::move(newModule)) != m_module)
         emit moduleChanged(m_module.value(), {});
@@ -395,7 +397,7 @@ void CanDetectorEvent::resetModule()
         emit moduleChanged({}, {});
 }
 
-rm::can::ModuleId CanDetectorEvent::module() const
+can::ModuleId CanDetectorEvent::module() const
 {
     if (m_module.has_value())
         return m_module.value();
@@ -408,7 +410,7 @@ bool CanDetectorEvent::hasModule() const
     return m_module.has_value();
 }
 
-void CanDetectorEvent::setPort(rm::can::PortIndex newPort)
+void CanDetectorEvent::setPort(can::PortIndex newPort)
 {
     if (std::exchange(m_port, std::move(newPort)) != m_port)
         emit portChanged(m_port.value(), {});
@@ -420,7 +422,7 @@ void CanDetectorEvent::resetPort()
         emit portChanged({}, {});
 }
 
-rm::can::PortIndex CanDetectorEvent::port() const
+can::PortIndex CanDetectorEvent::port() const
 {
     if (m_port.has_value())
         return m_port.value();
@@ -443,14 +445,14 @@ QString RBusDetectorGroupEvent::name() const
 QList<Parameter> RBusDetectorGroupEvent::parameters() const
 {
     return QList {
-        Parameter::number<rm::rbus::GroupId>("group", tr("Group")),
+        Parameter::number<rbus::GroupId>("group", tr("Group")),
     } + DetectorEvent::parameters();
 }
 
-rm::DetectorAddress RBusDetectorGroupEvent::detector() const
+DetectorAddress RBusDetectorGroupEvent::detector() const
 {
     if (m_group.has_value())
-        return rm::DetectorAddress::forRBusGroup(m_group.value());
+        return DetectorAddress::forRBusGroup(m_group.value());
 
     return {};
 }
@@ -460,7 +462,7 @@ bool RBusDetectorGroupEvent::hasDetector() const
     return m_group.has_value();
 }
 
-void RBusDetectorGroupEvent::setGroup(rm::rbus::GroupId newGroup)
+void RBusDetectorGroupEvent::setGroup(rbus::GroupId newGroup)
 {
     if (std::exchange(m_group, std::move(newGroup)) != m_group)
         emit groupChanged(m_group.value(), {});
@@ -472,7 +474,7 @@ void RBusDetectorGroupEvent::resetGroup()
         emit groupChanged({}, {});
 }
 
-rm::rbus::GroupId RBusDetectorGroupEvent::group() const
+rbus::GroupId RBusDetectorGroupEvent::group() const
 {
     if (m_group.has_value())
         return m_group.value();
@@ -495,18 +497,18 @@ QString RBusDetectorEvent::name() const
 QList<Parameter> RBusDetectorEvent::parameters() const
 {
     return QList {
-        Parameter::number<rm::rbus::ModuleId>("module", tr("Module"), Parameter::Flag::Optional),
-        Parameter::number<rm::rbus::PortIndex>("port", tr("Port"), Parameter::Flag::Optional),
+        Parameter::number<rbus::ModuleId>("module", tr("Module"), Parameter::Flag::Optional),
+        Parameter::number<rbus::PortIndex>("port", tr("Port"), Parameter::Flag::Optional),
     } + DetectorEvent::parameters();
 }
 
-rm::DetectorAddress RBusDetectorEvent::detector() const
+DetectorAddress RBusDetectorEvent::detector() const
 {
     if (m_module.has_value()) {
         if (m_port.has_value())
-            return rm::DetectorAddress::forRBusPort(m_module.value(), m_port.value());
+            return DetectorAddress::forRBusPort(m_module.value(), m_port.value());
         else
-            return rm::DetectorAddress::forRBusGroup(group(m_module.value()));
+            return DetectorAddress::forRBusGroup(group(m_module.value()));
     }
 
     return {};
@@ -517,7 +519,7 @@ bool RBusDetectorEvent::hasDetector() const
     return m_module.has_value();
 }
 
-void RBusDetectorEvent::setModule(rm::rbus::ModuleId newModule)
+void RBusDetectorEvent::setModule(rbus::ModuleId newModule)
 {
     if (std::exchange(m_module, std::move(newModule)) != m_module)
         emit moduleChanged(m_module.value(), {});
@@ -529,7 +531,7 @@ void RBusDetectorEvent::resetModule()
         emit moduleChanged({}, {});
 }
 
-rm::rbus::ModuleId RBusDetectorEvent::module() const
+rbus::ModuleId RBusDetectorEvent::module() const
 {
     if (m_module.has_value())
         return m_module.value();
@@ -542,7 +544,7 @@ bool RBusDetectorEvent::hasModule() const
     return m_module.has_value();
 }
 
-void RBusDetectorEvent::setPort(rm::rbus::PortIndex newPort)
+void RBusDetectorEvent::setPort(rbus::PortIndex newPort)
 {
     if (std::exchange(m_port, std::move(newPort)) != m_port)
         emit portChanged(m_port.value(), {});
@@ -554,7 +556,7 @@ void RBusDetectorEvent::resetPort()
         emit portChanged({}, {});
 }
 
-rm::rbus::PortIndex RBusDetectorEvent::port() const
+rbus::PortIndex RBusDetectorEvent::port() const
 {
     if (m_port.has_value())
         return m_port.value();

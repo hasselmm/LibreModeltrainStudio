@@ -1,6 +1,8 @@
 add_library (
     LmrsCore STATIC
 
+    accessories.cpp
+    accessories.h
     algorithms.cpp
     algorithms.h
     automationmodel.cpp
@@ -14,20 +16,20 @@ add_library (
     decoderinfo.cpp
     decoderinfo.h
     decoderinfo.qrc
+    detectors.cpp
+    detectors.h
     device.cpp
     device.h
     fileformat.cpp
     fileformat.h
     framestream.cpp
     framestream.h
-    logging.cpp
-    logging.h
     localization.cpp
     localization.h
+    logging.cpp
+    logging.h
     memory.cpp
     memory.h
-    model.cpp
-    model.h
     parameters.cpp
     parameters.h
     propertyguard.cpp

@@ -2,19 +2,27 @@
 #define LMRS_CORE_DEVICE_H
 
 #include "continuation.h"
-#include "model.h"
+#include "dccconstants.h"
 
 #include <QAbstractTableModel>
 #include <QPointer>
 
-namespace lmrs::core::parameters {
-class Parameter;
+namespace lmrs::core {
+
+namespace accessory {
+struct AccessoryInfo;
+struct DetectorInfo;
+struct TurnoutInfo;
 }
 
-namespace lmrs::core {
+namespace parameters {
+struct Parameter;
+}
 
 class Device;
 class DeviceFactory;
+
+struct VehicleInfo;
 
 using parameters::Parameter;
 
@@ -89,8 +97,8 @@ public:
     Q_FLAG(Feature)
     Q_DECLARE_FLAGS(Features, Feature)
 
-    using AccessoryInfoCallback = std::function<void(AccessoryInfo)>;
-    using TurnoutInfoCallback = std::function<void(TurnoutInfo)>;
+    using AccessoryInfoCallback = std::function<void(accessory::AccessoryInfo)>;
+    using TurnoutInfoCallback = std::function<void(accessory::TurnoutInfo)>;
 
     using Control::Control;
 
@@ -105,8 +113,8 @@ public:
     virtual void requestEmergencyStop() = 0;
 
 signals:
-    void accessoryInfoChanged(lmrs::core::AccessoryInfo accessoryInfo);
-    void turnoutInfoChanged(lmrs::core::TurnoutInfo turnoutInfo);
+    void accessoryInfoChanged(lmrs::core::accessory::AccessoryInfo accessoryInfo);
+    void turnoutInfoChanged(lmrs::core::accessory::TurnoutInfo turnoutInfo);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(AccessoryControl::Features)
@@ -201,7 +209,7 @@ public:
     using Control::Control;
 
 signals:
-    void detectorInfoChanged(lmrs::core::DetectorInfo detectorInfo);
+    void detectorInfoChanged(lmrs::core::accessory::DetectorInfo detectorInfo);
 };
 
 ///

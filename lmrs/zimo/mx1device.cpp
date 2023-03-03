@@ -8,6 +8,7 @@
 #include <lmrs/core/propertyguard.h>
 #include <lmrs/core/userliterals.h>
 #include <lmrs/core/validatingvariantmap.h>
+#include <lmrs/core/vehicleinfomodel.h>
 
 #include <QSerialPort>
 #include <QSerialPortInfo>
