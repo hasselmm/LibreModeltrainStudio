@@ -495,7 +495,6 @@ public:
     const Item *item(const QModelIndex &index) const;
 
 private:
-
     using Factory = std::function<Item *(QObject *)>;
     void registerType(int typeId, Factory createEvent);
 
@@ -543,7 +542,7 @@ public:
         EventRole = Qt::UserRole,
     };
 
-    using QAbstractListModel::QAbstractListModel;
+    explicit AutomationModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = {}) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -576,7 +575,8 @@ protected slots:
     void onEventChanged();
 
 private:
-    QList<Event *> m_events;
+    class Private;
+    Private *const d;
 };
 
 // =====================================================================================================================

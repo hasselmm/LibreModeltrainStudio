@@ -1037,12 +1037,25 @@ const Item *AutomationTypeModel::item(const QModelIndex &index) const
 
 // =====================================================================================================================
 
+class AutomationModel::Private : public PrivateObject<AutomationModel>
+{
+public:
+    using PrivateObject::PrivateObject;
+
+    QList<Event *> m_events;
+};
+
+AutomationModel::AutomationModel(QObject *parent)
+    : QAbstractListModel{parent}
+    , d{new Private{this}}
+{}
+
 int AutomationModel::rowCount(const QModelIndex &parent) const
 {
     if (Q_UNLIKELY(parent.isValid()))
         return 0;
 
-    return static_cast<int>(m_events.count());
+    return static_cast<int>(d->m_events.count());
 }
 
 QVariant AutomationModel::data(const QModelIndex &index, int role) const
@@ -1050,10 +1063,10 @@ QVariant AutomationModel::data(const QModelIndex &index, int role) const
     if (hasIndex(index.row(), index.column(), index.parent())) {
         switch (static_cast<DataRole>(role)) {
         case NameRole:
-            return m_events[index.row()]->name();
+            return d->m_events[index.row()]->name();
 
         case EventRole:
-            return QVariant::fromValue(m_events[index.row()]);
+            return QVariant::fromValue(d->m_events[index.row()]);
         }
     }
 
@@ -1112,7 +1125,7 @@ int AutomationModel::insertEvent(Event *event, int before)
     beginInsertRows({}, before, before);
 
     event->setParent(this);
-    m_events.emplace(before, event);
+    d->m_events.emplace(before, event);
 
     const auto observeAction = [this](Action *action) {
         observeItem(action, &Action::staticMetaObject, LMRS_CORE_FIND_META_METHOD(&AutomationModel::onActionChanged));
@@ -1162,11 +1175,11 @@ bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
 
     beginRemoveRows(parent, row, row + count - 1);
-    const auto begin = m_events.begin() + row;
+    const auto begin = d->m_events.begin() + row;
     const auto end = begin + count;
 
     qDeleteAll(begin, end);
-    m_events.erase(begin, end);
+    d->m_events.erase(begin, end);
 
     endRemoveRows();
 
@@ -1176,8 +1189,8 @@ bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
 void AutomationModel::clear()
 {
     beginResetModel();
-    qDeleteAll(m_events);
-    m_events.clear();
+    qDeleteAll(d->m_events);
+    d->m_events.clear();
     endResetModel();
 }
 
