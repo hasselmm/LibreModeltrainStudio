@@ -7,6 +7,43 @@
 
 namespace lmrs::core {
 
+struct VehicleInfo
+{
+    Q_GADGET
+
+public:
+    enum class Flag {
+        IsClaimed = (1 << 0),
+        IsConsist = (1 << 1),
+    };
+
+    Q_FLAG(Flag)
+    Q_DECLARE_FLAGS(Flags, Flag)
+
+    VehicleInfo() = default;
+
+    constexpr explicit VehicleInfo(dcc::VehicleAddress address, dcc::Direction direction, dcc::Speed speed,
+                                   dcc::FunctionState functionState = {}, Flags flags = {}) noexcept
+        : m_address{address}, m_direction{direction}, m_speed{std::move(speed)}
+        , m_functionState{std::move(functionState)}, m_flags{flags}
+    {}
+
+    constexpr auto address() const noexcept { return m_address; }
+    constexpr auto direction() const noexcept { return m_direction; }
+    constexpr auto speed() const noexcept { return m_speed; }
+    constexpr auto flags() const noexcept { return Flags{m_flags}; }
+
+    constexpr bool functionState(dcc::Function function) const noexcept { return m_functionState[function]; }
+    constexpr auto functionState() const noexcept { return m_functionState; }
+
+private:
+    dcc::VehicleAddress m_address = 0;
+    dcc::Direction m_direction = dcc::Direction::Forward;
+    dcc::Speed m_speed;
+    dcc::FunctionState m_functionState;
+    Flags::Int m_flags;
+};
+
 class VehicleInfoModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -58,6 +95,8 @@ private:
 
     QList<Row> m_rows;
 };
+
+QDebug operator<<(QDebug debug, const VehicleInfo &info);
 
 } // namespace lmrs::core
 

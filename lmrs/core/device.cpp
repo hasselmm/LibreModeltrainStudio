@@ -1,11 +1,12 @@
 #include "decoderinfo.h"
 
+#include "accessories.h"
 #include "algorithms.h"
+#include "detectors.h"
 #include "device.h"
-#include "logging.h"
 #include "quantities.h"
-#include "typetraits.h"
 #include "userliterals.h"
+#include "vehicleinfomodel.h"
 
 #include <QDateTime>
 #include <QLocale>
@@ -407,3 +408,5 @@ QList<QPair<QString, QByteArray>> DebugControl::nativeExampleFrames() const noex
 }
 
 } // namespace lmrs::core
+
+#include "moc_device.cpp"

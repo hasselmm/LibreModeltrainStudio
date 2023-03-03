@@ -1,7 +1,7 @@
 #ifndef LMRS_STUDIO_ACCESSORYTABLEMODEL_H
 #define LMRS_STUDIO_ACCESSORYTABLEMODEL_H
 
-#include <lmrs/core/model.h>
+#include <lmrs/core/accessories.h>
 
 #include <QAbstractTableModel>
 #include <QPointer>
@@ -53,11 +53,11 @@ private:
         QVariant address() const;
         QVariant state() const;
 
-        std::variant<core::AccessoryInfo, core::TurnoutInfo> value;
+        std::variant<core::accessory::AccessoryInfo, core::accessory::TurnoutInfo> value;
     };
 
-    void onAccessoryInfoChanged(core::AccessoryInfo info);
-    void onTurnoutInfoChanged(core::TurnoutInfo info);
+    void onAccessoryInfoChanged(core::accessory::AccessoryInfo info);
+    void onTurnoutInfoChanged(core::accessory::TurnoutInfo info);
     void onRowChanged(Row row);
 
     QPointer<core::AccessoryControl> m_control;

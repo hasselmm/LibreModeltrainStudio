@@ -2,6 +2,7 @@
 
 #include "z21client.h"
 
+#include <lmrs/core/accessories.h>
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/logging.h>
 #include <lmrs/core/memory.h>
@@ -10,6 +11,7 @@
 #include <lmrs/core/typetraits.h>
 #include <lmrs/core/userliterals.h>
 #include <lmrs/core/validatingvariantmap.h>
+#include <lmrs/core/vehicleinfomodel.h>
 
 #include <QBitArray>
 #include <QHostAddress>
@@ -22,6 +24,7 @@ namespace lmrs::roco::z21 {
 
 namespace {
 
+using namespace accessory;
 namespace dcc = core::dcc;
 
 using std::chrono::milliseconds;
@@ -88,10 +91,10 @@ public:
 private:
     Client *client() const { return core::checked_cast<Client *>(parent()); }
 
-    void onDetectorInfoReceived(QList<core::DetectorInfo> infoList);
+    void onDetectorInfoReceived(QList<DetectorInfo> infoList);
 
 private:
-    QHash<rm::DetectorAddress, core::DetectorInfo> m_infoCache;
+    QHash<DetectorAddress, DetectorInfo> m_infoCache;
 };
 
 // =====================================================================================================================
@@ -310,7 +313,7 @@ DetectorControl::DetectorControl(Client *parent)
     connect(client(), &Client::detectorInfoReceived, this, &DetectorControl::onDetectorInfoReceived);
 }
 
-void DetectorControl::onDetectorInfoReceived(QList<core::DetectorInfo> infoList)
+void DetectorControl::onDetectorInfoReceived(QList<DetectorInfo> infoList)
 {
     for (const auto &info: infoList) {
         if (const auto oldInfo = std::exchange(m_infoCache[info.address()], info); oldInfo != info)

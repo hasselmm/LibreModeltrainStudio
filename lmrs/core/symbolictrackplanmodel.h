@@ -9,7 +9,7 @@
 
 namespace lmrs::core {
 
-namespace rm {
+namespace accessory {
 struct DetectorAddress;
 }
 
@@ -229,7 +229,7 @@ public:
     void resize(QSize size);
 
     QModelIndexList findAccessories(dcc::AccessoryAddress address) const;
-    QModelIndexList findDetectors(const rm::DetectorAddress &address) const;
+    QModelIndexList findDetectors(const accessory::DetectorAddress &address) const;
 
 public slots:
     void reset(lmrs::core::SymbolicTrackPlanModel::Preset preset = Preset::Empty);

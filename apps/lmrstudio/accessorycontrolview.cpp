@@ -25,6 +25,7 @@
 
 namespace lmrs::studio {
 
+using namespace core::accessory;
 namespace dcc = core::dcc;
 
 using widgets::SpinBox;
@@ -67,8 +68,8 @@ public:
 
     using PrivateObject::PrivateObject;
 
-    void onAccessoryInfoChanged(core::AccessoryInfo info);
-    void onTurnoutInfoChanged(core::TurnoutInfo info);
+    void onAccessoryInfoChanged(AccessoryInfo info);
+    void onTurnoutInfoChanged(TurnoutInfo info);
 
     void onAddressChanged();
     void onAccessoryTypeToggled(int id, bool checked);
@@ -117,7 +118,7 @@ public:
     core::ConstPointer<QTableView> detectorInfoView{q()};
 };
 
-void AccessoryControlView::Private::onAccessoryInfoChanged(core::AccessoryInfo info)
+void AccessoryControlView::Private::onAccessoryInfoChanged(AccessoryInfo info)
 {
     qCInfo(logger()) << __func__ << info.address() << info.state();
 
@@ -125,7 +126,7 @@ void AccessoryControlView::Private::onAccessoryInfoChanged(core::AccessoryInfo i
         signalBox->setValue(info.state());
 }
 
-void AccessoryControlView::Private::onTurnoutInfoChanged(core::TurnoutInfo info)
+void AccessoryControlView::Private::onTurnoutInfoChanged(TurnoutInfo info)
 {
     qCInfo(logger()) << __func__ << info.address() << info.state();
 
@@ -138,11 +139,11 @@ void AccessoryControlView::Private::onTurnoutInfoChanged(core::TurnoutInfo info)
 void AccessoryControlView::Private::onAddressChanged()
 {
     if (const auto accessoryControl = q()->accessoryControl()) {
-        accessoryControl->requestAccessoryInfo(addressBox->value(), [this](core::AccessoryInfo info) {
+        accessoryControl->requestAccessoryInfo(addressBox->value(), [this](AccessoryInfo info) {
             onAccessoryInfoChanged(std::move(info));
         });
 
-        accessoryControl->requestTurnoutInfo(addressBox->value(), [this](core::TurnoutInfo info) {
+        accessoryControl->requestTurnoutInfo(addressBox->value(), [this](TurnoutInfo info) {
             onTurnoutInfoChanged(std::move(info));
         });
     }
@@ -290,7 +291,7 @@ AccessoryControlView::AccessoryControlView(QWidget *parent)
     d->turnoutInfoView->setMinimumWidth(200);
     d->detectorInfoView->setMinimumWidth(400);
 
-    for (const auto &entry: QMetaTypeId<core::AccessoryInfo::CommonSignal>{}) {
+    for (const auto &entry: QMetaTypeId<AccessoryInfo::CommonSignal>{}) {
         const auto value = core::value(entry.value());
         auto label = tr("%1 (0x%2)").arg(QString::fromLatin1(entry.key()), QString::number(value, 16));
         d->signalCombo->addItem(label, value);

@@ -2,6 +2,7 @@
 
 #include "algorithms.h"
 #include "dccconstants.h"
+#include "detectors.h"
 #include "fileformat.h"
 #include "logging.h"
 
@@ -204,11 +205,11 @@ QModelIndexList SymbolicTrackPlanModel::findAccessories(dcc::AccessoryAddress ad
     return indices;
 }
 
-QModelIndexList SymbolicTrackPlanModel::findDetectors(const rm::DetectorAddress &address) const
+QModelIndexList SymbolicTrackPlanModel::findDetectors(const accessory::DetectorAddress &address) const
 {
     // FIXME: interface needs to mention module and port, sadly
 
-    if (address.type() != rm::DetectorAddress::Type::RBusPort)
+    if (address.type() != accessory::DetectorAddress::Type::RBusPort)
         return {}; // FIXME: support all kinds of modules
 
     auto indices = QModelIndexList{};

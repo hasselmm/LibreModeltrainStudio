@@ -1,8 +1,8 @@
 #ifndef LMRS_ROCO_Z21_CLIENT_H
 #define LMRS_ROCO_Z21_CLIENT_H
 
+#include <lmrs/core/detectors.h>
 #include <lmrs/core/quantities.h>
-#include <lmrs/core/model.h>
 
 #include <QObject>
 
@@ -13,8 +13,8 @@ namespace lmrs::roco::z21 {
 
 Q_NAMESPACE
 
+namespace accessory = core::accessory;
 namespace dcc = core::dcc;
-namespace rm = core::rm;
 
 enum class LanMessageId : quint16 {
     GetSerialNumber = 0x10,
@@ -220,10 +220,10 @@ public:
 
     bool isValid() const;
 
-    rm::rbus::GroupId group() const;
+    accessory::rbus::GroupId group() const;
     QBitArray occupancy() const;
 
-    operator QList<core::DetectorInfo>() const;
+    operator QList<accessory::DetectorInfo>() const;
     auto operator==(const RBusDetectorInfo &rhs) const { return m_data == rhs.m_data; }
     auto data() const { return m_data; }
 
@@ -256,7 +256,7 @@ public:
 
     Q_ENUM(Type)
 
-    using Occupancy = core::DetectorInfo::Occupancy;
+    using Occupancy = accessory::DetectorInfo::Occupancy;
 
     explicit LoconetDetectorInfo(QByteArray data = {});
 
@@ -264,7 +264,7 @@ public:
 
     Type type() const;
 
-    rm::loconet::ReportAddress address() const;
+    accessory::loconet::ReportAddress address() const;
     Occupancy occupancy() const;
     dcc::VehicleAddress vehicle() const;
     dcc::Direction direction() const;
@@ -272,11 +272,11 @@ public:
     quint8 lissyClass() const;
     quint16 lissySpeed() const;
 
-    static QList<core::DetectorInfo> merge(QList<LoconetDetectorInfo> infoList);
+    static QList<accessory::DetectorInfo> merge(QList<LoconetDetectorInfo> infoList);
     auto operator==(const LoconetDetectorInfo &rhs) const { return m_data == rhs.m_data; }
     auto data() const { return m_data; }
 
-    static std::pair<Query, quint16> address(const rm::DetectorAddress &address);
+    static std::pair<Query, quint16> address(const accessory::DetectorAddress &address);
 
 private:
     QByteArray m_data;
@@ -313,19 +313,19 @@ public:
 
     static constexpr core::Range<Type> VehicleSetRange = {Type::VehicleSetFirst, Type::VehicleSetLast};
 
-    using Occupancy = core::DetectorInfo::Occupancy;
-    using PowerState = core::DetectorInfo::PowerState;
+    using Occupancy = accessory::DetectorInfo::Occupancy;
+    using PowerState = accessory::DetectorInfo::PowerState;
 
     explicit CanDetectorInfo(QByteArray data = {});
 
     bool isValid() const;
 
-    using Key = std::tuple<rm::can::NetworkId, rm::can::ModuleId, rm::can::PortIndex>;
+    using Key = std::tuple<accessory::can::NetworkId, accessory::can::ModuleId, accessory::can::PortIndex>;
     auto key() const { return Key{networkId(), module(), port()}; }
 
-    rm::can::NetworkId networkId() const;
-    rm::can::ModuleId module() const;
-    rm::can::PortIndex port() const;
+    accessory::can::NetworkId networkId() const;
+    accessory::can::ModuleId module() const;
+    accessory::can::PortIndex port() const;
 
     Type type() const;
 
@@ -348,7 +348,7 @@ public:
     auto isVehicleSet() const noexcept { return VehicleSetRange.contains(type()); }
     auto isLastVehicleSet() const noexcept { return isVehicleSet() && vehicle2() == 0; }
 
-    static QList<core::DetectorInfo> merge(QList<CanDetectorInfo> infoList);
+    static QList<accessory::DetectorInfo> merge(QList<CanDetectorInfo> infoList);
     auto operator==(const CanDetectorInfo &rhs) const { return m_data == rhs.m_data; }
     auto data() const { return m_data; }
 
@@ -555,7 +555,7 @@ public:
     void readVariables(quint16 address, QList<quint16> indices,
                        std::function<void(Error error, quint16 variable, quint8 value)> callback = {}); // FIXME: use DCC types
 
-    void startDetectorProgramming(rm::rbus::ModuleId module);
+    void startDetectorProgramming(accessory::rbus::ModuleId module);
     void stopDetectorProgramming();
 
     // queries
@@ -571,11 +571,11 @@ public:
     void queryVehicleAny();
     void queryAccessoryInfo(dcc::AccessoryAddress address, std::function<void (AccessoryInfo)> callback = {});
     void queryTurnoutInfo(dcc::AccessoryAddress address, std::function<void(TurnoutInfo)> callback = {});
-    void queryDetectorInfo(rm::DetectorAddress address, std::function<void (QList<core::DetectorInfo>)> callback = {});
-    void queryRBusDetectorInfo(rm::rbus::GroupId group, std::function<void(RBusDetectorInfo)> callback = {});
+    void queryDetectorInfo(accessory::DetectorAddress address, std::function<void (QList<accessory::DetectorInfo>)> callback = {});
+    void queryRBusDetectorInfo(accessory::rbus::GroupId group, std::function<void(RBusDetectorInfo)> callback = {});
     void queryLoconetDetectorInfo(LoconetDetectorInfo::Query type, quint16 address,
                                   std::function<void(QList<LoconetDetectorInfo>)> callback = {});
-    void queryCanDetectorInfo(rm::can::NetworkId address, std::function<void (QList<CanDetectorInfo>)> callback = {});
+    void queryCanDetectorInfo(accessory::can::NetworkId address, std::function<void (QList<CanDetectorInfo>)> callback = {});
     void queryRailcom(quint16 address, std::function<void(RailcomInfo info)> callback = {}); // FIXME: use DCC types
     void queryRailcomAny();
 
@@ -595,7 +595,7 @@ signals:
 
     void accessoryInfoReceived(lmrs::roco::z21::AccessoryInfo info);
     void railcomInfoReceived(lmrs::roco::z21::RailcomInfo info);
-    void detectorInfoReceived(QList<lmrs::core::DetectorInfo> info);
+    void detectorInfoReceived(QList<lmrs::core::accessory::DetectorInfo> info);
     void rbusDetectorInfoReceived(lmrs::roco::z21::RBusDetectorInfo info);
     void loconetDetectorInfoReceived(lmrs::roco::z21::LoconetDetectorInfo info);
     void canDetectorInfoReceived(QList<lmrs::roco::z21::CanDetectorInfo> info);
