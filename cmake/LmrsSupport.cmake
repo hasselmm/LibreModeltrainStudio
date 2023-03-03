@@ -68,11 +68,17 @@ endfunction()
 ## =====================================================================================================================
 
 function(lmrs_install_target TARGET)
-    # First of all install the target and the Qt runtime, this is easy
+    # Resolve binary locations of C++ runtime and Qt
+    get_target_property(qtcore_location Qt6::Core LOCATION)
+
+    get_filename_component(compiler_bindir ${CMAKE_CXX_COMPILER} DIRECTORY)
+    get_filename_component(qtcore_bindir ${CMAKE_CXX_COMPILER} DIRECTORY)
+
+    # Install the target and the Qt runtime
     install(TARGETS ${TARGET})
     lmrs_install_qt_runtime(${TARGET})
 
-    # Now also install runtime dependencies of all the targets
+    # Install runtime dependencies of all the targets
     get_target_property(link_libraries ${TARGET} LINK_LIBRARIES)
     foreach(target LmrsStudio ${link_libraries})
         # CMake cannot resolve runtime dependencies for alias targets, therefore resolve the alias
@@ -99,7 +105,7 @@ function(lmrs_install_target TARGET)
             RUNTIME_DEPENDENCY_SET ${target}::Dependencies
             PRE_EXCLUDE_REGEXES ^api-ms-.*;^ext-ms-.*;^hvsifiletrust;qt6
             POST_EXCLUDE_REGEXES kernel32;shell32;system32;windows
-            DIRECTORIES C:/msys64/clang64/bin
+            DIRECTORIES ${compiler_bindir} ${qtcore_bindir}
         )
     endforeach()
 endfunction()
