@@ -67,7 +67,7 @@ void SpeedMeter::setMaximumValue(qreal maximumValue)
 
 void SpeedMeter::setMeasurementInterval(std::chrono::milliseconds interval)
 {
-    d->rootObject()->setProperty("measurementInterval", interval.count());
+    d->rootObject()->setProperty("measurementInterval", static_cast<int>(interval.count()));
 }
 
 } // namespace lmrs::widgets

@@ -9,6 +9,7 @@
 #include "metadata.h"
 #include "package.h"
 
+#include <lmrs/core/localization.h>
 #include <lmrs/core/userliterals.h>
 #include <lmrs/gui/fontawesome.h>
 #include <lmrs/widgets/navigationtoolbar.h>
@@ -57,25 +58,25 @@ void MainWindow::Private::setupNavigationActions()
     notImplemented->setEnabled(false);
     notImplemented->setMargin(20);
 
-    const auto addView = [this](QIcon icon, QString text, QWidget *view) {
+    const auto addView = [this](QIcon icon, l10n::String text, QWidget *view) {
         navigation->addView(std::move(icon), std::move(text), view);
         stack->addWidget(view);
     };
 
-    addView(icon(gui::fontawesome::fasPlug), tr("&Connect"), notImplemented);
-    addView(icon(gui::fontawesome::fasTrain), tr("&Drive"), notImplemented);
+    addView(icon(gui::fontawesome::fasPlug), LMRS_TR("&Connect"), notImplemented);
+    addView(icon(gui::fontawesome::fasTrain), LMRS_TR("&Drive"), notImplemented);
 
     navigation->addSeparator();
 
-    addView(icon(gui::fontawesome::fasCircleInfo), tr("&Info"), packageSummary);
-    addView(icon(gui::fontawesome::fasScrewdriverWrench), tr("&Programming"), notImplemented);
-    addView(icon(gui::fontawesome::fasListOl), tr("&Functions"), functionEditor);
-    addView(icon(gui::fontawesome::fasVolumeHigh), tr("&Sounds"), soundSlotEditor);
-    addView(icon(gui::fontawesome::fasFolderTree), tr("&Explorer"), packageExplorer);
+    addView(icon(gui::fontawesome::fasCircleInfo), LMRS_TR("&Info"), packageSummary);
+    addView(icon(gui::fontawesome::fasScrewdriverWrench), LMRS_TR("&Programming"), notImplemented);
+    addView(icon(gui::fontawesome::fasListOl), LMRS_TR("&Functions"), functionEditor);
+    addView(icon(gui::fontawesome::fasVolumeHigh), LMRS_TR("&Sounds"), soundSlotEditor);
+    addView(icon(gui::fontawesome::fasFolderTree), LMRS_TR("&Explorer"), packageExplorer);
 
     navigation->addSeparator();
 
-    addView(icon(gui::fontawesome::fasBook), tr("&Decoder\nLibrary"), notImplemented);
+    addView(icon(gui::fontawesome::fasBook), LMRS_TR("&Decoder\nLibrary"), notImplemented);
 
     navigation->setCurrentView(stack->currentWidget());
     navigation->attachMainWidget(stack);

@@ -1,0 +1,117 @@
+name: Continuous Integration
+on:
+  push:
+    branches: [ main ]
+
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  Build-on-Ubuntu:
+    name: "Build on Ubuntu"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.4.2'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+          modules: 'qtcharts qtmultimedia qtserialport'
+          tools: 'tools_ninja'
+          cache: true
+
+      - name: Set up compiler cache
+        uses: chocobo1/setup-ccache-action@v1
+        with:
+          update_packager_index: false
+
+      - name: Configure project
+        run: >
+          mkdir build && cd build && cmake -GNinja
+          -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-14
+          -DCMAKE_C_COMPILER_LAUNCHER:STRING=ccache
+          -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-14
+          -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache
+          -DCMAKE_MAKE_PROGRAM:FILEPATH=$IQTA_TOOLS/Ninja/ninja
+          -DCPACK_BINARY_STGZ:BOOL=OFF
+          -DCPACK_BINARY_TGZ:BOOL=ON
+          -DCPACK_BINARY_TZ:BOOL=OFF
+          ..
+
+      - name: Build project
+        run: cd build && cmake --build . --target all -- -k0
+
+      - name: Test project
+        run: cd build && ctest --rerun-failed --output-on-failure
+        continue-on-error: true # remove once tests are expected to be stable
+
+      - name: Package project
+        run: cd build && cmake --build . --target package
+
+      - name: Archive packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: build/*.tar.gz
+          retention-days: 3
+
+  Build-on-Windows:
+    name: "Build on Windows"
+    runs-on: windows-2022
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.4.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_mingw'
+          modules: 'qtcharts qtmultimedia qtserialport'
+          tools: 'tools_mingw90 tools_ninja'
+          cache: true
+
+      - name: Set up compiler cache
+        uses: chocobo1/setup-ccache-action@v1
+        with:
+          windows_compile_environment: msvc # guess "windows_package_manager: choco" would be a better name
+
+      - name: Configure project
+        run: >
+          mkdir build && cd build && cmake -GNinja
+          -DCMAKE_C_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/gcc.exe
+          -DCMAKE_C_COMPILER_LAUNCHER:STRING=ccache
+          -DCMAKE_CXX_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/g++.exe
+          -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache
+          -DCMAKE_MAKE_PROGRAM:FILEPATH=$env:IQTA_TOOLS/Ninja/ninja.exe
+          -DCPACK_BINARY_NSIS:BOOL=OFF
+          -DCPACK_BINARY_ZIP:BOOL=ON
+          ..
+
+      - name: Build project
+        run: cd build && cmake --build . --target all -- -k0
+
+      - name: Test project
+        run: cd build && ctest --rerun-failed --output-on-failure
+        continue-on-error: true # remove once tests are expected to be stable
+
+      - name: Package project
+        run: cd build && cmake --build . --target package
+
+      - name: Archive packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: build/*.zip
+          retention-days: 3

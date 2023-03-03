@@ -99,7 +99,7 @@ inline QStringList toStringList(const QList<T> &values)
     return result;
 }
 
-constexpr auto coalesce(auto value, auto... args)
+constexpr auto coalesce(auto value, auto... args) -> decltype(value)
 {
     if constexpr(sizeof...(args) > 0) {
         if (isEmpty(value))
@@ -235,6 +235,8 @@ private:
     MetaEnumEntry<T> m_entry;
 };
 
+static_assert(requires { typename std::iterator_traits<MetaEnumIterator<Qt::AlignmentFlag>>::iterator_category; });
+
 template <FlagsType T>
 class FlagsIterator
 {
@@ -277,14 +279,16 @@ private:
     T m_mask;
 };
 
+static_assert(requires { typename std::iterator_traits<FlagsIterator<Qt::Alignment>>::iterator_category; });
+
 class ItemModelIterator // FIXME: move to separate header to reduce dependencies
 {
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type   = int;
     using value_type        = QModelIndex;
-    using pointer_type      = value_type*;
-    using reference_type    = value_type&;
+    using pointer           = value_type*;
+    using reference         = value_type&;
 
     ItemModelIterator() noexcept = default;
     ItemModelIterator(const QAbstractItemModel *model, int row) noexcept
@@ -304,6 +308,8 @@ private:
     QPointer<const QAbstractItemModel> m_model;
     int m_row;
 };
+
+static_assert(requires { typename std::iterator_traits<ItemModelIterator>::iterator_category; });
 
 } // namespace lmrs::core
 

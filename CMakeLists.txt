@@ -69,7 +69,7 @@ add_compile_options(
 )
 
 find_package(Doxygen)
-find_package(Sphinx REQUIRED COMPONENTS Breathe MystParser QtHelp)
+find_package(Sphinx COMPONENTS Breathe MystParser QtHelp)
 
 add_custom_target(documentation SOURCES README.md)
 
@@ -87,4 +87,11 @@ add_custom_target (
     cmake/FindSphinx.cmake
     cmake/FontAwesome.cmake
     cmake/LmrsSupport.cmake
+)
+
+add_custom_target (
+    github
+
+    SOURCES
+    .github/workflows/autobuild.yml
 )

@@ -102,13 +102,15 @@ find_program(
     NAMES sphinx-build sphinx-build.exe
     DOC "Path to sphinx-build executable")
 
-execute_process(
-    COMMAND ${SPHINX_EXECUTABLE} --version
-    OUTPUT_VARIABLE SPHINX_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    COMMAND_ERROR_IS_FATAL ANY)
+if (SPHINX_EXECUTABLE)
+    execute_process(
+        COMMAND ${SPHINX_EXECUTABLE} --version
+        OUTPUT_VARIABLE SPHINX_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND_ERROR_IS_FATAL ANY)
 
-string(REGEX REPLACE ".* " "" SPHINX_VERSION ${SPHINX_VERSION})
+    string(REGEX REPLACE ".* " "" SPHINX_VERSION ${SPHINX_VERSION})
+endif()
 
 ## =====================================================================================================================
 ## Search extensions

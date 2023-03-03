@@ -100,10 +100,19 @@ class MainWindow::Private : public core::PrivateObject<MainWindow>
 {
     Q_OBJECT
 
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_GCC("-Wtautological-compare")
+
     static_assert(core::IsPrivateObject<Private>);
     static_assert(&staticMetaObject == &MainWindow::Private::staticMetaObject);
+
+    QT_WARNING_POP
+
+#ifndef Q_CC_GNU
     static_assert(&staticMetaObject != &QObject::staticMetaObject);
     static_assert(LMRS_STATIC_METAOBJECT == &MainWindow::staticMetaObject);
+#endif
+
 
 public:
     using PrivateObject::PrivateObject;
@@ -890,7 +899,7 @@ core::Device *MainWindowView::device() const
     return m_device;
 }
 
-void MainWindowView::updateControls(core::Device *device)
+void MainWindowView::updateControls(core::Device *)
 {
     // nothing to do by default
 }

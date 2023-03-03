@@ -74,9 +74,9 @@ QByteArrayView Message::data() const
     return {m_data.begin() + HeaderSize, m_data.end()};
 }
 
-qsizetype Message::dataSize() const
+int Message::dataSize() const
 {
-    return m_data.size() - HeaderSize;
+    return static_cast<int>(m_data.size() - HeaderSize);
 }
 
 QByteArray Message::toByteArray() const
@@ -118,12 +118,12 @@ std::optional<DataType> Request::get() const
     }
 
     if (Q_UNLIKELY(dataSize() < DataType::MinimumSize)) {
-        qCWarning(core::logger(this), "Message too short (%zd byte(s))", dataSize());
+        qCWarning(core::logger(this), "Message too short (%d byte(s))", dataSize());
         return {};
     }
 
     if (Q_UNLIKELY(dataSize() > DataType::MaximumSize)) {
-        qCWarning(core::logger(this), "Message too long (%zd byte(s))", dataSize());
+        qCWarning(core::logger(this), "Message too long (%d byte(s))", dataSize());
         return {};
     }
 
@@ -278,12 +278,12 @@ std::optional<DataType> Response::get() const
     }
 
     if (Q_UNLIKELY(dataSize() < DataType::MinimumSize)) {
-        qCWarning(core::logger(this), "Message too short (%zd byte(s))", dataSize());
+        qCWarning(core::logger(this), "Message too short (%d byte(s))", dataSize());
         return {};
     }
 
     if (Q_UNLIKELY(dataSize() > DataType::MaximumSize)) {
-        qCWarning(core::logger(this), "Message too long (%zd byte(s))", dataSize());
+        qCWarning(core::logger(this), "Message too long (%d byte(s))", dataSize());
         return {};
     }
 
