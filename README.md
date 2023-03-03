@@ -10,6 +10,7 @@ by single companies, or persons. Lack of cooperation prevents that these
 projects reach their full potential. This project is meant as invitation
 to build better modelrailing software together.
 
+
 Supported Hardware
 ------------------
 
@@ -17,6 +18,7 @@ Supported Hardware
 - [ESU Lokprogrammer](https://www.esu.eu/produkte/lokprogrammer/)
 - [KPF-Zeller](https://kpf-zeller.de/) Speed Cat
 - [ZIMO MXULF](http://www.zimo.at/web2010/products/InfMXULF.htm)
+
 
 Building
 --------
@@ -28,6 +30,12 @@ open the toplevel `CMakeLists.txt` in QtCreator.
 Alternatively open a commandline, add Qt 6.4 to your `PATH`,
 and run [CMake](https://cmake.org/).
 
+[![Continuous Integration][ci-status-icon]][ci-status-link]
+
+[ci-status-icon]: https://github.com/hasselmm/LibreModeltrainStudio/actions/workflows/autobuild.yml/badge.svg
+[ci-status-link]: https://github.com/hasselmm/LibreModeltrainStudio/actions/workflows/autobuild.yml
+
+
 Contributions
 -------------
 
@@ -37,6 +45,7 @@ The source code can be found at Github:
 <https://github.com/hasselmm/LibreModeltrainStudio>
 
 Let's team up: Modelrailing is much more fun together!
+
 
 License
 -------
