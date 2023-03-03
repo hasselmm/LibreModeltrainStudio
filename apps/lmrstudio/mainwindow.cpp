@@ -664,15 +664,22 @@ void MainWindow::Private::onCurrentViewChanged()
 
 void MainWindow::Private::onFileNameChanged()
 {
-    if (const auto mainWindowView = dynamic_cast<MainWindowView *>(stack->currentWidget()))
-        q()->setWindowFilePath(mainWindowView->fileName());
-    else
-        q()->setWindowFilePath({});
-
     auto windowTitle = qApp->applicationName();
+    auto documentTitle = QString{};
 
-    if (const auto fileName = q()->windowFilePath(); !fileName.isEmpty())
-        windowTitle = QFileInfo{fileName}.fileName() + "[*] - "_L1 + windowTitle;
+    if (const auto mainWindowView = dynamic_cast<MainWindowView *>(stack->currentWidget())) {
+        auto fileName = mainWindowView->fileName();
+        documentTitle = QFileInfo{fileName}.fileName();
+        q()->setWindowFilePath(std::move(fileName));
+
+        if (documentTitle.isEmpty() && mainWindowView->fileState() != MainWindowView::FileState::None)
+            documentTitle = tr("<untitled>");
+    } else {
+        q()->setWindowFilePath({});
+    }
+
+    if (!documentTitle.isEmpty())
+        windowTitle = std::move(documentTitle) + "[*] - "_L1 + std::move(windowTitle);
 
     q()->setWindowTitle(std::move(windowTitle));
 }
@@ -680,7 +687,7 @@ void MainWindow::Private::onFileNameChanged()
 void MainWindow::Private::onModifiedChanged()
 {
     if (const auto mainWindowView = dynamic_cast<MainWindowView *>(stack->currentWidget()))
-        q()->setWindowModified(mainWindowView->isModified());
+        q()->setWindowModified(mainWindowView->fileState() == MainWindowView::FileState::Modified);
     else
         q()->setWindowModified(false);
 }
@@ -873,9 +880,9 @@ QString MainWindowView::fileName() const
     return {};
 }
 
-bool MainWindowView::isModified() const
+MainWindowView::FileState MainWindowView::fileState() const
 {
-    return false;
+    return FileState::None;
 }
 
 void MainWindowView::setDevice(core::Device *newDevice)

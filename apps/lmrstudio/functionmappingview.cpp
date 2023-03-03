@@ -514,14 +514,14 @@ QList<QActionGroup *> FunctionMappingView::actionGroups(ActionCategory category)
     return d->actionGroups.value(category);
 }
 
+FunctionMappingView::FileState FunctionMappingView::fileState() const
+{
+    return d->isModified() ? FileState::Modified : FileState::Saved;
+}
+
 QString FunctionMappingView::fileName() const
 {
     return d->fileName();
-}
-
-bool FunctionMappingView::isModified() const
-{
-    return d->isModified();
 }
 
 DeviceFilter FunctionMappingView::deviceFilter() const

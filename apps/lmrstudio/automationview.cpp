@@ -299,14 +299,14 @@ QList<QActionGroup *> AutomationView::actionGroups(ActionCategory category) cons
     return {d->actionGroups[category]};
 }
 
+AutomationView::FileState AutomationView::fileState() const
+{
+    return d->isModified() ? FileState::Modified : FileState::Saved;
+}
+
 QString AutomationView::fileName() const
 {
     return d->fileName();
-}
-
-bool AutomationView::isModified() const
-{
-    return d->isModified();
 }
 
 DeviceFilter AutomationView::deviceFilter() const

@@ -336,14 +336,14 @@ QList<QActionGroup *> TrackPlanView::actionGroups(ActionCategory category) const
     return {d->actionGroups[category]};
 }
 
+TrackPlanView::FileState TrackPlanView::fileState() const
+{
+    return d->isModified() ? FileState::Modified : FileState::Saved;
+}
+
 QString TrackPlanView::fileName() const
 {
     return d->fileName();
-}
-
-bool TrackPlanView::isModified() const
-{
-    return d->isModified();
 }
 
 void TrackPlanView::updateControls(core::Device *newDevice)

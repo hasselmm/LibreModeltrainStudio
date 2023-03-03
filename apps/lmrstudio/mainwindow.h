@@ -31,11 +31,19 @@ public:
 
     Q_ENUM(ActionCategory)
 
+    enum class FileState {
+        None,
+        Saved,
+        Modified,
+    };
+
+    Q_ENUM(FileState)
+
     using QFrame::QFrame;
 
     virtual QList<QActionGroup *> actionGroups(ActionCategory category) const;
+    virtual FileState fileState() const;
     virtual QString fileName() const;
-    virtual bool isModified() const;
 
     virtual DeviceFilter deviceFilter() const;
     void setDevice(core::Device *newDevice);
