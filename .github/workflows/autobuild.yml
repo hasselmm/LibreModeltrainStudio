@@ -54,6 +54,8 @@ jobs:
       - name: Test project
         run: cd build && ctest --rerun-failed --output-on-failure
         continue-on-error: true # remove once tests are expected to be stable
+        env:
+          QT_QPA_PLATFORM: offscreen
 
       - name: Package project
         run: cd build && cmake --build . --target package
