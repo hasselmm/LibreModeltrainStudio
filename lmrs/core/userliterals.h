@@ -2,9 +2,10 @@
 #define LMRS_CORE_USERLITERALS_H
 
 #include <QLatin1String>
-#include <QUrl>
 
 #include <chrono>
+
+class QUrl;
 
 namespace lmrs::core::literals {
 
@@ -23,11 +24,6 @@ constexpr auto operator ""_L1(const char *str, size_t len)
 constexpr auto operator ""_L1(char value)
 {
     return QLatin1Char{value};
-}
-
-inline auto operator ""_url(const char *str, size_t len)
-{
-    return QUrl{QLatin1StringView{str, static_cast<int>(len)}};
 }
 
 constexpr auto operator ""_U(unsigned long long codepoint)
@@ -54,6 +50,8 @@ constexpr auto operator""_size(unsigned long long value)
 {
     return static_cast<qsizetype>(value);
 }
+
+QUrl operator ""_url(const char *str, size_t len);
 
 } // namespace lmrs::core::literals
 
