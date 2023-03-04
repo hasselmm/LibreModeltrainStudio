@@ -4,6 +4,7 @@
 #include "dccconstants.h"
 #include "detectors.h"
 #include "fileformat.h"
+#include "localization.h"
 
 #include <QAbstractListModel>
 
@@ -514,17 +515,17 @@ private:
 
         Row() = default;
 
-        explicit Row(QString text);
+        explicit Row(l10n::String text);
         explicit Row(ItemPointer event);
 
         Action *action() const { return dynamic_cast<Action *>(item()); }
         Event *event() const { return dynamic_cast<Event *>(item()); }
         Item *item() const;
 
-        std::optional<QString> text() const;
+        std::optional<l10n::String> text() const;
 
     private:
-        std::variant<QString, ItemPointer> m_value;
+        std::variant<l10n::String, ItemPointer> m_value;
     };
 
     QList<Row> m_rows;

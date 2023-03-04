@@ -823,8 +823,8 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::choice<QString>(s_parameter_portName, tr("Serial &port:"), defaultPorts()),
-        core::Parameter::choice<QSerialPort::BaudRate>(s_parameter_portSpeed, tr("&Speed:"), serialSpeeds()),
+        core::Parameter::choice<QString>(s_parameter_portName, LMRS_TR("Serial &port:"), defaultPorts()),
+        core::Parameter::choice<QSerialPort::BaudRate>(s_parameter_portSpeed, LMRS_TR("&Speed:"), serialSpeeds()),
     };
 }
 

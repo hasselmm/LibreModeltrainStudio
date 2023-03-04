@@ -16,6 +16,7 @@
 #include <QCompleter>
 #include <QFormLayout>
 #include <QHostAddress>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPointer>
 #include <QValidator>
@@ -199,7 +200,9 @@ DeviceParameterWidget::DeviceParameterWidget(core::DeviceFactory *factory, QWidg
 
     for (const auto &parameter: d->factory->parameters()) {
         if (auto editor = d->createEditor(parameter); editor.widget) {
-            layout->addRow(parameter.name(), editor.widget);
+            auto label = new l10n::Facade<QLabel>{parameter.name(), this};
+            layout->addRow(label, editor.widget);
+            label->setBuddy(editor.widget);
             d->editors.insert(parameter.key(), std::move(editor));
         } else {
             qCWarning(core::logger(this), "Unsupported type %d for parameter \"%s\"",

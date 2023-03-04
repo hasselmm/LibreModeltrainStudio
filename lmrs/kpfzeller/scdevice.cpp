@@ -441,9 +441,9 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::choice<QString>(s_parameterPortName, tr("Serial &port:"), defaultPorts()),
-        core::Parameter::choice<SpeedCatDevice::Scale>(s_parameterScale, tr("Model &scale:"), defaultScales()),
-        core::Parameter::flag(s_parameterRubber, tr("&Rubber band:"), true),
+        core::Parameter::choice<QString>(s_parameterPortName, LMRS_TR("Serial &port:"), defaultPorts()),
+        core::Parameter::choice<SpeedCatDevice::Scale>(s_parameterScale, LMRS_TR("Model &scale:"), defaultScales()),
+        core::Parameter::flag(s_parameterRubber, LMRS_TR("&Rubber band:"), true),
     };
 }
 

@@ -799,7 +799,7 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::hostAddress(s_parameter_address, tr("Host &address:"), defaultAddresses()),
+        core::Parameter::hostAddress(s_parameter_address, LMRS_TR("Host &address:"), defaultAddresses()),
     };
 }
 
