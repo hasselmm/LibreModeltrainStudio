@@ -1140,7 +1140,7 @@ int AutomationModel::appendAction(const QModelIndex &index, Action *action)
     return -1; // soft assert
 }
 
-int AutomationModel::insertEvent(const QModelIndex &index, Action *action, int before)
+int AutomationModel::insertAction(const QModelIndex &index, Action *action, int before)
 {
     if (const auto event = eventItem(index))
         return event->insertAction(action, before);

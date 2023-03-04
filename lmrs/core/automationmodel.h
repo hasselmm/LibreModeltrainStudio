@@ -555,7 +555,7 @@ public:
     int insertEvent(Event *event, int before);
 
     int appendAction(const QModelIndex &index, Action *action);
-    int insertEvent(const QModelIndex &index, Action *action, int before);
+    int insertAction(const QModelIndex &index, Action *action, int before);
 
     bool removeRows(int row, int count, const QModelIndex &parent = {}) override;
 
