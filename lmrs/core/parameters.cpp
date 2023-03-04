@@ -217,7 +217,7 @@ Parameter Parameter::number(QByteArrayView key, l10n::String name, parameters::N
     if (LMRS_FAILED(logger(), model.valueType.isRegistered())
             || LMRS_FAILED(logger(), QMetaType::canConvert(model.valueType, QMetaType::fromType<int>()))
             || LMRS_FAILED(logger(), QMetaType::canConvert(QMetaType::fromType<int>(), model.valueType))
-            || LMRS_FAILED_LESS_OR_EQUAL(logger(), model.minimumValue, model.maximumValue))
+            || LMRS_FAILED_COMPARE(logger(), model.minimumValue, <=, model.maximumValue))
         qCWarning(logger(), "Invalid value type for parameter \"%s\"", key.constData());
 
     return {Type::Number, std::move(flags), std::move(key), std::move(name), QVariant::fromValue(std::move(model))};

@@ -18,10 +18,6 @@
 
 #define LMRS_FAILED_EQUALS(Logger, ActualValue, ExpectedValue) \
     LMRS_FAILED_COMPARE((Logger), (ActualValue), ==, (ExpectedValue))
-#define LMRS_FAILED_LESS_OR_EQUAL(Logger, ActualValue, ExpectedValue) \
-    LMRS_FAILED_COMPARE((Logger), (ActualValue), <=, (ExpectedValue))
-#define LMRS_FAILED_LESS_THAN(Logger, ActualValue, ExpectedValue) \
-    LMRS_FAILED_COMPARE((Logger), (ActualValue), <, (ExpectedValue))
 
 #define LMRS_CORE_DEFINE_LOGGER(Context) \
     static auto &logger(auto) = delete; \

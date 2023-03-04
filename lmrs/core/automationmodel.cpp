@@ -1068,13 +1068,17 @@ QVariant AutomationModel::data(const QModelIndex &index, int role) const
 
 const Event *AutomationModel::eventItem(const QModelIndex &index) const
 {
-    Q_ASSERT(index.model() == this); // soft assert
+    if (!index.isValid() || LMRS_FAILED_EQUALS(logger(this), index.model(), this))
+        return nullptr;
+
     return qvariant_cast<const Event *>(index.data(EventRole));
 }
 
 Event *AutomationModel::eventItem(const QModelIndex &index)
 {
-    Q_ASSERT(index.model() == this); // soft assert
+    if (!index.isValid() || LMRS_FAILED_EQUALS(logger(this), index.model(), this))
+        return nullptr;
+
     return qvariant_cast<Event *>(index.data(EventRole));
 }
 
@@ -1106,7 +1110,9 @@ int AutomationModel::appendEvent(Event *event)
 
 int AutomationModel::insertEvent(Event *event, int before)
 {
-    if (before < 0 || before > rowCount()) // soft assert
+    if (LMRS_FAILED(logger(this), event != nullptr)
+            || LMRS_FAILED_COMPARE(logger(this), before, >=, 0)
+            || LMRS_FAILED_COMPARE(logger(this), before, <=, rowCount()))
         return -1;
 
     beginInsertRows({}, before, before);
@@ -1136,23 +1142,29 @@ int AutomationModel::insertEvent(Event *event, int before)
 
 int AutomationModel::appendAction(const QModelIndex &index, Action *action)
 {
-    if (const auto event = eventItem(index))
-        return event->appendAction(action);
+    const auto event = eventItem(index);
 
-    return -1; // soft assert
+    if (LMRS_FAILED(logger(this), event != nullptr))
+        return -1;
+
+    return event->appendAction(action);
 }
 
 int AutomationModel::insertAction(const QModelIndex &index, Action *action, int before)
 {
-    if (const auto event = eventItem(index))
-        return event->insertAction(action, before);
+    const auto event = eventItem(index);
 
-    return -1; // soft assert
+    if (LMRS_FAILED(logger(this), event != nullptr))
+        return -1;
+
+    return event->insertAction(action, before);
 }
 
 bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    if (count < 1 || row + count > rowCount() || parent.isValid()) // FIXME soft assert
+    if (LMRS_FAILED(logger(this), !parent.isValid())
+            || LMRS_FAILED_COMPARE(logger(this), count, >=, 1)
+            || LMRS_FAILED_COMPARE(logger(this), row + count, <=, rowCount()))
         return false;
 
     beginRemoveRows(parent, row, row + count - 1);
@@ -1193,7 +1205,7 @@ void AutomationModel::onEventChanged()
 
 JsonFileReader::ModelPointer JsonFileReader::read(const AutomationTypeModel *types)
 {
-    if (!types) // FIXME: soft assert
+    if (LMRS_FAILED(logger(this), types != nullptr))
         return {};
 
     auto file = QFile{fileName()};
