@@ -34,10 +34,10 @@ public:
 IPv4AddressValidator::IPv4AddressValidator(QObject *parent)
     : QRegularExpressionValidator{parent}
 {
-    static const auto octet = R"((?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]))"_L1;
-    static const auto dot = "\\."_L1;
+    static const auto octet = R"((?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]))"_refrag;
+    static const auto dot = "\\."_refrag;
 
-    setRegularExpression(QRegularExpression{'^'_L1 + octet + dot + octet + dot + octet + dot + octet + '$'_L1});
+    setRegularExpression("^"_refrag + octet + dot + octet + dot + octet + dot + octet + "$"_refrag);
 }
 
 } // namespace

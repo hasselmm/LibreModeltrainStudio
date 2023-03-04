@@ -2,6 +2,7 @@
 #define LMRS_CORE_DEBUG_H
 
 #include "quantities.h"
+#include "userliterals.h"
 
 #include <QLoggingCategory>
 
@@ -102,6 +103,8 @@ public:
 struct SeparatorState
 {
     bool needed = false;
+
+    QString next(QString separator = ", "_L1);
 };
 
 QDebug &operator<<(QDebug &debug, SeparatorState &separator);

@@ -28,6 +28,15 @@ QByteArray logging::categoryName(QMetaType metaType, QMetaType detailType)
     return {};
 }
 
+QString SeparatorState::next(QString separator)
+{
+    if (needed)
+        return separator;
+
+    needed = true;
+    return {};
+}
+
 QDebug &operator<<(QDebug &debug, SeparatorState &separator)
 {
     if (separator.needed)

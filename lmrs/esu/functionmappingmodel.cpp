@@ -575,7 +575,7 @@ PlainTextFileReader::ModelPointer PlainTextFileReader::read()
         return nullptr;
     }
 
-    const auto pattern = QRegularExpression{R"(cv\s*(?<variable>\d+)\s*=\s*(?<value>\d+)\s*(?<continue>,\s*)?)"_L1};
+    static const auto pattern = R"(cv\s*(?<variable>\d+)\s*=\s*(?<value>\d+)\s*(?<continue>,\s*)?)"_regex;
 
     auto stream = QTextStream{&file};
 

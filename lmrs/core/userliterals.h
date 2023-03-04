@@ -2,9 +2,12 @@
 #define LMRS_CORE_USERLITERALS_H
 
 #include <QLatin1String>
-#include <QUrl>
 
 #include <chrono>
+
+class QRegularExpression;
+class QRegularExpressionMatch;
+class QUrl;
 
 namespace lmrs::core::literals {
 
@@ -23,11 +26,6 @@ constexpr auto operator ""_L1(const char *str, size_t len)
 constexpr auto operator ""_L1(char value)
 {
     return QLatin1Char{value};
-}
-
-inline auto operator ""_url(const char *str, size_t len)
-{
-    return QUrl{QLatin1StringView{str, static_cast<int>(len)}};
 }
 
 constexpr auto operator ""_U(unsigned long long codepoint)
@@ -53,6 +51,52 @@ constexpr auto operator""_u16(unsigned long long value)
 constexpr auto operator""_size(unsigned long long value)
 {
     return static_cast<qsizetype>(value);
+}
+
+QUrl operator ""_url(const char *str, size_t len);
+QRegularExpression operator ""_regex(const char *str, size_t len);
+
+namespace internal {
+
+template<class Tag>
+struct RegularExpressionLiteralBase
+{
+    constexpr bool operator==(const RegularExpressionLiteralBase &rhs) const noexcept { return pattern == rhs.pattern; }
+    constexpr bool operator!=(const RegularExpressionLiteralBase &rhs) const noexcept { return pattern != rhs.pattern; }
+
+    QRegularExpressionMatch match(QString subject) const noexcept;
+    QRegularExpression compile(Qt::CaseSensitivity cs = Qt::CaseInsensitive) const noexcept;
+    operator QRegularExpression() const noexcept;
+    size_t qHash(size_t seed = 0) const noexcept;
+
+    QLatin1StringView pattern;
+};
+
+template<class Tag>
+inline size_t qHash(const RegularExpressionLiteralBase<Tag> &literal, size_t seed = 0) noexcept
+{
+    return literal.qHash(seed);
+}
+
+} // namespace internal
+
+struct RegularExpressionLiteral : public internal::RegularExpressionLiteralBase<struct RegularExpressionLiteralTag>
+{
+    RegularExpressionLiteral operator+(RegularExpressionLiteral rhs) const noexcept;
+};
+
+struct WildcardLiteral : public internal::RegularExpressionLiteralBase<struct WildcardLiteralTag>
+{
+};
+
+constexpr RegularExpressionLiteral operator ""_refrag(const char *str, size_t len)
+{
+    return {QLatin1StringView{str, static_cast<int>(len)}};
+}
+
+constexpr WildcardLiteral operator ""_wildcard(const char *str, size_t len)
+{
+    return {QLatin1StringView{str, static_cast<int>(len)}};
 }
 
 } // namespace lmrs::core::literals

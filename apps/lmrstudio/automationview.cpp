@@ -274,6 +274,7 @@ AutomationView::AutomationView(QWidget *parent)
 
     d->actionGroups[ActionCategory::FileSave] = new QActionGroup{this};
     d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSaveAction);
+    d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSaveAsAction);
 
     d->actionGroups[ActionCategory::EditCreate] = new QActionGroup{this};
     d->actionGroups[ActionCategory::EditCreate]->addAction(createEventAction);
@@ -299,14 +300,14 @@ QList<QActionGroup *> AutomationView::actionGroups(ActionCategory category) cons
     return {d->actionGroups[category]};
 }
 
+AutomationView::FileState AutomationView::fileState() const
+{
+    return d->isModified() ? FileState::Modified : FileState::Saved;
+}
+
 QString AutomationView::fileName() const
 {
     return d->fileName();
-}
-
-bool AutomationView::isModified() const
-{
-    return d->isModified();
 }
 
 DeviceFilter AutomationView::deviceFilter() const
