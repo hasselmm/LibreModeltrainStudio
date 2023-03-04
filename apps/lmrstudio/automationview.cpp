@@ -274,6 +274,7 @@ AutomationView::AutomationView(QWidget *parent)
 
     d->actionGroups[ActionCategory::FileSave] = new QActionGroup{this};
     d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSaveAction);
+    d->actionGroups[ActionCategory::FileSave]->addAction(d->fileSaveAsAction);
 
     d->actionGroups[ActionCategory::EditCreate] = new QActionGroup{this};
     d->actionGroups[ActionCategory::EditCreate]->addAction(createEventAction);
