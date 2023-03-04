@@ -364,7 +364,7 @@ void CanDetectorEvent::setNetwork(can::NetworkId newNetwork)
 
 void CanDetectorEvent::resetNetwork()
 {
-    const auto detectorGuard = core::propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
+    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
 
     if (std::exchange(m_network, {}) != m_network)
         emit networkChanged({}, {});
@@ -391,7 +391,7 @@ void CanDetectorEvent::setModule(can::ModuleId newModule)
 
 void CanDetectorEvent::resetModule()
 {
-    const auto detectorGuard = core::propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
+    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
 
     if (std::exchange(m_module, {}) != m_module)
         emit moduleChanged({}, {});
