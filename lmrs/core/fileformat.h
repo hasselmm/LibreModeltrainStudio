@@ -1,6 +1,8 @@
 #ifndef LMRS_CORE_FILEFORMAT_H
 #define LMRS_CORE_FILEFORMAT_H
 
+#include "userliterals.h"
+
 #include <QObject>
 
 namespace lmrs::core {
@@ -15,7 +17,7 @@ struct FileFormat
 public:
     QString name;
     QString mimeType;
-    QStringList extensions;
+    QList<WildcardLiteral> extensions;
 
     [[nodiscard]] QString toFilter() const;
 
@@ -219,17 +221,13 @@ inline void registerFileFormat(FileFormat fileFormat)
     registerFileFormat<ModelType>(std::move(fileFormat), std::make_unique<T, QString>);
 }
 
+inline size_t qHash(const lmrs::core::FileFormat &format, size_t seed = 0) noexcept
+{
+    return qHashMulti(seed, format.name, format.extensions);
+}
+
 } // namespace lmrs::core
 
 // =====================================================================================================================
-
-template<>
-struct std::hash<lmrs::core::FileFormat>
-{
-    size_t operator()(const lmrs::core::FileFormat &format, size_t seed)
-    {
-        return qHashMulti(seed, format.name, format.extensions);
-    }
-};
 
 #endif // LMRS_CORE_FILEFORMAT_H
