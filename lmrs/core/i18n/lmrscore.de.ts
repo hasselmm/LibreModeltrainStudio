@@ -283,11 +283,11 @@
     </message>
     <message>
         <source>Primary State</source>
-        <translation>Zweite Adresse</translation>
+        <translation>Erster Zustand</translation>
     </message>
     <message>
         <source>Secondary Address</source>
-        <translation>Erster Zustand</translation>
+        <translation>Zweite Adresse</translation>
     </message>
     <message>
         <source>Secondary State</source>

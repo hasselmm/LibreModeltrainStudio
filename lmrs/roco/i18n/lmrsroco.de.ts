@@ -74,7 +74,7 @@
     </message>
     <message>
         <source>Host &amp;address:</source>
-        <translation>Netzwerkadresse:</translation>
+        <translation>Netzwerk&amp;adresse:</translation>
     </message>
 </context>
 <context>
