@@ -1,5 +1,7 @@
 #include "automationmodel.h"
 
+#include "accessories.h"
+#include "device.h"
 #include "logging.h"
 #include "parameters.h"
 #include "propertyguard.h"
@@ -283,6 +285,21 @@ bool TurnoutEvent::hasSecondaryState() const
     return m_secondaryState.has_value();
 }
 
+void TurnoutEvent::setControl(AccessoryControl *newControl)
+{
+    qCInfo(logger(this)) << Q_FUNC_INFO << newControl;
+
+    if (newControl) {
+        connect(newControl, &AccessoryControl::turnoutInfoChanged,
+                this, &TurnoutEvent::onTurnoutInfoChanged);
+    }
+}
+
+void TurnoutEvent::onTurnoutInfoChanged(accessory::TurnoutInfo /*info*/)
+{
+    LMRS_UNIMPLEMENTED();
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 
 QList<Parameter> DetectorEvent::parameters() const
@@ -313,6 +330,19 @@ void DetectorEvent::setType(Type newType)
 DetectorEvent::Type DetectorEvent::type() const
 {
     return m_type;
+}
+
+void DetectorEvent::setControl(DetectorControl *newControl)
+{
+    if (newControl) {
+        connect(newControl, &DetectorControl::detectorInfoChanged,
+                this, &DetectorEvent::onDetectorInfoChanged);
+    }
+}
+
+void DetectorEvent::onDetectorInfoChanged(accessory::DetectorInfo /*info*/)
+{
+    LMRS_UNIMPLEMENTED();
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -427,6 +457,19 @@ bool CanDetectorEvent::hasPort() const
     return m_port.has_value();
 }
 
+void CanDetectorEvent::setControl(DetectorControl *newControl)
+{
+    if (newControl) {
+        connect(newControl, &DetectorControl::detectorInfoChanged,
+                this, &CanDetectorEvent::onDetectorInfoChanged);
+    }
+}
+
+void CanDetectorEvent::onDetectorInfoChanged(accessory::DetectorInfo /*info*/)
+{
+    LMRS_UNIMPLEMENTED();
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 
 QString RBusDetectorGroupEvent::name() const
@@ -477,6 +520,19 @@ rbus::GroupId RBusDetectorGroupEvent::group() const
 bool RBusDetectorGroupEvent::hasGroup() const
 {
     return m_group.has_value();
+}
+
+void RBusDetectorGroupEvent::setControl(DetectorControl *newControl)
+{
+    if (newControl) {
+        connect(newControl, &DetectorControl::detectorInfoChanged,
+                this, &RBusDetectorGroupEvent::onDetectorInfoChanged);
+    }
+}
+
+void RBusDetectorGroupEvent::onDetectorInfoChanged(accessory::DetectorInfo /*info*/)
+{
+    LMRS_UNIMPLEMENTED();
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -559,6 +615,20 @@ rbus::PortIndex RBusDetectorEvent::port() const
 bool RBusDetectorEvent::hasPort() const
 {
     return m_port.has_value();
+}
+
+void RBusDetectorEvent::setControl(DetectorControl *newControl)
+{
+    if (newControl) {
+        connect(newControl, &DetectorControl::detectorInfoChanged,
+                this, &RBusDetectorEvent::onDetectorInfoChanged);
+    }
+}
+
+void RBusDetectorEvent::onDetectorInfoChanged(accessory::DetectorInfo info)
+{
+    qCInfo(logger(this)) << Q_FUNC_INFO << info;
+    Q_UNIMPLEMENTED();
 }
 
 // =====================================================================================================================
@@ -1042,8 +1112,93 @@ class AutomationModel::Private : public PrivateObject<AutomationModel>
 public:
     using PrivateObject::PrivateObject;
 
+    void setDevice(Device *newDevice);
+
+    template<size_t I = 0> void disconnectControls(Event *event = nullptr);
+    template<size_t I = 0> void connectControls(Event *event = nullptr);
+    template<class T> void setControl(T *newControl);
+
     QList<Event *> m_events;
+    QPointer<Device> m_device;
+    ControlSink m_controls;
 };
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+template<class T>
+void AutomationModel::Private::setControl(T *newControl)
+{
+    if (const auto oldControl = std::exchange(std::get<QPointer<T>>(m_controls),
+                                              newControl).get(); oldControl != newControl) {
+        if (oldControl) {
+            qCDebug(logger(), "disconnecting %s(%p)", oldControl->metaObject()->className(), oldControl);
+
+            for (auto event: std::as_const(m_events))
+                oldControl->disconnect(event);
+        }
+
+        if (newControl) {
+            qCDebug(logger(), "setting %s(%p)", newControl->metaObject()->className(), newControl);
+        } else {
+            qCDebug(logger(), "resetting %s()", T::staticMetaObject.className());
+        }
+
+        for (auto event: std::as_const(m_events)) {
+            qCInfo(logger()) << event;
+            event->setControl(newControl);
+        }
+    }
+}
+
+template<size_t I>
+void AutomationModel::Private::disconnectControls(Event *event)
+{
+    if constexpr (I < ControlSink::size()) {
+        static const auto nullControl = ControlSink::element_pointer<I>{nullptr};
+
+        if (event)
+            event->setControl(nullControl);
+        else
+            setControl(nullControl);
+
+        disconnectControls<I + 1>(event);
+    }
+}
+
+template<size_t I>
+void AutomationModel::Private::connectControls(Event *event)
+{
+    if (m_device.isNull())
+        return;
+
+    if constexpr (I < ControlSink::size()) {
+        const auto newControl = m_device->control<ControlSink::element_type<I>>();
+
+        if (event)
+            event->setControl(newControl);
+        else
+            setControl(newControl);
+
+        connectControls<I + 1>(event);
+    }
+}
+
+void AutomationModel::Private::setDevice(Device *newDevice)
+{
+    if (const auto oldDevice = std::exchange(m_device, newDevice);
+            oldDevice && oldDevice != newDevice) {
+        oldDevice->disconnect(this);
+        disconnectControls();
+    }
+
+    if (m_device) {
+        const auto onControlsChanged = [this] { connectControls(); };
+        connect(m_device, &Device::controlsChanged, this, onControlsChanged);
+        onControlsChanged();
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 
 AutomationModel::AutomationModel(QObject *parent)
     : QAbstractListModel{parent}
@@ -1126,6 +1281,7 @@ int AutomationModel::insertEvent(Event *event, int before)
 
     event->setParent(this);
     d->m_events.emplace(before, event);
+    d->connectControls(event);
 
     const auto observeAction = [this](Action *action) {
         observeItem(action, &Action::staticMetaObject, LMRS_CORE_FIND_META_METHOD(&AutomationModel::onActionChanged));
@@ -1178,12 +1334,29 @@ bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
     const auto begin = d->m_events.begin() + row;
     const auto end = begin + count;
 
-    qDeleteAll(begin, end);
+    for (auto it = begin; it != end; ++it) {
+        const auto event = *it;
+
+        d->disconnectControls(event);
+        if (event->parent() == this)
+            delete event;
+    }
+
     d->m_events.erase(begin, end);
 
     endRemoveRows();
 
     return true;
+}
+
+void AutomationModel::setDevice(Device *newDevice)
+{
+    d->setDevice(newDevice);
+}
+
+Device *AutomationModel::device() const
+{
+    return d->m_device;
 }
 
 void AutomationModel::clear()
