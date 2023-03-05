@@ -14,6 +14,7 @@ endfunction()
 
 
 lmrs_add_test(tst_algorithms.cpp Lmrs::Core)
+lmrs_add_test(tst_automation.cpp Lmrs::Core)
 lmrs_add_test(tst_continuation.cpp Lmrs::Core)
 lmrs_add_test(tst_dccconstants.cpp Lmrs::Core)
 lmrs_add_test(tst_dccrequest.cpp Lmrs::Core)
@@ -26,7 +27,7 @@ lmrs_add_test(tst_variablecontrol.cpp Lmrs::Core)
 lmrs_add_test(tst_z21client.cpp Lmrs::Roco)
 
 set_target_properties(
-    tst_dccconstants PROPERTIES
+    tst_automation PROPERTIES
     FOLDER "qtc_runnable"
 )
 
