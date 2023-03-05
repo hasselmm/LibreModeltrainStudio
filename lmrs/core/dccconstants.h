@@ -41,8 +41,6 @@ using SpeedPercentil        = SpeedQuantity<100>;
 using Speed                 = std::variant<std::monostate, Speed14, Speed28, Speed126, SpeedPercentil>;
 
 
-QDebug operator<<(QDebug debug, Speed speed);
-
 // TODO: verify and ensure that speeds representing emergancy stops are converted properly
 
 template<class T>
@@ -706,7 +704,13 @@ static_assert(FunctionGroup9.size() == 8);
 static_assert(FunctionGroup10.size() == 8);
 static_assert(FunctionGroupAll.size() == 69);
 
-using FunctionState = std::bitset<FunctionGroupAll.size()>;
+struct FunctionState : public std::bitset<FunctionGroupAll.size()>
+{
+    Q_GADGET
+
+public:
+    using std::bitset<FunctionGroupAll.size()>::bitset;
+};
 
 quint8 functionMask(core::Range<Function> group, FunctionState state);
 
@@ -775,10 +779,12 @@ static_assert(functionGroup(68)  == FunctionGroup10);
 static_assert(functionGroup(69)  == FunctionGroupNone);
 static_assert(functionGroup(255) == FunctionGroupNone);
 
+QDebug operator<<(QDebug debug, ExtendedVariableIndex variable);
+QDebug operator<<(QDebug debug, const FunctionState &functions);
+QDebug operator<<(QDebug debug, Speed speed);
+
 } // namespace lmrs::core::dcc
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-QDebug operator<<(QDebug debug, const lmrs::core::dcc::FunctionState &functions);
 
 #endif // LMRS_CORE_DCCCONSTANTS_H

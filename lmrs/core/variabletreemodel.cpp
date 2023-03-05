@@ -58,6 +58,18 @@ QString flagNames(QJsonArray flags, int value)
     return names.join(", "_L1);
 }
 
+quintptr internalId(const QModelIndex &parent)
+{
+    if (!parent.isValid()) {
+        return 0;
+    } else if (const auto grandParent = parent.parent(); !grandParent.isValid()) {
+        return (static_cast<uint>(parent.row()) << 2) | 1;
+    } else {
+        return (static_cast<uint>(parent.row()) << 10)
+                | (static_cast<uint>(grandParent.row()) << 2) | 2;
+    }
+}
+
 } // namespace
 
 void VariableModel::updateVariable(ExtendedVariableIndex variable, VariableValue value)
@@ -176,18 +188,6 @@ void VariableModel::clear()
     beginResetModel();
     m_rows.clear();
     endResetModel();
-}
-
-quintptr internalId(const QModelIndex &parent)
-{
-    if (!parent.isValid()) {
-        return 0;
-    } else if (const auto grandParent = parent.parent(); !grandParent.isValid()) {
-        return (static_cast<uint>(parent.row()) << 2) | 1;
-    } else {
-        return (static_cast<uint>(parent.row()) << 10)
-                | (static_cast<uint>(grandParent.row()) << 2) | 2;
-    }
 }
 
 QModelIndex VariableModel::index(int row, int column, const QModelIndex &parent) const

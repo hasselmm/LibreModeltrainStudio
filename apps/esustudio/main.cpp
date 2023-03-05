@@ -32,6 +32,7 @@ int Application::run()
 
 } // namespace lmrs::studio
 
+int main(int argc, char *argv[]); // actually qMain() on Windows
 int main(int argc, char *argv[])
 {
     return lmrs::studio::Application{argc, argv}.run();
