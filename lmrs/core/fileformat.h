@@ -107,7 +107,8 @@ public:
         registry().emplaceBack(std::move(fileFormat), std::move(factory));
     }
 
-    static Pointer fromFile(QString fileName);
+    [[nodiscard]] static inline Pointer fromFileName(QString fileName);
+
     virtual ModelPointer read(Args...) = 0;
 
 private:
@@ -133,7 +134,7 @@ public:
 
 template<typename ModelType, typename... Args>
 typename FileFormatReader<ModelType, Args...>::Pointer
-FileFormatReader<ModelType, Args...>::fromFile(QString fileName)
+FileFormatReader<ModelType, Args...>::fromFileName(QString fileName)
 {
     for (const auto &[format, createReader]: registry())
         if (format.accepts(fileName))
@@ -166,7 +167,8 @@ public:
         registry().emplaceBack(std::move(fileFormat), std::move(factory));
     }
 
-    [[nodiscard]] static inline Pointer fromFile(QString fileName);
+    [[nodiscard]] static inline Pointer fromFileName(QString fileName);
+
     virtual bool write(const ModelType *model) = 0;
 
 private:
@@ -192,7 +194,7 @@ public:
 
 template<typename ModelType>
 typename FileFormatWriter<ModelType>::Pointer
-FileFormatWriter<ModelType>::fromFile(QString fileName)
+FileFormatWriter<ModelType>::fromFileName(QString fileName)
 {
     for (const auto &[format, createWriter]: registry())
         if (format.accepts(fileName))

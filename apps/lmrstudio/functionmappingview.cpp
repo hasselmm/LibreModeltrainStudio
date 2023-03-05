@@ -570,7 +570,7 @@ l10n::ActionGroup *FunctionMappingView::Private::makeActionGroup(ActionCategory 
 
 FunctionMappingView::Private::FileHandlerPointer FunctionMappingView::Private::readFile(QString fileName)
 {
-    auto reader = esu::FunctionMappingReader::fromFile(std::move(fileName));
+    auto reader = esu::FunctionMappingReader::fromFileName(std::move(fileName));
 
     if (auto newModel = reader->read()) {
         const auto oldModel = currentModel();
@@ -583,7 +583,7 @@ FunctionMappingView::Private::FileHandlerPointer FunctionMappingView::Private::r
 
 FunctionMappingView::Private::FileHandlerPointer FunctionMappingView::Private::writeFile(QString fileName)
 {
-    auto writer = esu::FunctionMappingWriter::fromFile(std::move(fileName));
+    auto writer = esu::FunctionMappingWriter::fromFileName(std::move(fileName));
     const auto succeeded = writer->write(currentModel());
     Q_ASSERT(succeeded == writer->succeeded());
     return writer;

@@ -448,7 +448,7 @@ void AutomationView::Private::setModel(AutomationModel *newModel)
 
 AutomationView::Private::FileHandlerPointer AutomationView::Private::readFile(QString fileName)
 {
-    auto reader = AutomationModelReader::fromFile(std::move(fileName));
+    auto reader = AutomationModelReader::fromFileName(std::move(fileName));
 
     if (auto newModel = reader->read(types))
         setModel(newModel.release());
@@ -458,7 +458,7 @@ AutomationView::Private::FileHandlerPointer AutomationView::Private::readFile(QS
 
 AutomationView::Private::FileHandlerPointer AutomationView::Private::writeFile(QString fileName)
 {
-    auto writer = AutomationModelWriter::fromFile(std::move(fileName));
+    auto writer = AutomationModelWriter::fromFileName(std::move(fileName));
     const auto succeeded = writer->write(canvas->model());
     Q_ASSERT(succeeded == writer->succeeded());
     return writer;

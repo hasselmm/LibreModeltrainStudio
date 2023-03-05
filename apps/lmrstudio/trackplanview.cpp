@@ -366,7 +366,7 @@ bool TrackPlanView::open(QString newFileName)
 
 TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::readFile(QString fileName)
 {
-    auto reader = core::SymbolicTrackPlanReader::fromFile(std::move(fileName));
+    auto reader = core::SymbolicTrackPlanReader::fromFileName(std::move(fileName));
 
     if (auto newLayout = reader->read()) {
         qInfo() << newLayout->name << newLayout->pages.size();
@@ -383,7 +383,7 @@ TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::readFile(QStr
 
 TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::writeFile(QString fileName)
 {
-    auto writer = core::SymbolicTrackPlanWriter::fromFile(std::move(fileName));
+    auto writer = core::SymbolicTrackPlanWriter::fromFileName(std::move(fileName));
     const auto succeeded = writer->write(layout.get());
     Q_ASSERT(succeeded == writer->succeeded());
     return writer;
