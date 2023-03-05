@@ -242,17 +242,21 @@ class TurnoutEvent : public Event
 {
     Q_OBJECT
 
-    Q_PROPERTY(quint16 primaryAddress READ primaryAddress WRITE setPrimaryAddress RESET resetPrimaryAddress NOTIFY primaryAddressChanged FINAL)
     Q_PROPERTY(bool hasPrimaryAddress READ hasPrimaryAddress NOTIFY primaryAddressChanged FINAL)
+    Q_PROPERTY(quint16 primaryAddress READ primaryAddress WRITE setPrimaryAddress
+               RESET resetPrimaryAddress NOTIFY primaryAddressChanged FINAL)
 
-    Q_PROPERTY(core::dcc::TurnoutState primaryState READ primaryState WRITE setPrimaryState RESET resetPrimaryState NOTIFY primaryStateChanged FINAL)
     Q_PROPERTY(bool hasPrimaryState READ hasPrimaryState NOTIFY primaryStateChanged FINAL)
+    Q_PROPERTY(core::dcc::TurnoutState primaryState READ primaryState WRITE setPrimaryState
+               RESET resetPrimaryState NOTIFY primaryStateChanged FINAL)
 
-    Q_PROPERTY(quint16 secondaryAddress READ secondaryAddress WRITE setSecondaryAddress NOTIFY secondaryAddressChanged FINAL)
     Q_PROPERTY(bool hasSecondaryAddress READ hasSecondaryAddress NOTIFY secondaryAddressChanged FINAL)
+    Q_PROPERTY(quint16 secondaryAddress READ secondaryAddress WRITE setSecondaryAddress
+               RESET resetSecondaryAddress NOTIFY secondaryAddressChanged FINAL)
 
-    Q_PROPERTY(core::dcc::TurnoutState secondaryState READ secondaryState WRITE setSecondaryState NOTIFY secondaryStateChanged FINAL)
     Q_PROPERTY(bool hasSecondaryState READ hasSecondaryState NOTIFY secondaryStateChanged FINAL)
+    Q_PROPERTY(core::dcc::TurnoutState secondaryState READ secondaryState WRITE setSecondaryState
+               RESET resetSecondaryState NOTIFY secondaryStateChanged FINAL)
 
 public:
     using Event::Event;
