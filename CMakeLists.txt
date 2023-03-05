@@ -80,18 +80,8 @@ add_subdirectory(docs)
 add_subdirectory(tools)
 add_subdirectory(tests)
 
-add_custom_target (
-    cmake
+file(GLOB_RECURSE cmake_sources CONFIGURE_DEPENDS cmake/*.cmake)
+add_custom_target (cmake SOURCES ${cmake_sources})
 
-    SOURCES
-    cmake/FindSphinx.cmake
-    cmake/FontAwesome.cmake
-    cmake/LmrsSupport.cmake
-)
-
-add_custom_target (
-    github
-
-    SOURCES
-    .github/workflows/autobuild.yml
-)
+file(GLOB_RECURSE github_sources CONFIGURE_DEPENDS .github/**/*.yml)
+add_custom_target (github SOURCES ${github_sources})
