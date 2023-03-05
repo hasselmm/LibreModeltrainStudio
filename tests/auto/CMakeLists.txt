@@ -21,6 +21,7 @@ lmrs_add_test(tst_lp2message.cpp Lmrs::Esu)
 lmrs_add_test(tst_lp2stream.cpp Lmrs::Esu)
 lmrs_add_test(tst_propertyguard.cpp Lmrs::Core)
 lmrs_add_test(tst_speeddial.cpp Lmrs::Widgets)
+lmrs_add_test(tst_staticinit.cpp Lmrs::Core)
 lmrs_add_test(tst_variablecontrol.cpp Lmrs::Core)
 lmrs_add_test(tst_z21client.cpp Lmrs::Roco)
 

@@ -4,12 +4,21 @@
 namespace lmrs::core {
 
 template<class T>
-class StaticInit
+class StaticInitInjector
 {
 public:
-    constexpr StaticInit() { T::staticConstructor(); }
+    StaticInitInjector() { T::staticConstructor(); }
 };
 
-}
+template<class T, class BaseType>
+class StaticInit
+        : public StaticInitInjector<T>
+        , public BaseType
+{
+public:
+    using BaseType::BaseType;
+};
+
+} // namespace lmrs::core
 
 #endif // LMRS_CORE_STATICINIT_H

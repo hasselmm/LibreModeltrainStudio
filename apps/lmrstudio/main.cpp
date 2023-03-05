@@ -20,12 +20,10 @@ const QtMessageHandler defaultMessageHandler = qInstallMessageHandler([](auto ty
     defaultMessageHandler(type, context, message);
 });
 
-class Application
-        : public core::StaticInit<Application>
-        , public QApplication
+class Application : public core::StaticInit<Application, QApplication>
 {
 public:
-    using QApplication::QApplication;
+    using StaticInit::StaticInit;
     static void staticConstructor();
 
     int run();
