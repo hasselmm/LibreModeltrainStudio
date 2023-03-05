@@ -418,6 +418,11 @@ class DelimiterSeparatedFileReader : public TextFileReaderBase
     QT_TR_FUNCTIONS
 
 public:
+    explicit DelimiterSeparatedFileReader(QIODevice *device, QChar delimiter = ';'_L1)
+        : TextFileReaderBase{device}
+        , m_delimiter{delimiter}
+    {}
+
     explicit DelimiterSeparatedFileReader(QString fileName, QChar delimiter = ';'_L1)
         : TextFileReaderBase{std::move(fileName)}
         , m_delimiter{delimiter}
@@ -461,6 +466,11 @@ class DelimiterSeparatedFileWriter : public FunctionMappingWriter
     QT_TR_FUNCTIONS
 
 public:
+    explicit DelimiterSeparatedFileWriter(QIODevice *device, QChar delimiter = ';'_L1)
+        : FunctionMappingWriter{device}
+        , m_delimiter{delimiter}
+    {}
+
     explicit DelimiterSeparatedFileWriter(QString fileName, QChar delimiter = ';'_L1)
         : FunctionMappingWriter{std::move(fileName)}
         , m_delimiter{delimiter}
@@ -952,9 +962,9 @@ template<>
 lmrs::esu::FunctionMappingReader::Registry &lmrs::esu::FunctionMappingReader::registry()
 {
     static auto formats = Registry {
-        {core::FileFormat::plainText(), std::make_unique<lmrs::esu::PlainTextFileReader, QString>},
-        {core::FileFormat::lokProgrammer(), std::make_unique<lmrs::esu::EsuxFileReader, QString>},
-        {core::FileFormat::z21Maintenance(), std::make_unique<lmrs::esu::DelimiterSeparatedFileReader, QString>},
+        {core::FileFormat::plainText(), Factory::make<lmrs::esu::PlainTextFileReader>()},
+        {core::FileFormat::lokProgrammer(), Factory::make<lmrs::esu::EsuxFileReader>()},
+        {core::FileFormat::z21Maintenance(), Factory::make<lmrs::esu::DelimiterSeparatedFileReader>()},
     };
 
     return formats;
@@ -964,8 +974,8 @@ template<>
 lmrs::esu::FunctionMappingWriter::Registry &lmrs::esu::FunctionMappingWriter::registry()
 {
     static auto formats = Registry {
-        {core::FileFormat::plainText(), std::make_unique<lmrs::esu::PlainTextFileWriter, QString>},
-        {core::FileFormat::z21Maintenance(), std::make_unique<lmrs::esu::DelimiterSeparatedFileWriter, QString>},
+        {core::FileFormat::plainText(), Factory::make<lmrs::esu::PlainTextFileWriter>()},
+        {core::FileFormat::z21Maintenance(), Factory::make<lmrs::esu::DelimiterSeparatedFileWriter>()},
     };
 
     return formats;

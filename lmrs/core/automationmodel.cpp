@@ -1386,28 +1386,31 @@ void AutomationModel::onEventChanged()
 JsonFileReader::ModelPointer JsonFileReader::read(const AutomationTypeModel *types)
 {
     if (LMRS_FAILED(logger(this), types != nullptr))
-        return {};
+        return nullptr;
 
-    auto file = QFile{fileName()};
+    // read JSON data from file or device, and parse into a JSON tree
 
-    if (!file.open(QFile::ReadOnly)) {
-        reportError(file.errorString());
-        return {};
-    }
+    if (!open(QIODevice::ReadOnly))
+        return nullptr;
 
     auto parseStatus = QJsonParseError{};
-    const auto document = QJsonDocument::fromJson(file.readAll(), &parseStatus);
+    const auto document = QJsonDocument::fromJson(readAll(), &parseStatus);
 
     if (parseStatus.error != QJsonParseError::NoError) {
         reportError(parseStatus.errorString());
-        return {};
+        return nullptr;
     }
+
+    if (!close())
+        return nullptr;
+
+    // parse the JSON tree and create an automation model from it
 
     const auto root = document.object();
 
     if (QUrl{root[s_schema].toString()} != typeUri<AutomationModel>()) {
         reportError(tr("Unexpected file format."));
-        return {};
+        return nullptr;
     }
 
     auto model = std::make_unique<AutomationModel>();
@@ -1435,27 +1438,16 @@ bool JsonFileWriter::write(const AutomationModel *model)
             events.append(event->toJsonObject());
     }
 
-    auto file = QFile{fileName()};
-
-    if (!file.open(QFile::WriteOnly)) {
-        reportError(file.errorString());
+    if (!open(QIODevice::WriteOnly))
         return false;
-    }
 
     auto root = QJsonObject{
         {s_schema, typeUri<AutomationModel>().toString()},
         {s_events, std::move(events)}
     };
 
-    auto json = QJsonDocument{std::move(root)}.toJson();
-    const auto bytesToWrite = json.length();
-
-    if (file.write(std::move(json)) != bytesToWrite) {
-        reportError(file.errorString());
-        return false;
-    }
-
-    return true;
+    return writeData(QJsonDocument{std::move(root)}.toJson())
+            && close();
 }
 
 // =====================================================================================================================
@@ -1467,7 +1459,7 @@ lmrs::core::automation::AutomationModelReader::Registry &
 lmrs::core::automation::AutomationModelReader::registry()
 {
     static auto formats = Registry {
-        {FileFormat::lmrsAutomationModel(), std::make_unique<automation::JsonFileReader, QString>},
+        {FileFormat::lmrsAutomationModel(), Factory::make<automation::JsonFileReader>()},
     };
 
     return formats;
@@ -1478,7 +1470,7 @@ lmrs::core::automation::AutomationModelWriter::Registry &
 lmrs::core::automation::AutomationModelWriter::registry()
 {
     static auto formats = Registry {
-        {FileFormat::lmrsAutomationModel(), std::make_unique<automation::JsonFileWriter, QString>},
+        {FileFormat::lmrsAutomationModel(), Factory::make<automation::JsonFileWriter>()},
     };
 
     return formats;

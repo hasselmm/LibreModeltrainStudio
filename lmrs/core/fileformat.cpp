@@ -130,6 +130,10 @@ bool FileFormat::accepts(QString fileName) const
 
 // =====================================================================================================================
 
+FileFormatHandler::FileFormatHandler(QIODevice *device)
+    : m_device{device}
+{}
+
 FileFormatHandler::FileFormatHandler(QString fileName)
     : m_fileName{std::move(fileName)}
 {}
@@ -137,6 +141,16 @@ FileFormatHandler::FileFormatHandler(QString fileName)
 FileFormatHandler::~FileFormatHandler()
 {
     reset();
+}
+
+void FileFormatHandler::reset()
+{
+    if (m_device && m_device->isOpen())
+        m_device->close();
+    if (!m_fileName.isEmpty())
+        delete m_device;
+
+    m_errorString.clear();
 }
 
 void FileFormatHandler::reportError(QString errorString)
@@ -147,6 +161,58 @@ void FileFormatHandler::reportError(QString errorString)
 void FileFormatHandler::reportUnsupportedFileError()
 {
     reportError(tr("The type of this file is not recognized, or it is not supported at all."));
+}
+
+bool FileFormatHandler::open(QIODeviceBase::OpenMode mode)
+{
+    if (m_device.isNull())
+        m_device = new QFile{m_fileName};
+
+    if (!m_device->open(mode)) {
+        reportError(m_device->errorString());
+        return false;
+    }
+
+    return true;
+}
+
+bool FileFormatHandler::writeData(QByteArray data)
+{
+    if (LMRS_FAILED(logger(this), !m_device.isNull())
+            || LMRS_FAILED(logger(this), m_device->isOpen()))
+        return false;
+
+    const auto bytesToWrite = data.length();
+
+    if (m_device->write(std::move(data)) != bytesToWrite) {
+        reportError(m_device->errorString());
+        return false;
+    }
+
+    return true;
+}
+
+QByteArray FileFormatHandler::readAll() const
+{
+    if (LMRS_FAILED(logger(this), !m_device.isNull())
+            || LMRS_FAILED(logger(this), m_device->isOpen()))
+        return {};
+
+    return m_device->readAll();
+}
+
+bool FileFormatHandler::close()
+{
+    if (LMRS_FAILED(logger(this), !m_device.isNull())
+            || LMRS_FAILED(logger(this), m_device->isOpen()))
+        return false;
+
+    m_device->close();
+
+    if (!m_fileName.isEmpty())
+        delete m_device;
+
+    return true;
 }
 
 } // namespace lmrs::core
