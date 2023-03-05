@@ -38,14 +38,6 @@ auto typeUri()
     return uri;
 }
 
-QMetaType metaTypeFromClassName(QByteArrayView className)
-{
-    auto typeName = QByteArray{};
-    typeName.reserve(className.size() + 1);
-    typeName.append(std::move(className)).append('*');
-    return QMetaType::fromName(std::move(typeName));
-}
-
 QMetaType metaTypeFromUri(QUrl uri)
 {
     if (!s_schemaBaseUrl.isParentOf(uri))
@@ -845,7 +837,7 @@ Item *AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
 
 Item *AutomationTypeModel::fromMetaObject(const QMetaObject *metaObject, QObject *parent) const
 {
-    return fromMetaType(metaTypeFromClassName(metaObject->className()), parent);
+    return fromMetaType(metaTypeFromMetaObject(metaObject), parent);
 }
 
 Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const

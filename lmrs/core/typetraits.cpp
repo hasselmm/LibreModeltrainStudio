@@ -1,6 +1,8 @@
 #include "typetraits.h"
 
-namespace lmrs::core::tests {
+namespace lmrs::core {
+
+namespace tests {
 
 struct Base
 {
@@ -39,4 +41,24 @@ struct Simple
     static_assert(LMRS_STATIC_METAOBJECT == &Simple::staticMetaObject);
 };
 
-} // namespace lmrs::core::tests
+} // namespace tests
+
+QMetaType metaTypeFromClassName(QByteArrayView className)
+{
+    auto typeName = QByteArray{};
+    typeName.reserve(className.size() + 1);
+    typeName.append(std::move(className)).append('*');
+    return QMetaType::fromName(std::move(typeName));
+}
+
+QMetaType metaTypeFromMetaObject(const QMetaObject *metaObject)
+{
+    return metaTypeFromClassName(metaObject->className());
+}
+
+QMetaType metaTypeFromObject(const QObject *object)
+{
+    return metaTypeFromMetaObject(object->metaObject());
+}
+
+} // namespace lmrs::core
