@@ -1047,6 +1047,12 @@ QVariant AutomationTypeModel::data(const QModelIndex &index, int role) const
                 return QVariant::fromValue(item);
 
             break;
+
+        case TypeRole:
+            if (const auto item = m_rows[index.row()].item())
+                return QVariant::fromValue(metaTypeFromObject(item));
+
+            break;
         }
     }
 
@@ -1103,6 +1109,14 @@ const Item *AutomationTypeModel::item(const QModelIndex &index) const
         return nullptr;
 
     return qvariant_cast<const Item *>(index.data(ItemRole));
+}
+
+QMetaType AutomationTypeModel::itemType(const QModelIndex &index) const
+{
+    if (const auto prototype = item(index))
+        return metaTypeFromObject(prototype);
+
+    return {};
 }
 
 // =====================================================================================================================

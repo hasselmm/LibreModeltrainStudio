@@ -500,7 +500,8 @@ class AutomationTypeModel : public QAbstractListModel
 public:
     enum DataRole {
         NameRole = Qt::DisplayRole,
-        ItemRole = Qt::UserRole,
+        TypeRole = Qt::UserRole,
+        ItemRole,
         EventRole,
         ActionRole,
     };
@@ -547,6 +548,7 @@ public:
     const Action *actionItem(const QModelIndex &index) const;
     const Event *eventItem(const QModelIndex &index) const;
     const Item *item(const QModelIndex &index) const;
+    QMetaType itemType(const QModelIndex &index) const;
 
 private:
     using Factory = std::function<Item *(QObject *)>;
