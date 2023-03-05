@@ -39,9 +39,7 @@ jobs:
         run: >
           mkdir build && cd build && cmake -GNinja
           -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-14
-          -DCMAKE_C_COMPILER_LAUNCHER:STRING=ccache
           -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-14
-          -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache
           -DCMAKE_MAKE_PROGRAM:FILEPATH=$IQTA_TOOLS/Ninja/ninja
           -DCPACK_BINARY_STGZ:BOOL=OFF
           -DCPACK_BINARY_TGZ:BOOL=ON
@@ -99,9 +97,7 @@ jobs:
         run: >
           mkdir build && cd build && cmake -GNinja
           -DCMAKE_C_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/gcc.exe
-          -DCMAKE_C_COMPILER_LAUNCHER:STRING=ccache
           -DCMAKE_CXX_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/g++.exe
-          -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache
           -DCMAKE_MAKE_PROGRAM:FILEPATH=$env:IQTA_TOOLS/Ninja/ninja.exe
           -DCPACK_BINARY_NSIS:BOOL=OFF
           -DCPACK_BINARY_ZIP:BOOL=ON
