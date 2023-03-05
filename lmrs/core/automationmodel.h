@@ -347,7 +347,7 @@ private:
     void onDetectorInfoChanged(accessory::DetectorInfo);
 
     QList<dcc::VehicleAddress> m_vehicles;
-    Type m_type;
+    Type m_type = Type::Any;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
