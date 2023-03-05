@@ -76,7 +76,7 @@ QByteArray Parameter::valueKey() const noexcept
 
 QString Parameter::invalidValueText() const noexcept
 {
-    return coalesce(m_invalidValueText, tr("any"));
+    return coalesce(m_invalidValueText.toString(), tr("any"));
 }
 
 QByteArray Parameter::typeName(Type type)
@@ -163,7 +163,7 @@ QJsonValue Parameter::toJson(QVariant value) const
     return QJsonValue::fromVariant(std::move(value));
 }
 
-Parameter Parameter::choice(QByteArrayView key, QString name, parameters::ChoiceModel model, Flags flags)
+Parameter Parameter::choice(QByteArrayView key, l10n::String name, parameters::ChoiceModel model, Flags flags)
 {
     if (LMRS_FAILED(logger(), !model.choices.isEmpty())
             || LMRS_FAILED(logger(), model.valueType.isValid())) {
@@ -182,7 +182,7 @@ Parameter Parameter::choice(QByteArrayView key, QString name, parameters::Choice
     return {Type::Choice, std::move(flags), std::move(key), std::move(name), QVariant::fromValue(std::move(model))};
 }
 
-Parameter Parameter::choice(QByteArrayView key, QString name, QMetaType type, QMetaEnum values, Flags flags)
+Parameter Parameter::choice(QByteArrayView key, l10n::String name, QMetaType type, QMetaEnum values, Flags flags)
 {
     if (LMRS_FAILED(logger(), type.isRegistered())
             || LMRS_FAILED(logger(), type.flags() & QMetaType::IsEnumeration)
@@ -207,29 +207,29 @@ Parameter Parameter::choice(QByteArrayView key, QString name, QMetaType type, QM
     return choice(std::move(key), std::move(name), {std::move(type), std::move(choices)}, std::move(flags));
 }
 
-Parameter Parameter::flag(QByteArrayView key, QString name, bool defaultValue, Flags flags)
+Parameter Parameter::flag(QByteArrayView key, l10n::String name, bool defaultValue, Flags flags)
 {
     return {Type::Flag, std::move(flags), std::move(key), std::move(name), defaultValue};
 }
 
-Parameter Parameter::number(QByteArrayView key, QString name, parameters::NumberModel model, Flags flags)
+Parameter Parameter::number(QByteArrayView key, l10n::String name, parameters::NumberModel model, Flags flags)
 {
     if (LMRS_FAILED(logger(), model.valueType.isRegistered())
             || LMRS_FAILED(logger(), QMetaType::canConvert(model.valueType, QMetaType::fromType<int>()))
             || LMRS_FAILED(logger(), QMetaType::canConvert(QMetaType::fromType<int>(), model.valueType))
-            || LMRS_FAILED_LESS_OR_EQUAL(logger(), model.minimumValue, model.maximumValue))
+            || LMRS_FAILED_COMPARE(logger(), model.minimumValue, <=, model.maximumValue))
         qCWarning(logger(), "Invalid value type for parameter \"%s\"", key.constData());
 
     return {Type::Number, std::move(flags), std::move(key), std::move(name), QVariant::fromValue(std::move(model))};
 }
 
-Parameter Parameter::text(QByteArrayView key, QString name, parameters::TextModel model, Flags flags)
+Parameter Parameter::text(QByteArrayView key, l10n::String name, parameters::TextModel model, Flags flags)
 {
     return {Type::Text, std::move(flags), std::move(key), std::move(name), QVariant::fromValue(std::move(model))};
 }
 
 template<>
-Parameter Parameter::hostAddress(QByteArrayView key, QString name, QList<QHostAddress> proposals, Flags flags)
+Parameter Parameter::hostAddress(QByteArrayView key, l10n::String name, QList<QHostAddress> proposals, Flags flags)
 {
     return {Type::HostAddress, std::move(flags), std::move(key), std::move(name), QVariant::fromValue(std::move(proposals))};
 }

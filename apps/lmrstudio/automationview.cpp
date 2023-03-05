@@ -121,6 +121,12 @@ public:
         return core::checked_cast<AutomationTypeModel* >(QIdentityProxyModel::sourceModel());
     }
 
+    void setActionsEnabled(bool newEnabled)
+    {
+        if (const auto oldEnabled = std::exchange(m_actionsEnabled, newEnabled); oldEnabled != newEnabled)
+            emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
+    }
+
     QVariant data(const QModelIndex &index, int role) const override
     {
         if (role == Qt::DecorationRole) {
@@ -133,9 +139,22 @@ public:
         return QIdentityProxyModel::data(index, role);
     }
 
+    Qt::ItemFlags flags(const QModelIndex &index) const override
+    {
+        auto sourceIndex = mapToSource(index);
+        auto flags = sourceModel()->flags(sourceIndex);
+
+        if (sourceModel()->actionItem(std::move(sourceIndex)))
+            flags.setFlag(Qt::ItemIsEnabled, m_actionsEnabled);
+
+        return flags;
+    }
+
 private:
     using QIdentityProxyModel::setSourceModel;
     using QIdentityProxyModel::sourceModel;
+
+    bool m_actionsEnabled = false;
 };
 
 } // namespace
@@ -173,6 +192,8 @@ public:
     // fields ----------------------------------------------------------------------------------------------------------
 
     core::ConstPointer<AutomationTypeModel> types{this};
+    core::ConstPointer<StyledAutomationTypeModel> styledTypes{this};
+
     core::ConstPointer<AutomationCanvas> canvas{q()};
 
     QHash<ActionCategory, QActionGroup *> actionGroups;
@@ -244,9 +265,8 @@ AutomationView::AutomationView(QWidget *parent)
     typeSelector->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
     typeSelector->setUniformItemSizes(true);
 
-    auto styledTypes = new StyledAutomationTypeModel{typeSelector};
-    styledTypes->setSourceModel(d->types);
-    typeSelector->setModel(styledTypes);
+    d->styledTypes->setSourceModel(d->types);
+    typeSelector->setModel(d->styledTypes);
 
     connect(typeSelector, &QListView::activated, this, [this](QModelIndex index) {
         if (const auto prototype = d->types->eventItem(index))
@@ -357,10 +377,12 @@ void AutomationView::Private::onCurrentIndexChanged()
     // FIXME: also handle action and binding items
 
     const auto hasSelectedItem = (canvas->currentIndex() >= 0);
+    const auto hasSelectedEvent = (canvas->model() && canvas->model()->eventItem(canvas->currentIndex()));
 
     editCutAction->setEnabled(hasSelectedItem);
     editCopyAction->setEnabled(hasSelectedItem);
     editDeleteAction->setEnabled(hasSelectedItem);
+    styledTypes->setActionsEnabled(hasSelectedEvent);
 }
 
 void AutomationView::Private::onEditCut()

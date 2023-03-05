@@ -904,7 +904,7 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::choice<QString>(s_parameter_portName, tr("Serial &port:"), defaultPorts()),
+        core::Parameter::choice<QString>(s_parameter_portName, LMRS_TR("Serial &port:"), defaultPorts()),
     };
 }
 

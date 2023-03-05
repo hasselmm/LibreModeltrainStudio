@@ -2,6 +2,7 @@
 #define LMRS_CORE_PARAMETERS_H
 
 #include "algorithms.h"
+#include "localization.h"
 #include "typetraits.h"
 
 #include <QVariant>
@@ -105,7 +106,7 @@ struct Parameter
     Q_PROPERTY(QByteArray hasValueKey READ hasValueKey CONSTANT FINAL)
     Q_PROPERTY(QByteArray resetValueKey READ resetValueKey CONSTANT FINAL)
 
-    Q_PROPERTY(QString name READ name CONSTANT FINAL)
+    Q_PROPERTY(QString name READ nameTr CONSTANT FINAL)
     Q_PROPERTY(QVariant model READ model CONSTANT FINAL)
 
     Q_PROPERTY(QString invalidValueText READ invalidValueText CONSTANT FINAL)
@@ -134,7 +135,7 @@ public:
     Q_DECLARE_FLAGS(Flags, Flag)
 
     Parameter() noexcept = default;
-    Parameter(Type type, Flags flags, QByteArrayView key, QString name, QVariant model) noexcept
+    Parameter(Type type, Flags flags, QByteArrayView key, l10n::String name, QVariant model) noexcept
         : m_type{type}
         , m_flags{std::move(flags)}
         , m_key{key.toByteArray()}
@@ -147,6 +148,7 @@ public:
 
     auto key() const noexcept { return m_key; }
     auto name() const noexcept { return m_name; }
+    auto nameTr() const noexcept { return m_name.toString(); }
     auto model() const noexcept { return m_model; }
 
     bool acceptsType(QMetaType metaType) const;
@@ -162,18 +164,18 @@ public:
     QVariant fromJson(QJsonValue value) const;
     QJsonValue toJson(QVariant value) const;
 
-    static Parameter choice(QByteArrayView key, QString name, ChoiceModel model, Flags flags = {});
-    static Parameter flag(QByteArrayView key, QString name, bool defaultValue = false, Flags flags = {});
-    static Parameter number(QByteArrayView key, QString name, NumberModel model, Flags flags = {});
-    static Parameter text(QByteArrayView key, QString name, TextModel model = {}, Flags flags = {});
+    static Parameter choice(QByteArrayView key, l10n::String name, ChoiceModel model, Flags flags = {});
+    static Parameter flag(QByteArrayView key, l10n::String name, bool defaultValue = false, Flags flags = {});
+    static Parameter number(QByteArrayView key, l10n::String name, NumberModel model, Flags flags = {});
+    static Parameter text(QByteArrayView key, l10n::String name, TextModel model = {}, Flags flags = {});
 
-    static Parameter hostAddress(QByteArrayView key, QString name,
+    static Parameter hostAddress(QByteArrayView key, l10n::String name,
                                  ForwardDeclared<QList<QHostAddress>> auto proposals = {},
                                  Flags flags = {}); // FIXME: make this a generic value type
 
 
     template<class T>
-    static Parameter choice(QByteArrayView key, QString name, QList<Choice> choices, Flags flags = {})
+    static Parameter choice(QByteArrayView key, l10n::String name, QList<Choice> choices, Flags flags = {})
     {
         qRegisterMetaType<T>();
         auto model = ChoiceModel{QMetaType::fromType<T>(), std::move(choices)};
@@ -181,14 +183,14 @@ public:
     }
 
     template<EnumType T>
-    static Parameter choice(QByteArrayView key, QString name, Flags flags = {})
+    static Parameter choice(QByteArrayView key, l10n::String name, Flags flags = {})
     {
         qRegisterMetaType<T>();
         return choice(std::move(key), std::move(name), QMetaType::fromType<T>(), core::metaEnum<T>(), std::move(flags));
     }
 
     template<typename T>
-    static Parameter number(QByteArrayView key, QString name, Flags flags = {})
+    static Parameter number(QByteArrayView key, l10n::String name, Flags flags = {})
     {
         qRegisterMetaType<T>();
 
@@ -204,15 +206,15 @@ private:
     static auto &logger(auto) = delete;
     static auto &logger();
 
-    static Parameter text(QByteArrayView key, QString name, QMetaType type, TextModel model, Flags flags);
-    static Parameter choice(QByteArrayView key, QString name, QMetaType type, QMetaEnum values, Flags flags);
+    static Parameter text(QByteArrayView key, l10n::String name, QMetaType type, TextModel model, Flags flags);
+    static Parameter choice(QByteArrayView key, l10n::String name, QMetaType type, QMetaEnum values, Flags flags);
 
     Type m_type = Type::Invalid;
     Flags m_flags;
     QByteArray m_key;
-    QString m_name;
+    l10n::String m_name;
     QVariant m_model;
-    QString m_invalidValueText;
+    l10n::String m_invalidValueText;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parameter::Flags)

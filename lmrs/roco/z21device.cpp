@@ -799,7 +799,7 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::hostAddress(s_parameter_address, tr("Host &address:"), defaultAddresses()),
+        core::Parameter::hostAddress(s_parameter_address, LMRS_TR("Host &address:"), defaultAddresses()),
     };
 }
 
@@ -821,6 +821,5 @@ core::Device *DeviceFactory::create(QVariantMap parameters, QObject *parent)
 
     return {};
 }
-
 
 } // namespace lmrs::roco::z21

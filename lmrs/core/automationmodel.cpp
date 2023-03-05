@@ -184,10 +184,10 @@ QString TurnoutEvent::name() const
 QList<Parameter> TurnoutEvent::parameters() const
 {
     return {
-        Parameter::number<dcc::AccessoryAddress>("primaryAddress", tr("Primary Address"), Parameter::Flag::Optional),
-        Parameter::choice<dcc::TurnoutState>("primaryState", tr("Primary State"), Parameter::Flag::Optional),
-        Parameter::number<dcc::AccessoryAddress>("secondaryAddress", tr("Secondary Address"), Parameter::Flag::Optional),
-        Parameter::choice<dcc::TurnoutState>("secondaryState", tr("Secondary State"), Parameter::Flag::Optional),
+        Parameter::number<dcc::AccessoryAddress>("primaryAddress", LMRS_TR("Primary address"), Parameter::Flag::Optional),
+        Parameter::choice<dcc::TurnoutState>("primaryState", LMRS_TR("Primary state"), Parameter::Flag::Optional),
+        Parameter::number<dcc::AccessoryAddress>("secondaryAddress", LMRS_TR("Secondary address"), Parameter::Flag::Optional),
+        Parameter::choice<dcc::TurnoutState>("secondaryState", LMRS_TR("Secondary state"), Parameter::Flag::Optional),
     };
 }
 
@@ -296,8 +296,8 @@ bool TurnoutEvent::hasSecondaryState() const
 QList<Parameter> DetectorEvent::parameters() const
 {
     return QList {
-// FIXME       Parameter::list<dcc::VehicleAddress>("vehicles"_L1, tr("Vehicles")),
-        Parameter::choice<Type>("type", tr("Event")),
+// FIXME       Parameter::list<dcc::VehicleAddress>("vehicles"_L1, LMRS_TR("Vehicles")),
+        Parameter::choice<Type>("type", LMRS_TR("Event")),
     };
 }
 
@@ -333,9 +333,9 @@ QString CanDetectorEvent::name() const
 QList<Parameter> CanDetectorEvent::parameters() const
 {
     return QList {
-        Parameter::number<can::NetworkId>("network", tr("Network"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
-        Parameter::number<can::ModuleId>("module", tr("Module"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
-        Parameter::number<can::PortIndex>("port", tr("Port"), Parameter::Flag::Optional),
+        Parameter::number<can::NetworkId>("network", LMRS_TR("Network"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
+        Parameter::number<can::ModuleId>("module", LMRS_TR("Module"), Parameter::Flag::Hexadecimal | Parameter::Flag::Optional),
+        Parameter::number<can::PortIndex>("port", LMRS_TR("Port"), Parameter::Flag::Optional),
     } + DetectorEvent::parameters();
 }
 
@@ -364,7 +364,7 @@ void CanDetectorEvent::setNetwork(can::NetworkId newNetwork)
 
 void CanDetectorEvent::resetNetwork()
 {
-    const auto detectorGuard = core::propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
+    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
 
     if (std::exchange(m_network, {}) != m_network)
         emit networkChanged({}, {});
@@ -391,7 +391,7 @@ void CanDetectorEvent::setModule(can::ModuleId newModule)
 
 void CanDetectorEvent::resetModule()
 {
-    const auto detectorGuard = core::propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
+    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
 
     if (std::exchange(m_module, {}) != m_module)
         emit moduleChanged({}, {});
@@ -445,7 +445,7 @@ QString RBusDetectorGroupEvent::name() const
 QList<Parameter> RBusDetectorGroupEvent::parameters() const
 {
     return QList {
-        Parameter::number<rbus::GroupId>("group", tr("Group")),
+        Parameter::number<rbus::GroupId>("group", LMRS_TR("Group")),
     } + DetectorEvent::parameters();
 }
 
@@ -497,8 +497,8 @@ QString RBusDetectorEvent::name() const
 QList<Parameter> RBusDetectorEvent::parameters() const
 {
     return QList {
-        Parameter::number<rbus::ModuleId>("module", tr("Module"), Parameter::Flag::Optional),
-        Parameter::number<rbus::PortIndex>("port", tr("Port"), Parameter::Flag::Optional),
+        Parameter::number<rbus::ModuleId>("module", LMRS_TR("Module"), Parameter::Flag::Optional),
+        Parameter::number<rbus::PortIndex>("port", LMRS_TR("Port"), Parameter::Flag::Optional),
     } + DetectorEvent::parameters();
 }
 
@@ -579,8 +579,10 @@ QString TurnoutAction::name() const
 QList<Parameter> TurnoutAction::parameters() const
 {
     return {
-        Parameter::number<dcc::AccessoryAddress>("address", tr("Address"), Parameter::Flag::Optional),
-        Parameter::choice<dcc::TurnoutState>("state", tr("State"), Parameter::Flag::Optional),
+        Parameter::number<dcc::AccessoryAddress>("address", LMRS_TR("Address"), Parameter::Flag::Optional),
+        Parameter::choice<dcc::TurnoutState>("state", LMRS_TR("State"), Parameter::Flag::Optional),
+//                Parameter::flag(s_detail_event_isPrimary, LMRS_TR("Primary Match")),
+//                Parameter::flag(s_detail_event_isSecondary, LMRS_TR("Secondary Match")),
     };
 }
 
@@ -644,10 +646,10 @@ QString VehicleAction::name() const
 QList<Parameter> VehicleAction::parameters() const
 {
     return {
-        Parameter::number<dcc::VehicleAddress>("address", tr("Address"), Parameter::Flag::Optional),
-        Parameter::number<dcc::Speed126>("speed", tr("Speed"), Parameter::Flag::Optional),
-        Parameter::choice<dcc::Direction>("direction", tr("Direction"), Parameter::Flag::Optional),
-// FIXME        Parameter::bitmask<dcc::FunctionState>("functions", tr("Functions"), Parameter::Flag::Optional),
+        Parameter::number<dcc::VehicleAddress>("address", LMRS_TR("Address"), Parameter::Flag::Optional),
+        Parameter::number<dcc::Speed126>("speed", LMRS_TR("Speed"), Parameter::Flag::Optional),
+        Parameter::choice<dcc::Direction>("direction", LMRS_TR("Direction"), Parameter::Flag::Optional),
+// FIXME        Parameter::bitmask<dcc::FunctionState>("functions", LMRS_TR("Functions"), Parameter::Flag::Optional),
     };
 }
 
@@ -772,7 +774,7 @@ QList<Parameter> MessageAction::parameters() const
 {
     return {
         // FIXME: provide advice regarding placeholders: "Turnout {primaryAddress}{secondaryAddress:/{secondaryAddress}} has switched to {primaryState}{secondaryState:, and {secondaryState}}"
-        Parameter::text("message", tr("Message")),
+        Parameter::text("message", LMRS_TR("Message")),
     };
 }
 
@@ -789,7 +791,7 @@ QString MessageAction::message() const
 
 // =====================================================================================================================
 
-AutomationTypeModel::Row::Row(QString text)
+AutomationTypeModel::Row::Row(l10n::String text)
     : m_value{std::move(text)}
 {}
 
@@ -805,9 +807,9 @@ Item *AutomationTypeModel::Row::item() const
     return {};
 }
 
-std::optional<QString> AutomationTypeModel::Row::text() const
+std::optional<l10n::String> AutomationTypeModel::Row::text() const
 {
-    if (const auto text = std::get_if<QString>(&m_value))
+    if (const auto text = std::get_if<l10n::String>(&m_value))
         return *text;
 
     return {};
@@ -818,14 +820,14 @@ std::optional<QString> AutomationTypeModel::Row::text() const
 AutomationTypeModel::AutomationTypeModel(QObject *parent)
     : QAbstractListModel{parent}
 {
-    m_rows.emplaceBack(tr("Events"));
+    m_rows.emplaceBack(LMRS_TR("Events"));
 
     registerType<TurnoutEvent>();
     registerType<CanDetectorEvent>();
     registerType<RBusDetectorGroupEvent>();
     registerType<RBusDetectorEvent>();
 
-    m_rows.emplaceBack(tr("Actions"));
+    m_rows.emplaceBack(LMRS_TR("Actions"));
 
     registerType<MessageAction>();
     registerType<TurnoutAction>();
@@ -958,7 +960,7 @@ QVariant AutomationTypeModel::data(const QModelIndex &index, int role) const
         switch (static_cast<DataRole>(role)) {
         case NameRole:
             if (const auto text = m_rows[index.row()].text())
-                return text.value();
+                return text->toString();
             if (const auto item = m_rows[index.row()].item())
                 return item->name();
 
@@ -1066,13 +1068,17 @@ QVariant AutomationModel::data(const QModelIndex &index, int role) const
 
 const Event *AutomationModel::eventItem(const QModelIndex &index) const
 {
-    Q_ASSERT(index.model() == this); // soft assert
+    if (!index.isValid() || LMRS_FAILED_EQUALS(logger(this), index.model(), this))
+        return nullptr;
+
     return qvariant_cast<const Event *>(index.data(EventRole));
 }
 
 Event *AutomationModel::eventItem(const QModelIndex &index)
 {
-    Q_ASSERT(index.model() == this); // soft assert
+    if (!index.isValid() || LMRS_FAILED_EQUALS(logger(this), index.model(), this))
+        return nullptr;
+
     return qvariant_cast<Event *>(index.data(EventRole));
 }
 
@@ -1104,7 +1110,9 @@ int AutomationModel::appendEvent(Event *event)
 
 int AutomationModel::insertEvent(Event *event, int before)
 {
-    if (before < 0 || before > rowCount()) // soft assert
+    if (LMRS_FAILED(logger(this), event != nullptr)
+            || LMRS_FAILED_COMPARE(logger(this), before, >=, 0)
+            || LMRS_FAILED_COMPARE(logger(this), before, <=, rowCount()))
         return -1;
 
     beginInsertRows({}, before, before);
@@ -1134,23 +1142,29 @@ int AutomationModel::insertEvent(Event *event, int before)
 
 int AutomationModel::appendAction(const QModelIndex &index, Action *action)
 {
-    if (const auto event = eventItem(index))
-        return event->appendAction(action);
+    const auto event = eventItem(index);
 
-    return -1; // soft assert
+    if (LMRS_FAILED(logger(this), event != nullptr))
+        return -1;
+
+    return event->appendAction(action);
 }
 
-int AutomationModel::insertEvent(const QModelIndex &index, Action *action, int before)
+int AutomationModel::insertAction(const QModelIndex &index, Action *action, int before)
 {
-    if (const auto event = eventItem(index))
-        return event->insertAction(action, before);
+    const auto event = eventItem(index);
 
-    return -1; // soft assert
+    if (LMRS_FAILED(logger(this), event != nullptr))
+        return -1;
+
+    return event->insertAction(action, before);
 }
 
 bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    if (count < 1 || row + count > rowCount() || parent.isValid()) // FIXME soft assert
+    if (LMRS_FAILED(logger(this), !parent.isValid())
+            || LMRS_FAILED_COMPARE(logger(this), count, >=, 1)
+            || LMRS_FAILED_COMPARE(logger(this), row + count, <=, rowCount()))
         return false;
 
     beginRemoveRows(parent, row, row + count - 1);
@@ -1191,7 +1205,7 @@ void AutomationModel::onEventChanged()
 
 JsonFileReader::ModelPointer JsonFileReader::read(const AutomationTypeModel *types)
 {
-    if (!types) // FIXME: soft assert
+    if (LMRS_FAILED(logger(this), types != nullptr))
         return {};
 
     auto file = QFile{fileName()};

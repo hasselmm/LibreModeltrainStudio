@@ -118,7 +118,7 @@ FocusScope {
                 id: title
 
                 font.bold: true
-                text: itemView.item?.name
+                text: qsTr(itemView.item?.name)
                 width: parent.width
 
                 MouseArea {
@@ -179,7 +179,7 @@ FocusScope {
                             id: parameterLabel
 
                             anchors.verticalCenter: parent.verticalCenter
-                            text: parameterRow.parameter.name + ':'
+                            text: qsTr(parameterRow.parameter.name) + ':'
                         }
 
                         AutomationParameterEditor {
