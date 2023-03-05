@@ -42,6 +42,33 @@ using widgets::SymbolicTrackPlanView;
 
 using Preset = SymbolicTrackPlanModel::Preset;
 
+template<int index>
+QString addNumericMnemonic(QString &text)
+{
+    if (index < 10)
+        return "&%1. %2"_L1.arg(QString::number(index + 1), text);
+
+    return text;
+}
+
+constexpr auto numericMnemonicFunction(int index)
+{
+    switch (index) {
+    case 0: return &addNumericMnemonic<0>;
+    case 1: return &addNumericMnemonic<1>;
+    case 2: return &addNumericMnemonic<2>;
+    case 3: return &addNumericMnemonic<3>;
+    case 4: return &addNumericMnemonic<4>;
+    case 5: return &addNumericMnemonic<5>;
+    case 6: return &addNumericMnemonic<6>;
+    case 7: return &addNumericMnemonic<7>;
+    case 8: return &addNumericMnemonic<8>;
+    case 9: return &addNumericMnemonic<9>;
+    }
+
+    return &addNumericMnemonic<10>;
+}
+
 } // namespace
 
 class TrackPlanView::Private : public core::PrivateObject<TrackPlanView, widgets::DocumentManager, QString>
@@ -215,33 +242,6 @@ l10n::String TrackPlanView::Private::displayName(Preset preset)
     Q_UNREACHABLE();
 }
 
-template<int index>
-QString addNumericMnemonic(QString &text)
-{
-    if (index < 10)
-        return "&%1. %2"_L1.arg(QString::number(index + 1), text);
-
-    return text;
-}
-
-auto numericMnemonicFunction(int index)
-{
-    switch (index) {
-    case 0: return &addNumericMnemonic<0>;
-    case 1: return &addNumericMnemonic<1>;
-    case 2: return &addNumericMnemonic<2>;
-    case 3: return &addNumericMnemonic<3>;
-    case 4: return &addNumericMnemonic<4>;
-    case 5: return &addNumericMnemonic<5>;
-    case 6: return &addNumericMnemonic<6>;
-    case 7: return &addNumericMnemonic<7>;
-    case 8: return &addNumericMnemonic<8>;
-    case 9: return &addNumericMnemonic<9>;
-    }
-
-    return &addNumericMnemonic<10>;
-}
-
 TrackPlanView::TrackPlanView(QWidget *parent)
     : MainWindowView{parent}
     , d{new Private{"TrackPlanView"_L1, this}}
@@ -366,7 +366,7 @@ bool TrackPlanView::open(QString newFileName)
 
 TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::readFile(QString fileName)
 {
-    auto reader = core::SymbolicTrackPlanReader::fromFile(std::move(fileName));
+    auto reader = core::SymbolicTrackPlanReader::fromFileName(std::move(fileName));
 
     if (auto newLayout = reader->read()) {
         qInfo() << newLayout->name << newLayout->pages.size();
@@ -383,7 +383,7 @@ TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::readFile(QStr
 
 TrackPlanView::Private::FileHandlerPointer TrackPlanView::Private::writeFile(QString fileName)
 {
-    auto writer = core::SymbolicTrackPlanWriter::fromFile(std::move(fileName));
+    auto writer = core::SymbolicTrackPlanWriter::fromFileName(std::move(fileName));
     const auto succeeded = writer->write(layout.get());
     Q_ASSERT(succeeded == writer->succeeded());
     return writer;

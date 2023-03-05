@@ -57,6 +57,7 @@ add_compile_options(
     -Werror=ignored-qualifiers
     -Werror=implicit-fallthrough
     -Werror=missing-field-initializers
+    -Werror=missing-prototypes
     -Werror=pessimizing-move
     -Werror=reorder
     -Werror=return-type
@@ -65,6 +66,7 @@ add_compile_options(
     -Werror=switch-enum
     -Werror=tautological-compare
     -Werror=unused
+    -Werror=unused-parameter
     -Werror=unused-result
 )
 

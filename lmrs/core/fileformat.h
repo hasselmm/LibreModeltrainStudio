@@ -3,7 +3,9 @@
 
 #include "userliterals.h"
 
+#include <QIODevice>
 #include <QObject>
+#include <QPointer>
 
 namespace lmrs::core {
 
@@ -53,6 +55,7 @@ class FileFormatHandler
     QT_TR_FUNCTIONS
 
 public:
+    explicit FileFormatHandler(QIODevice *device);
     explicit FileFormatHandler(QString fileName);
     virtual ~FileFormatHandler();
 
@@ -62,7 +65,7 @@ public:
     [[nodiscard]] auto failed() const { return !succeeded(); }
 
 protected:
-    void reset() { m_errorString.clear(); }
+    void reset();
 
     void reportError(QString errorString);
     void reportUnsupportedFileError();
@@ -77,9 +80,39 @@ protected:
         return formats;
     }
 
+    bool open(QIODevice::OpenMode mode);
+    bool writeData(QByteArray data);
+    QByteArray readAll() const;
+    bool close();
+
 private:
     QString m_fileName;
     QString m_errorString;
+    QPointer<QIODevice> m_device;
+};
+
+// =====================================================================================================================
+
+template<typename PointerType>
+struct FileFormatFactory
+{
+    template<class Handler>
+    static FileFormatFactory make()
+    {
+        return {
+            std::make_unique<Handler, QIODevice *>,
+            std::make_unique<Handler, QString>,
+        };
+    }
+
+    PointerType operator()(QIODevice *device) const noexcept { return fromDevice(device); }
+    PointerType operator()(QString fileName) const noexcept { return fromFileName(std::move(fileName)); }
+
+    std::function<PointerType(QIODevice *)> fromDevice;
+    std::function<PointerType(QString)> fromFileName;
+
+    [[nodiscard]] bool isValid() const noexcept { return fromDevice && fromFileName; }
+    explicit operator bool() const noexcept { return isValid(); }
 };
 
 // =====================================================================================================================
@@ -90,9 +123,8 @@ class FileFormatReader : public FileFormatHandler
 public:
     using ModelType = T;
     using ModelPointer = std::unique_ptr<ModelType>;
-
     using Pointer = std::unique_ptr<FileFormatReader>;
-    using Factory = std::function<Pointer(QString)>;
+    using Factory = FileFormatFactory<Pointer>;
     using Registry = QList<QPair<FileFormat, Factory>>;
 
     using FileFormatHandler::FileFormatHandler;
@@ -107,7 +139,9 @@ public:
         registry().emplaceBack(std::move(fileFormat), std::move(factory));
     }
 
-    static Pointer fromFile(QString fileName);
+    [[nodiscard]] static inline Factory fromFileFormat(const FileFormat &fileFormat);
+    [[nodiscard]] static inline Pointer fromFileName(QString fileName);
+
     virtual ModelPointer read(Args...) = 0;
 
 private:
@@ -132,8 +166,19 @@ public:
 // ---------------------------------------------------------------------------------------------------------------------
 
 template<typename ModelType, typename... Args>
+inline typename FileFormatReader<ModelType, Args...>::Factory
+FileFormatReader<ModelType, Args...>::fromFileFormat(const FileFormat &fileFormat)
+{
+    for (const auto &[format, factory]: registry())
+        if (format == fileFormat)
+            return factory;
+
+    return {};
+}
+
+template<typename ModelType, typename... Args>
 typename FileFormatReader<ModelType, Args...>::Pointer
-FileFormatReader<ModelType, Args...>::fromFile(QString fileName)
+FileFormatReader<ModelType, Args...>::fromFileName(QString fileName)
 {
     for (const auto &[format, createReader]: registry())
         if (format.accepts(fileName))
@@ -149,9 +194,8 @@ class FileFormatWriter : public FileFormatHandler
 {
 public:
     using ModelType = T;
-
     using Pointer = std::unique_ptr<FileFormatWriter>;
-    using Factory = std::function<Pointer(QString)>;
+    using Factory = FileFormatFactory<Pointer>;
     using Registry = QList<QPair<FileFormat, Factory>>;
 
     using FileFormatHandler::FileFormatHandler;
@@ -166,7 +210,9 @@ public:
         registry().emplaceBack(std::move(fileFormat), std::move(factory));
     }
 
-    [[nodiscard]] static inline Pointer fromFile(QString fileName);
+    [[nodiscard]] static inline Factory fromFileFormat(const FileFormat &fileFormat);
+    [[nodiscard]] static inline Pointer fromFileName(QString fileName);
+
     virtual bool write(const ModelType *model) = 0;
 
 private:
@@ -191,8 +237,19 @@ public:
 // ---------------------------------------------------------------------------------------------------------------------
 
 template<typename ModelType>
+typename FileFormatWriter<ModelType>::Factory
+FileFormatWriter<ModelType>::fromFileFormat(const FileFormat &fileFormat)
+{
+    for (const auto &[format, factory]: registry())
+        if (format == fileFormat)
+            return factory;
+
+    return {};
+}
+
+template<typename ModelType>
 typename FileFormatWriter<ModelType>::Pointer
-FileFormatWriter<ModelType>::fromFile(QString fileName)
+FileFormatWriter<ModelType>::fromFileName(QString fileName)
 {
     for (const auto &[format, createWriter]: registry())
         if (format.accepts(fileName))
@@ -215,10 +272,10 @@ inline void registerFileFormat(FileFormat fileFormat, typename FileFormatWriter<
     FileFormatWriter<ModelType>::registerFileFormat(std::move(fileFormat), std::move(factory));
 }
 
-template<typename T, typename ModelType = typename T::ModelType>
+template<typename T, typename ModelType = typename T::ModelType, typename Factory = typename T::Factory>
 inline void registerFileFormat(FileFormat fileFormat)
 {
-    registerFileFormat<ModelType>(std::move(fileFormat), std::make_unique<T, QString>);
+    registerFileFormat<ModelType>(std::move(fileFormat), Factory::template make<T>());
 }
 
 inline size_t qHash(const lmrs::core::FileFormat &format, size_t seed = 0) noexcept

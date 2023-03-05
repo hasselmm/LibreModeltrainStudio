@@ -46,6 +46,11 @@ class DelimiterSeparatedFileReader : public SymbolicTrackPlanReader
     QT_TR_FUNCTIONS
 
 public:
+    explicit DelimiterSeparatedFileReader(QIODevice *device, char delimiter)
+        : SymbolicTrackPlanReader{device}
+        , m_delimiter{delimiter}
+    {}
+
     explicit DelimiterSeparatedFileReader(QString fileName, char delimiter)
         : SymbolicTrackPlanReader{std::move(fileName)}
         , m_delimiter{delimiter}
@@ -63,6 +68,11 @@ class DelimiterSeparatedFileWriter : public SymbolicTrackPlanWriter
     QT_TR_FUNCTIONS
 
 public:
+    explicit DelimiterSeparatedFileWriter(QIODevice *device, char delimiter)
+        : SymbolicTrackPlanWriter{device}
+        , m_delimiter{delimiter}
+    {}
+
     explicit DelimiterSeparatedFileWriter(QString fileName, char delimiter)
         : SymbolicTrackPlanWriter{std::move(fileName)}
         , m_delimiter{delimiter}
@@ -93,11 +103,12 @@ bool DelimiterSeparatedFileWriter::write(const SymbolicTrackPlanLayout *)
     return false;
 }
 
-template<class T, char separator>
-auto makeFactory()
+template<class Handler, char separator>
+typename Handler::Factory makeFactory()
 {
-    return [](QString fileName) {
-        return std::make_unique<T>(std::move(fileName), separator);
+    return {
+        [](QIODevice *device) { return std::make_unique<Handler>(device, separator); },
+        [](QString fileName) { return std::make_unique<Handler>(std::move(fileName), separator); },
     };
 }
 

@@ -60,6 +60,7 @@ int Application::run()
 
 } // namespace lmrs::studio
 
+int main(int argc, char *argv[]); // actually qMain() on Windows
 int main(int argc, char *argv[])
 {
 //    qputenv("QT_LOGGING_RULES", "lmrs.roco.z21.Client.stream.debug=true");

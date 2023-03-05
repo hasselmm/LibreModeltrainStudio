@@ -14,7 +14,10 @@ template<> char *toString(const lmrs::core::dcc::VariableValue &x) { return toSt
 //QDebug operator<<(QDebug debug, lmrs::core::dcc::ExtendedVariableIndex i) { return debug << i.value; }
 //QDebug operator<<(QDebug debug, lmrs::core::dcc::VariableValue v) { return debug << v.value; }
 
-QDebug operator<<(QDebug debug, lmrs::core::Result<lmrs::core::dcc::VariableValue> r) { return debug << r.error << "/" << r.value; }
+static QDebug operator<<(QDebug debug, lmrs::core::Result<lmrs::core::dcc::VariableValue> r)
+{
+    return debug << r.error << "/" << r.value;
+}
 
 namespace lmrs::core::tests {
 

@@ -344,6 +344,7 @@ int Application::tryConnect()
 
 } // namespace esu::programmer
 
+int main(int argc, char *argv[]); // actually qMain() on Windows
 int main(int argc, char *argv[])
 {
     return lmrs::programmer::Application{argc, argv}.run();

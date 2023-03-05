@@ -86,6 +86,20 @@ constexpr std::optional<core::DeviceInfo> toDeviceInfo(InterfaceInfo id)
     return {};
 }
 
+DccSettings dccSettings(core::DebugControl::DccFeedbackMode feedbackMode)
+{
+    switch (feedbackMode) {
+    case core::DebugControl::DccFeedbackMode::Acknowledge:
+        return DccSettings::ack();
+    case core::DebugControl::DccFeedbackMode::Advanced:
+        return DccSettings::afb();
+    case core::DebugControl::DccFeedbackMode::None:
+        break;
+    }
+
+    return DccSettings::nack();
+}
+
 } // namespace
 
 // =====================================================================================================================
@@ -232,20 +246,6 @@ public:
 Device::DebugControl::DebugControl(Private *d)
     : core::DebugControl{d->q()}
 {}
-
-DccSettings dccSettings(core::DebugControl::DccFeedbackMode feedbackMode)
-{
-    switch (feedbackMode) {
-    case core::DebugControl::DccFeedbackMode::Acknowledge:
-        return DccSettings::ack();
-    case core::DebugControl::DccFeedbackMode::Advanced:
-        return DccSettings::afb();
-    case core::DebugControl::DccFeedbackMode::None:
-        break;
-    }
-
-    return DccSettings::nack();
-}
 
 void Device::DebugControl::sendDccFrame(QByteArray frame, DccPowerMode powerMode, DccFeedbackMode feedbackMode) const
 {

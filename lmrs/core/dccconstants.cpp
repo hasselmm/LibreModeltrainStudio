@@ -211,9 +211,22 @@ QDebug operator<<(QDebug debug, Speed speed)
     return debug << "invalid";
 }
 
-} // namespace lmrs::core::dcc
+QDebug operator<<(QDebug debug, lmrs::core::dcc::ExtendedVariableIndex variable)
+{
+    const auto prettyPrinter = lmrs::core::PrettyPrinter<decltype(variable)>{debug};
 
-using namespace lmrs::core;
+    if (debug.verbosity() > QDebug::DefaultVerbosity) {
+        debug << "cv31=" << cv31(variable)
+              << ", cv32=" << cv32(variable)
+              << ", cv=" << variableIndex(variable);
+    } else {
+        debug << variableIndex(variable) << '['
+              << cv31(variable) << '/'
+              << cv32(variable) << ']';
+    }
+
+    return debug;
+}
 
 QDebug operator<<(QDebug debug, const dcc::FunctionState &functions)
 {
@@ -233,3 +246,5 @@ QDebug operator<<(QDebug debug, const dcc::FunctionState &functions)
 
     return debug;
 }
+
+} // namespace lmrs::core::dcc

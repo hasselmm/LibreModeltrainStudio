@@ -16,23 +16,6 @@
 
 #include <iterator>
 
-QDebug operator<<(QDebug debug, lmrs::core::dcc::ExtendedVariableIndex variable)
-{
-    const auto prettyPrinter = lmrs::core::PrettyPrinter<decltype(variable)>{debug};
-
-    if (debug.verbosity() > QDebug::DefaultVerbosity) {
-        debug << "cv31=" << cv31(variable)
-              << ", cv32=" << cv32(variable)
-              << ", cv=" << variableIndex(variable);
-    } else {
-        debug << variableIndex(variable) << '['
-              << cv31(variable) << '/'
-              << cv32(variable) << ']';
-    }
-
-    return debug;
-}
-
 namespace lmrs::esu {
 
 using namespace core::dcc;
@@ -300,6 +283,39 @@ static_assert(soundsBase(71) == extendedVariable(375, 16, 12));
     return mappings;
 }
 
+constexpr std::optional<int> extendedVariableOffset(core::Range<ExtendedVariableIndex> range, ExtendedVariableIndex variable)
+{
+    if (range.contains(variable)) {
+        const auto page = extendedPage(variable) - extendedPage(range.first);
+        return page * 256 + variableIndex(variable - 1) % 256;
+    }
+
+    return {};
+}
+
+QString description(ExtendedVariableIndex variable)
+{
+    if (const auto offset = extendedVariableOffset(functionMappingConditions, variable)) {
+        const auto column = static_cast<char>(offset.value() % 16 + 'A');
+        const auto row = offset.value() / 16 + 1;
+
+        if (column <= 'J')
+            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - conditions").arg(row).arg(column);
+    } else if (const auto offset = extendedVariableOffset(functionMappingOperations, variable)) {
+        const auto column = static_cast<char>(offset.value() % 16 + 'K');
+        const auto row = offset.value() / 16 + 1;
+
+        if (column <= 'M')
+            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - outputs").arg(row).arg(column);
+        if (column <= 'P')
+            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - logic").arg(row).arg(column);
+        if (column <= 'T')
+            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - sound").arg(row).arg(column);
+    }
+
+    return {};
+}
+
 } // namespace
 
 class FunctionMappingModel::Private : public core::PrivateObject<FunctionMappingModel>
@@ -380,39 +396,6 @@ FunctionMappingModel::VariableValueMap FunctionMappingModel::variables() const
     return variablesFromMappings(d->m_rows);
 }
 
-constexpr std::optional<int> extendedVariableOffset(core::Range<ExtendedVariableIndex> range, ExtendedVariableIndex variable)
-{
-    if (range.contains(variable)) {
-        const auto page = extendedPage(variable) - extendedPage(range.first);
-        return page * 256 + variableIndex(variable - 1) % 256;
-    }
-
-    return {};
-}
-
-QString description(ExtendedVariableIndex variable)
-{
-    if (const auto offset = extendedVariableOffset(functionMappingConditions, variable)) {
-        const auto column = static_cast<char>(offset.value() % 16 + 'A');
-        const auto row = offset.value() / 16 + 1;
-
-        if (column <= 'J')
-            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - conditions").arg(row).arg(column);
-    } else if (const auto offset = extendedVariableOffset(functionMappingOperations, variable)) {
-        const auto column = static_cast<char>(offset.value() % 16 + 'K');
-        const auto row = offset.value() / 16 + 1;
-
-        if (column <= 'M')
-            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - outputs").arg(row).arg(column);
-        if (column <= 'P')
-            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - logic").arg(row).arg(column);
-        if (column <= 'T')
-            return FunctionMappingModel::tr("ESU function mapping row %1, column %2 - sound").arg(row).arg(column);
-    }
-
-    return {};
-}
-
 class TextFileReaderBase : public FunctionMappingReader
 {
     Q_GADGET
@@ -435,6 +418,11 @@ class DelimiterSeparatedFileReader : public TextFileReaderBase
     QT_TR_FUNCTIONS
 
 public:
+    explicit DelimiterSeparatedFileReader(QIODevice *device, QChar delimiter = ';'_L1)
+        : TextFileReaderBase{device}
+        , m_delimiter{delimiter}
+    {}
+
     explicit DelimiterSeparatedFileReader(QString fileName, QChar delimiter = ';'_L1)
         : TextFileReaderBase{std::move(fileName)}
         , m_delimiter{delimiter}
@@ -478,6 +466,11 @@ class DelimiterSeparatedFileWriter : public FunctionMappingWriter
     QT_TR_FUNCTIONS
 
 public:
+    explicit DelimiterSeparatedFileWriter(QIODevice *device, QChar delimiter = ';'_L1)
+        : FunctionMappingWriter{device}
+        , m_delimiter{delimiter}
+    {}
+
     explicit DelimiterSeparatedFileWriter(QString fileName, QChar delimiter = ';'_L1)
         : FunctionMappingWriter{std::move(fileName)}
         , m_delimiter{delimiter}
@@ -969,9 +962,9 @@ template<>
 lmrs::esu::FunctionMappingReader::Registry &lmrs::esu::FunctionMappingReader::registry()
 {
     static auto formats = Registry {
-        {core::FileFormat::plainText(), std::make_unique<lmrs::esu::PlainTextFileReader, QString>},
-        {core::FileFormat::lokProgrammer(), std::make_unique<lmrs::esu::EsuxFileReader, QString>},
-        {core::FileFormat::z21Maintenance(), std::make_unique<lmrs::esu::DelimiterSeparatedFileReader, QString>},
+        {core::FileFormat::plainText(), Factory::make<lmrs::esu::PlainTextFileReader>()},
+        {core::FileFormat::lokProgrammer(), Factory::make<lmrs::esu::EsuxFileReader>()},
+        {core::FileFormat::z21Maintenance(), Factory::make<lmrs::esu::DelimiterSeparatedFileReader>()},
     };
 
     return formats;
@@ -981,8 +974,8 @@ template<>
 lmrs::esu::FunctionMappingWriter::Registry &lmrs::esu::FunctionMappingWriter::registry()
 {
     static auto formats = Registry {
-        {core::FileFormat::plainText(), std::make_unique<lmrs::esu::PlainTextFileWriter, QString>},
-        {core::FileFormat::z21Maintenance(), std::make_unique<lmrs::esu::DelimiterSeparatedFileWriter, QString>},
+        {core::FileFormat::plainText(), Factory::make<lmrs::esu::PlainTextFileWriter>()},
+        {core::FileFormat::z21Maintenance(), Factory::make<lmrs::esu::DelimiterSeparatedFileWriter>()},
     };
 
     return formats;
