@@ -2,6 +2,7 @@
 
 #include <lmrs/core/fileformat.h>
 #include <lmrs/core/localization.h>
+#include <lmrs/core/logging.h>
 #include <lmrs/core/staticinit.h>
 #include <lmrs/core/symbolictrackplanmodel.h>
 #include <lmrs/core/userliterals.h>
@@ -20,7 +21,7 @@ const QtMessageHandler defaultMessageHandler = qInstallMessageHandler([](auto ty
     defaultMessageHandler(type, context, message);
 });
 
-class Application : public core::StaticInit<Application, QApplication>
+class Application : public core::StaticInit<Application, core::logging::StaticInit<QApplication>>
 {
 public:
     using StaticInit::StaticInit;
@@ -62,10 +63,6 @@ int Application::run()
 int main(int argc, char *argv[])
 {
 //    qputenv("QT_LOGGING_RULES", "lmrs.roco.z21.Client.stream.debug=true");
-
-    qSetMessagePattern("%{time process}/%{pid} "
-                       "[%{type}%{if-category} %{category}%{endif}] "
-                       "%{message} (%{file}, line %{line})"_L1);
 
     return lmrs::studio::Application{argc, argv}.run();
 }

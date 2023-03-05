@@ -2,6 +2,7 @@
 #define LMRS_CORE_DEBUG_H
 
 #include "quantities.h"
+#include "staticinit.h"
 #include "userliterals.h"
 
 #include <QLoggingCategory>
@@ -31,6 +32,37 @@
 namespace lmrs::core {
 
 namespace logging {
+
+template<class T>
+class StaticInit : public core::StaticInit<StaticInit<T>, T>
+{
+protected:
+    static void staticConstructor()
+    {
+        qSetMessagePattern("%{time process}/%{pid} "
+                           "[%{type}%{if-category} %{category}%{endif}] "
+                           "%{message} (%{file}, line %{line})"_L1);
+    }
+
+public:
+    friend class core::StaticInitInjector<StaticInit<T>>;
+    using core::StaticInit<StaticInit<T>, T>::StaticInit;
+};
+
+template<class T>
+class StaticInitTesting : public core::StaticInit<StaticInit<T>, T>
+{
+protected:
+    static void staticConstructor()
+    {
+        qSetMessagePattern("%{if-category}[%{category}] %{endif}"
+                           "%{message} (%{file}, line %{line})"_L1);
+    }
+
+public:
+    friend class core::StaticInitInjector<StaticInitTesting<T>>;
+    using core::StaticInit<StaticInitTesting<T>, T>::StaticInit;
+};
 
 QByteArray categoryName(QMetaType metaType, QMetaType detailType = {});
 
