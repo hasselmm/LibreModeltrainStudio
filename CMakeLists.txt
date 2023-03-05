@@ -68,6 +68,7 @@ add_compile_options(
     -Werror=unused-result
 )
 
+find_package(CompilerCache)
 find_package(Doxygen)
 find_package(Sphinx COMPONENTS Breathe MystParser QtHelp)
 
