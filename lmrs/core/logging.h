@@ -104,7 +104,7 @@ const char *shortTypeName()
     return shortName;
 }
 
-namespace logging {
+namespace logging::internal {
 
 class PrettyPrinterBase
 {
@@ -118,10 +118,10 @@ private:
     QDebug m_debug;
 };
 
-} // logging
+} // logging::internal
 
 template<typename T>
-class PrettyPrinter : public logging::PrettyPrinterBase
+class PrettyPrinter : public logging::internal::PrettyPrinterBase
 {
 public:
     PrettyPrinter(QDebug &debug) : PrettyPrinterBase{debug, QMetaType::fromType<T>()} {}

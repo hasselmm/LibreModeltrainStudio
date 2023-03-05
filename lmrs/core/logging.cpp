@@ -57,7 +57,7 @@ const char *shortTypeName(QMetaType metaType)
     return shortName ? shortName + 1 : fullName;
 }
 
-logging::PrettyPrinterBase::PrettyPrinterBase(QDebug &debug, QMetaType metaType)
+logging::internal::PrettyPrinterBase::PrettyPrinterBase(QDebug &debug, QMetaType metaType)
     : m_metaType{std::move(metaType)}
     , m_stateSaver{debug}
     , m_debug{debug}
@@ -72,7 +72,7 @@ logging::PrettyPrinterBase::PrettyPrinterBase(QDebug &debug, QMetaType metaType)
     debug << '(';
 }
 
-logging::PrettyPrinterBase::~PrettyPrinterBase()
+logging::internal::PrettyPrinterBase::~PrettyPrinterBase()
 {
     m_debug << ')';
 }
