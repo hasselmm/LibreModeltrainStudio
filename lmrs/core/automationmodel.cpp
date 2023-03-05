@@ -38,14 +38,6 @@ auto typeUri()
     return uri;
 }
 
-QMetaType metaTypeFromClassName(QByteArrayView className)
-{
-    auto typeName = QByteArray{};
-    typeName.reserve(className.size() + 1);
-    typeName.append(std::move(className)).append('*');
-    return QMetaType::fromName(std::move(typeName));
-}
-
 QMetaType metaTypeFromUri(QUrl uri)
 {
     if (!s_schemaBaseUrl.isParentOf(uri))
@@ -839,13 +831,13 @@ Item *AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
     if (const auto factory = m_factories.value(type.id()))
         return factory(parent);
 
-    qCWarning(logger(this), "Could not create item of type %s", type.name());
+    qCWarning(logger(this), "Type %s is not registered for automation", type.name());
     return nullptr;
 }
 
 Item *AutomationTypeModel::fromMetaObject(const QMetaObject *metaObject, QObject *parent) const
 {
-    return fromMetaType(metaTypeFromClassName(metaObject->className()), parent);
+    return fromMetaType(metaTypeFromMetaObject(metaObject), parent);
 }
 
 Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const
@@ -853,23 +845,25 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
     const auto typeUri = object[s_schema].toString();
     const auto type = metaTypeFromUri(QUrl{typeUri});
 
-    if (type.metaObject() && type.metaObject()->inherits(baseType.metaObject())) {
-        if (const auto item = fromMetaType(type, parent)) {
-            for (auto it = object.begin(); it != object.end(); ++it) {
-                const auto key = it.key().toLatin1();
+    if (!type.metaObject()) {
+        qCWarning(logger(this), "Could not find type information for %ls", qUtf16Printable(typeUri));
+    } else if (!type.metaObject()->inherits(baseType.metaObject())) {
+        qCWarning(logger(this), "Could type %ls doesn't extend %s", qUtf16Printable(typeUri), baseType.name());
+    } else if (const auto item = fromMetaType(type, parent)) {
+        for (auto it = object.begin(); it != object.end(); ++it) {
+            const auto key = it.key().toLatin1();
 
-                if (it.key().startsWith('$'_L1))
-                    continue;
+            if (it.key().startsWith('$'_L1))
+                continue;
 
-                if (const auto p = item->parameter(key)) {
-                    item->setProperty(key, p->fromJson(it.value()));
-                } else {
-                    qCWarning(logger(this), "Skipping unexpected property \"%s\"", key.constData());
-                }
+            if (const auto p = item->parameter(key)) {
+                item->setProperty(key, p->fromJson(it.value()));
+            } else {
+                qCWarning(logger(this), "Skipping unexpected property \"%s\"", key.constData());
             }
-
-            return item;
         }
+
+        return item;
     }
 
     qCWarning(logger(this), "Unsupported automation type: %ls", qUtf16Printable(typeUri));

@@ -212,12 +212,10 @@ const QList<KnownSequence> s_programmerInfo = {
 
 } // namespace
 
-class Application
-        : public core::StaticInit<Application>
-        , public QApplication
+class Application : public core::StaticInit<Application, QApplication>
 {
 public:
-    using QApplication::QApplication;
+    using StaticInit::StaticInit;
     static void staticConstructor();
 
     int run();

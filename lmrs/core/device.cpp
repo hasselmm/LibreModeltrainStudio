@@ -4,6 +4,7 @@
 #include "algorithms.h"
 #include "detectors.h"
 #include "device.h"
+#include "logging.h"
 #include "quantities.h"
 #include "userliterals.h"
 #include "vehicleinfomodel.h"
@@ -389,12 +390,12 @@ Continuation retryOnError(Error error)
 
 void DebugControl::sendDccFrame(QByteArray, DccPowerMode, DccFeedbackMode) const
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void DebugControl::sendNativeFrame(QByteArray) const
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 QString DebugControl::nativeProtocolName() const noexcept

@@ -11,12 +11,10 @@ static void initResources() { Q_INIT_RESOURCE(widgets); }
 
 namespace lmrs::widgets {
 
-class SpeedMeter::Private
-        : public core::StaticInit<Private>
-        , public QQuickWidget
+class SpeedMeter::Private : public core::StaticInit<Private, QQuickWidget>
 {
 public:
-    using QQuickWidget::QQuickWidget;
+    using StaticInit::StaticInit;
     static void staticConstructor();
 };
 

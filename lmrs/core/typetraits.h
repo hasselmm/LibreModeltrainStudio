@@ -298,6 +298,10 @@ constexpr const QMetaObject *publicMetaObject(const QMetaObject *staticMetaObjec
 
 #define LMRS_STATIC_METAOBJECT ::lmrs::core::internal::publicMetaObject<Private>(&staticMetaObject)
 
+QMetaType metaTypeFromClassName(QByteArrayView className);
+QMetaType metaTypeFromMetaObject(const QMetaObject *metaObject);
+QMetaType metaTypeFromObject(const QObject *object);
+
 } // namespace lmrs::core
 
 template <typename T, typename Tag>

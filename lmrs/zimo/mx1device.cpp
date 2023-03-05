@@ -277,38 +277,38 @@ Device::AccessoryControl::AccessoryControl(Private *d)
 
 Device::AccessoryControl::Features Device::AccessoryControl::features() const
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
     return {};
 }
 
 void Device::AccessoryControl::setAccessoryState(dcc::AccessoryAddress /*address*/, quint8 /*state*/)
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void Device::AccessoryControl::setTurnoutState(dcc::AccessoryAddress /*address*/, dcc::TurnoutState /*state*/, bool /*enabled*/)
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void Device::AccessoryControl::setTurnoutState(dcc::AccessoryAddress /*address*/, dcc::TurnoutState /*state*/, milliseconds /*duration*/)
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void Device::AccessoryControl::requestAccessoryInfo(dcc::AccessoryAddress /*address*/, AccessoryInfoCallback /*callback*/)
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void Device::AccessoryControl::requestTurnoutInfo(dcc::AccessoryAddress /*address*/, TurnoutInfoCallback /*callback*/)
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void Device::AccessoryControl::requestEmergencyStop()
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 // =====================================================================================================================

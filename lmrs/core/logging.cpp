@@ -2,7 +2,9 @@
 
 namespace lmrs::core {
 
-QByteArray logging::categoryName(QMetaType metaType, QMetaType detailType)
+namespace {
+
+QByteArray categoryName(QMetaType metaType, QMetaType detailType = {})
 {
     if (auto detailName = detailType.name(); detailName && detailType.id() != qMetaTypeId<void>()) {
         if (const auto lastColon = strrchr(detailName, ':'))
@@ -27,6 +29,8 @@ QByteArray logging::categoryName(QMetaType metaType, QMetaType detailType)
 
     return {};
 }
+
+} // namespace
 
 QString SeparatorState::next(QString separator)
 {
@@ -53,7 +57,7 @@ const char *shortTypeName(QMetaType metaType)
     return shortName ? shortName + 1 : fullName;
 }
 
-logging::PrettyPrinterBase::PrettyPrinterBase(QDebug &debug, QMetaType metaType)
+logging::internal::PrettyPrinterBase::PrettyPrinterBase(QDebug &debug, QMetaType metaType)
     : m_metaType{std::move(metaType)}
     , m_stateSaver{debug}
     , m_debug{debug}
@@ -68,7 +72,7 @@ logging::PrettyPrinterBase::PrettyPrinterBase(QDebug &debug, QMetaType metaType)
     debug << '(';
 }
 
-logging::PrettyPrinterBase::~PrettyPrinterBase()
+logging::internal::PrettyPrinterBase::~PrettyPrinterBase()
 {
     m_debug << ')';
 }
@@ -104,6 +108,33 @@ bool logging::internal::reportFailure(const QLoggingCategory &category, bool ass
     }
 
     return false;
+}
+
+const QLoggingCategory &logger(QMetaType metaType, QMetaType detailType)
+{
+
+    struct Entry {
+    public:
+        Entry(QByteArray name)
+            : m_name{std::move(name)}
+            , m_category{std::make_shared<QLoggingCategory>(m_name.constData())}
+        {}
+
+        auto &category() const { return *m_category; }
+
+    private:
+        QByteArray m_name; // important to initialize first, so that m_name.constData() is valid
+        std::shared_ptr<QLoggingCategory> m_category;
+    };
+
+    using Key = std::pair<int, int>;
+    static auto cache = QHash<Key, Entry>{};
+    const auto key = std::make_pair(metaType.id(), detailType.id());
+
+    if (const auto it = cache.constFind(key); it != cache.constEnd())
+        return it->category();
+
+    return cache.emplace(key, categoryName(metaType, detailType))->category();
 }
 
 } // namespace lmrs::core

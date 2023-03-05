@@ -2,6 +2,7 @@
 #define LMRS_CORE_DEBUG_H
 
 #include "quantities.h"
+#include "staticinit.h"
 #include "userliterals.h"
 
 #include <QLoggingCategory>
@@ -28,33 +29,63 @@
     LMRS_CORE_DEFINE_LOGGER(Context) \
 } // namespace
 
+#define LMRS_UNIMPLEMENTED() \
+    qCritical("Function %s() is not implemented", __func__)
+#define LMRS_UNIMPLEMENTED_FOR_KEY(enumValue) \
+    qCritical("Function %s() is not implemented for %s", __func__, core::key((enumValue)))
+#define LMRS_UNIMPLEMENTED_FOR_METATYPE(metaType) \
+    qCritical("Function %s() is not implemented for %s", __func__, (metaType).name())
+
 namespace lmrs::core {
 
 namespace logging {
 
-QByteArray categoryName(QMetaType metaType, QMetaType detailType = {});
-
-template<class T, typename Detail = void>
-inline auto categoryName()
+template<class T>
+class StaticInit : public core::StaticInit<StaticInit<T>, T>
 {
-    return categoryName(QMetaType::fromType<T>(), QMetaType::fromType<Detail>());
-}
+protected:
+    static void staticConstructor()
+    {
+        qSetMessagePattern("%{time process}/%{pid} "
+                           "[%{type}%{if-category} %{category}%{endif}] "
+                           "%{message} (%{file}, line %{line})"_L1);
+    }
+
+public:
+    friend class core::StaticInitInjector<StaticInit<T>>;
+    using core::StaticInit<StaticInit<T>, T>::StaticInit;
+};
+
+template<class T>
+class StaticInitTesting : public core::StaticInit<StaticInitTesting<T>, T>
+{
+protected:
+    static void staticConstructor()
+    {
+        qSetMessagePattern("%{if-category}[%{category}] %{endif}"
+                           "%{message} (%{file}, line %{line})"_L1);
+    }
+
+public:
+    friend class core::StaticInitInjector<StaticInitTesting<T>>;
+    using core::StaticInit<StaticInitTesting<T>, T>::StaticInit;
+};
 
 } // logging
+
+const QLoggingCategory &logger(QMetaType metaType, QMetaType detailType = {});
 
 template<class T>
 inline const QLoggingCategory &logger()
 {
-    static const auto loggerName = logging::categoryName<T>();
-    static const auto logger = QLoggingCategory{loggerName.constData()};
+    static const auto &logger = core::logger(QMetaType::fromType<T>());
     return logger;
 }
 
 template<class T, typename Detail>
 inline const QLoggingCategory &logger()
 {
-    static const auto loggerName = logging::categoryName<T, Detail>();
-    static const auto logger = QLoggingCategory{loggerName.constData()};
+    static const auto &logger = core::logger(QMetaType::fromType<T>(), QMetaType::fromType<Detail>());
     return logger;
 }
 
@@ -73,7 +104,7 @@ const char *shortTypeName()
     return shortName;
 }
 
-namespace logging {
+namespace logging::internal {
 
 class PrettyPrinterBase
 {
@@ -87,10 +118,10 @@ private:
     QDebug m_debug;
 };
 
-} // logging
+} // logging::internal
 
 template<typename T>
-class PrettyPrinter : public logging::PrettyPrinterBase
+class PrettyPrinter : public logging::internal::PrettyPrinterBase
 {
 public:
     PrettyPrinter(QDebug &debug) : PrettyPrinterBase{debug, QMetaType::fromType<T>()} {}
@@ -133,9 +164,8 @@ inline bool reportFailure(const QLoggingCategory &category,
                                    expression, file, line, func);
 }
 
-}
-
-} // namespace lmrs::core::logging::internal
+} // namespace logging::internal
+} // namespace lmrs::core
 
 inline QDebug operator<<(QDebug debug, const QMetaType &type)
 {

@@ -2,13 +2,14 @@
 
 #include <lmrs/core/fileformat.h>
 #include <lmrs/core/localization.h>
+#include <lmrs/core/logging.h>
 #include <lmrs/core/staticinit.h>
 #include <lmrs/core/symbolictrackplanmodel.h>
 #include <lmrs/core/userliterals.h>
-#include <lmrs/roco/z21appfileformats.h>
 
 #include <lmrs/esu/lp2device.h>
 #include <lmrs/kpfzeller/scdevice.h>
+#include <lmrs/roco/z21appfileformats.h>
 #include <lmrs/roco/z21device.h>
 #include <lmrs/zimo/mx1device.h>
 
@@ -20,12 +21,10 @@ const QtMessageHandler defaultMessageHandler = qInstallMessageHandler([](auto ty
     defaultMessageHandler(type, context, message);
 });
 
-class Application
-        : public core::StaticInit<Application>
-        , public QApplication
+class Application : public core::StaticInit<Application, core::logging::StaticInit<QApplication>>
 {
 public:
-    using QApplication::QApplication;
+    using StaticInit::StaticInit;
     static void staticConstructor();
 
     int run();
@@ -64,10 +63,6 @@ int Application::run()
 int main(int argc, char *argv[])
 {
 //    qputenv("QT_LOGGING_RULES", "lmrs.roco.z21.Client.stream.debug=true");
-
-    qSetMessagePattern("%{time process}/%{pid} "
-                       "[%{type}%{if-category} %{category}%{endif}] "
-                       "%{message} (%{file}, line %{line})"_L1);
 
     return lmrs::studio::Application{argc, argv}.run();
 }

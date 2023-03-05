@@ -511,7 +511,7 @@ void Device::VariableControl::readVariable(dcc::VehicleAddress address, dcc::Var
 void Device::VariableControl::writeVariable(dcc::VehicleAddress /*address*/, dcc::VariableIndex /*variable*/,
                                             dcc::VariableValue /*value*/, core::ContinuationCallback<VariableValueResult> /*callback*/)
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 Device::Private *Device::VariableControl::d() const
