@@ -164,9 +164,8 @@ inline bool reportFailure(const QLoggingCategory &category,
                                    expression, file, line, func);
 }
 
-}
-
-} // namespace lmrs::core::logging::internal
+} // namespace logging::internal
+} // namespace lmrs::core
 
 inline QDebug operator<<(QDebug debug, const QMetaType &type)
 {
