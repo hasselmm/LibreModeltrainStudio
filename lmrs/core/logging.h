@@ -50,7 +50,7 @@ public:
 };
 
 template<class T>
-class StaticInitTesting : public core::StaticInit<StaticInit<T>, T>
+class StaticInitTesting : public core::StaticInit<StaticInitTesting<T>, T>
 {
 protected:
     static void staticConstructor()
@@ -64,29 +64,21 @@ public:
     using core::StaticInit<StaticInitTesting<T>, T>::StaticInit;
 };
 
-QByteArray categoryName(QMetaType metaType, QMetaType detailType = {});
-
-template<class T, typename Detail = void>
-inline auto categoryName()
-{
-    return categoryName(QMetaType::fromType<T>(), QMetaType::fromType<Detail>());
-}
-
 } // logging
+
+const QLoggingCategory &logger(QMetaType metaType, QMetaType detailType = {});
 
 template<class T>
 inline const QLoggingCategory &logger()
 {
-    static const auto loggerName = logging::categoryName<T>();
-    static const auto logger = QLoggingCategory{loggerName.constData()};
+    static const auto &logger = core::logger(QMetaType::fromType<T>());
     return logger;
 }
 
 template<class T, typename Detail>
 inline const QLoggingCategory &logger()
 {
-    static const auto loggerName = logging::categoryName<T, Detail>();
-    static const auto logger = QLoggingCategory{loggerName.constData()};
+    static const auto &logger = core::logger(QMetaType::fromType<T>(), QMetaType::fromType<Detail>());
     return logger;
 }
 
