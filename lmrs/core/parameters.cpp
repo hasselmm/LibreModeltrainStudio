@@ -42,7 +42,7 @@ bool Parameter::acceptsType(QMetaType metaType) const
             qInfo() << metaType.name() << choiceModel->valueType.name();
         }
 
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(type());
         return false;
 
     case Type::Flag:
@@ -55,7 +55,7 @@ bool Parameter::acceptsType(QMetaType metaType) const
         return QMetaType::canConvert(metaType, QMetaType::fromType<QString>());
     }
 
-    Q_UNREACHABLE();
+    LMRS_UNIMPLEMENTED_FOR_KEY(type());
     return false;
 }
 

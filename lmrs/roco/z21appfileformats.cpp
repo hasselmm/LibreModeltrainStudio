@@ -646,7 +646,7 @@ bool PageReaderContext::readResponseModules()
             qCWarning(logger(), "Could not insert symbol at x=%d, y=%d", x, y);
     }
 
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
     return true;
 }
 
@@ -654,7 +654,7 @@ bool PageReaderContext::readRoutes()
 {
     const auto stopWatch = AutoTimer{__func__};
 
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
     return true;
 }
 
@@ -662,7 +662,7 @@ bool PageReaderContext::readSignals()
 {
     const auto stopWatch = AutoTimer{__func__};
 
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
     return true;
 }
 

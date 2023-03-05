@@ -86,7 +86,7 @@ DeviceParameterWidget::Private::Editor DeviceParameterWidget::Private::createEdi
 
     case core::Parameter::Type::Number:
     case core::Parameter::Type::Text:
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(parameter.type());
         break;
 
     case core::Parameter::Type::Invalid:

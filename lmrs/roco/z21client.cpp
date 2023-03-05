@@ -1,5 +1,6 @@
 #include "z21client.h"
 
+#include <lmrs/core/algorithms.h>
 #include <lmrs/core/continuation.h>
 #include <lmrs/core/logging.h>
 #include <lmrs/core/propertyguard.h>
@@ -1497,7 +1498,7 @@ void Client::Private::maybeEmitCanDetectorInfo(can::NetworkId networkId, const C
 void Client::Private::mergeLoconetDetectorInfo(LoconetDetectorInfo info)
 {
     qInfo() << Q_FUNC_INFO << info << info.data().toHex(' ');
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void Client::Private::emitPendingLoconetDetectorInfo()
@@ -2067,17 +2068,17 @@ void Client::queryDetectorInfo(DetectorAddress address, std::function<void(QList
         break;
 
     case DetectorAddress::Type::LoconetSIC:
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(address.type());
 //        queryLoconetDetectorInfo(0x80, 0, std::move(callback));
         break;
 
     case DetectorAddress::Type::LoconetModule:
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(address.type());
 //        queryLoconetDetectorInfo(0x81, address.reportAddress, std::move(callback));
         break;
 
     case DetectorAddress::Type::LissyModule:
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(address.type());
 //        queryLoconetDetectorInfo(0x82, address.lissyAddress, std::move(callback));
         break;
 

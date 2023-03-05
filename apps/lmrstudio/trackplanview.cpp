@@ -4,6 +4,7 @@
 #include <lmrs/core/algorithms.h>
 #include <lmrs/core/device.h>
 #include <lmrs/core/fileformat.h>
+#include <lmrs/core/logging.h>
 #include <lmrs/core/memory.h>
 #include <lmrs/core/symbolictrackplanmodel.h>
 #include <lmrs/core/typetraits.h>
@@ -160,7 +161,7 @@ SymbolicTrackPlanView *TrackPlanView::Private::createView(SymbolicTrackPlanModel
 
 void TrackPlanView::Private::onFileSharingRequested()
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void TrackPlanView::Private::onListeningChanged(bool isListening)

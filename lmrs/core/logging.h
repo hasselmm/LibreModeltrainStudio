@@ -29,6 +29,13 @@
     LMRS_CORE_DEFINE_LOGGER(Context) \
 } // namespace
 
+#define LMRS_UNIMPLEMENTED() \
+    qCritical("Function %s() is not implemented", __func__)
+#define LMRS_UNIMPLEMENTED_FOR_KEY(enumValue) \
+    qCritical("Function %s() is not implemented for %s", __func__, core::key((enumValue)))
+#define LMRS_UNIMPLEMENTED_FOR_METATYPE(metaType) \
+    qCritical("Function %s() is not implemented for %s", __func__, (metaType).name())
+
 namespace lmrs::core {
 
 namespace logging {

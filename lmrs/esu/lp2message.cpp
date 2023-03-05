@@ -3,6 +3,7 @@
 #include "lp2request.h"
 #include "lp2response.h"
 
+#include <lmrs/core/algorithms.h>
 #include <lmrs/core/logging.h>
 
 #include <QLoggingCategory>
@@ -156,7 +157,7 @@ std::optional<QVariant> Request::get() const
     case Identifier::Wait:
     case Identifier::SetSomeMagic2: // called by DetectESUMode and PowerOn, argument: some computed value
     case Identifier::GetTrackLoad:
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(identifier());
         break;
 
     case Identifier::SendUfm:
@@ -186,7 +187,7 @@ std::optional<QVariant> Request::get() const
     case Identifier::EraseFlash:
     case Identifier::WriteFlash:
     case Identifier::SendMotorola: // ShortPulse, LongPulse, FrontGap, MidGap, RepeatCount, BitCount, Data
-        Q_UNIMPLEMENTED();
+        LMRS_UNIMPLEMENTED_FOR_KEY(identifier());
         break;
 
     }

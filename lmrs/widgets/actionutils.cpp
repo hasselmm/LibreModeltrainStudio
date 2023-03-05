@@ -91,7 +91,7 @@ QAction *makeCheckable(QAction *action)
 QWidget *ComboBoxAction::createWidget(QWidget *parent)
 {
     if (const auto menu = dynamic_cast<QMenu *>(parent)) {
-        Q_UNIMPLEMENTED(); // FIXME: Find solution to show devices in overflow menu
+        LMRS_UNIMPLEMENTED_FOR_METATYPE(core::metaTypeFromObject(menu)); // FIXME: Find solution to show devices in overflow menu
         return nullptr;
     }
 

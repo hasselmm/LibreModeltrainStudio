@@ -288,7 +288,7 @@ DebugControl::DebugControl(Client *parent)
 
 void DebugControl::sendDccFrame(QByteArray /*frame*/, DccPowerMode /*powerMode*/, DccFeedbackMode /*feedbackMode*/) const
 {
-    Q_UNIMPLEMENTED();
+    LMRS_UNIMPLEMENTED();
 }
 
 void DebugControl::sendNativeFrame(QByteArray nativeFrame) const
