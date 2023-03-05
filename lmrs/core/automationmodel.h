@@ -518,25 +518,25 @@ public:
     template<ItemType T = Item>
     T *fromType(QMetaType type, QObject *parent = nullptr) const
     {
-        return static_cast<T *>(fromMetaType(type, parent));
+        return dynamic_cast<T *>(fromMetaType(type, parent));
     }
 
     template<ItemType T = Item, ForwardDeclared<QJsonObject> JsonObject>
     T *fromJsonObject(JsonObject object, QObject *parent = nullptr) const
     {
-        return static_cast<T *>(fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent));
+        return dynamic_cast<T *>(fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent));
     }
 
     template<ItemType T = Item>
     T *fromJson(QByteArray json, QObject *parent = nullptr) const
     {
-        return static_cast<T *>(fromJson(QMetaType::fromType<T *>(), std::move(json), parent));
+        return dynamic_cast<T *>(fromJson(QMetaType::fromType<T *>(), std::move(json), parent));
     }
 
     template<ItemType T = Item>
     T *fromPrototype(const T *prototype, QObject *parent = nullptr) const
     {
-        return static_cast<T *>(fromMetaObject(prototype->metaObject(), parent));
+        return dynamic_cast<T *>(fromMetaObject(prototype->metaObject(), parent));
     }
 
     int rowCount(const QModelIndex &parent = {}) const override;
