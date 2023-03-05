@@ -515,25 +515,25 @@ public:
         registerType(qRegisterMetaType<T *>(), [](QObject *parent) { return new T{parent}; });
     }
 
-    template<ItemType T>
+    template<ItemType T = Item>
     T *fromType(QMetaType type, QObject *parent = nullptr) const
     {
         return static_cast<T *>(fromMetaType(type, parent));
     }
 
-    template<ItemType T, ForwardDeclared<QJsonObject> JsonObject>
+    template<ItemType T = Item, ForwardDeclared<QJsonObject> JsonObject>
     T *fromJsonObject(JsonObject object, QObject *parent = nullptr) const
     {
         return static_cast<T *>(fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent));
     }
 
-    template<ItemType T>
+    template<ItemType T = Item>
     T *fromJson(QByteArray json, QObject *parent = nullptr) const
     {
         return static_cast<T *>(fromJson(QMetaType::fromType<T *>(), std::move(json), parent));
     }
 
-    template<ItemType T>
+    template<ItemType T = Item>
     T *fromPrototype(const T *prototype, QObject *parent = nullptr) const
     {
         return static_cast<T *>(fromMetaObject(prototype->metaObject(), parent));
