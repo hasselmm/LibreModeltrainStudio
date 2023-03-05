@@ -66,6 +66,7 @@ add_compile_options(
     -Werror=switch-enum
     -Werror=tautological-compare
     -Werror=unused
+    -Werror=unused-parameter
     -Werror=unused-result
 )
 
