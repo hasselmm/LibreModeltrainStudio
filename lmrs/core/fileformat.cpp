@@ -128,6 +128,11 @@ bool FileFormat::accepts(QString fileName) const
     return false;
 }
 
+bool FileFormat::isValid() const noexcept
+{
+    return !name.isEmpty() && !mimeType.isEmpty() && !extensions.isEmpty();
+}
+
 // =====================================================================================================================
 
 FileFormatHandler::FileFormatHandler(QIODevice *device)
