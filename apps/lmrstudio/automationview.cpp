@@ -343,6 +343,11 @@ bool AutomationView::open(QString newFileName)
     return d->readFile(std::move(newFileName))->succeeded();
 }
 
+void AutomationView::updateControls(core::Device *device)
+{
+    d->canvas->model()->setDevice(device);
+}
+
 void AutomationView::Private::createEventItem(const automation::Event *prototype)
 {
     if (const auto model = canvas->model()) {

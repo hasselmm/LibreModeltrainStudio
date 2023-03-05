@@ -8,8 +8,26 @@
 
 #include <QAbstractListModel>
 
-namespace lmrs::core::parameters {
+namespace lmrs::core {
+class Device;
+
+class AccessoryControl;
+class DebugControl;
+class DetectorControl;
+class PowerControl;
+class SpeedMeterControl;
+class VariableControl;
+class VehicleControl;
+
+namespace accessory {
+struct DetectorInfo;
+struct TurnoutInfo;
+}
+
+namespace parameters {
 struct Parameter;
+}
+
 }
 
 namespace lmrs::core::automation {
@@ -203,7 +221,18 @@ signals:
     void actionRemoved(lmrs::core::automation::Action *action, int index, QPrivateSignal);
     void actionsChanged(QPrivateSignal);
 
+protected:
+    virtual void setControl(AccessoryControl *) {}
+    virtual void setControl(DebugControl *) {}
+    virtual void setControl(DetectorControl *) {}
+    virtual void setControl(PowerControl *) {}
+    virtual void setControl(SpeedMeterControl *) {}
+    virtual void setControl(VariableControl *) {}
+    virtual void setControl(VehicleControl *) {}
+
 private:
+    friend class AutomationModel;
+
     QList<Action *> m_actions;
 };
 
@@ -259,7 +288,12 @@ signals:
     void primaryStateChanged(dcc::TurnoutState primaryState, QPrivateSignal);
     void secondaryStateChanged(dcc::TurnoutState secondaryState, QPrivateSignal);
 
+protected:
+    void setControl(AccessoryControl *newControl) override;
+
 private:
+    void onTurnoutInfoChanged(accessory::TurnoutInfo info);
+
     std::optional<dcc::AccessoryAddress> m_primaryAddress;
     std::optional<dcc::TurnoutState> m_primaryState;
 
@@ -306,7 +340,12 @@ signals:
     void vehiclesChanged(QList<lmrs::core::dcc::VehicleAddress> vehicles, QPrivateSignal);
     void typeChanged(lmrs::core::automation::DetectorEvent::Type type, QPrivateSignal);
 
+protected:
+    void setControl(DetectorControl *newControl) override;
+
 private:
+    void onDetectorInfoChanged(accessory::DetectorInfo);
+
     QList<dcc::VehicleAddress> m_vehicles;
     Type m_type;
 };
@@ -357,7 +396,12 @@ signals:
     void moduleChanged(lmrs::core::accessory::can::ModuleId module, QPrivateSignal);
     void portChanged(lmrs::core::accessory::can::PortIndex port, QPrivateSignal);
 
+protected:
+    void setControl(DetectorControl *newControl) override;
+
 private:
+    void onDetectorInfoChanged(accessory::DetectorInfo info);
+
     std::optional<accessory::can::NetworkId> m_network;
     std::optional<accessory::can::ModuleId> m_module;
     std::optional<accessory::can::PortIndex> m_port;
@@ -391,7 +435,12 @@ public slots:
 signals:
     void groupChanged(lmrs::core::accessory::rbus::GroupId group, QPrivateSignal);
 
+protected:
+    void setControl(DetectorControl *newControl) override;
+
 private:
+    void onDetectorInfoChanged(accessory::DetectorInfo info);
+
     std::optional<accessory::rbus::GroupId> m_group;
 };
 
@@ -432,7 +481,12 @@ signals:
     void moduleChanged(lmrs::core::accessory::rbus::ModuleId module, QPrivateSignal);
     void portChanged(lmrs::core::accessory::rbus::PortIndex port, QPrivateSignal);
 
+protected:
+    void setControl(DetectorControl *newControl) override;
+
 private:
+    void onDetectorInfoChanged(accessory::DetectorInfo info);
+
     std::optional<accessory::rbus::ModuleId> m_module;
     std::optional<accessory::rbus::PortIndex> m_port;
 };
@@ -495,7 +549,6 @@ public:
     const Item *item(const QModelIndex &index) const;
 
 private:
-
     using Factory = std::function<Item *(QObject *)>;
     void registerType(int typeId, Factory createEvent);
 
@@ -543,7 +596,7 @@ public:
         EventRole = Qt::UserRole,
     };
 
-    using QAbstractListModel::QAbstractListModel;
+    explicit AutomationModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = {}) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -559,6 +612,9 @@ public:
     int insertAction(const QModelIndex &index, Action *action, int before);
 
     bool removeRows(int row, int count, const QModelIndex &parent = {}) override;
+
+    void setDevice(core::Device *newDevice);
+    core::Device *device() const;
 
 public slots:
     void clear();
@@ -576,7 +632,8 @@ protected slots:
     void onEventChanged();
 
 private:
-    QList<Event *> m_events;
+    class Private;
+    Private *const d;
 };
 
 // =====================================================================================================================

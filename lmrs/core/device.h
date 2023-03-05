@@ -324,6 +324,30 @@ signals:
     void vehicleInfoChanged(lmrs::core::VehicleInfo vehicleInfo);
 };
 
+namespace internal {
+
+using ControlTuple = std::tuple<
+        QPointer<AccessoryControl>, QPointer<DebugControl>, QPointer<DetectorControl>,
+        QPointer<PowerControl>, QPointer<SpeedMeterControl>, QPointer<VariableControl>,
+        QPointer<VehicleControl>>;
+
+} // namespace internal
+
+///
+/// The ControlSink tuple stores all supported Control instances at one place.
+///
+struct ControlSink : public internal::ControlTuple
+{
+    using tuple_type = internal::ControlTuple;
+
+    template<size_t I> using element_pointer = decltype(std::tuple_element_t<I, tuple_type>{}.get());
+    template<size_t I> using element_type = std::remove_pointer_t<element_pointer<I>>;
+
+    using internal::ControlTuple::ControlTuple;
+
+    static constexpr auto size() { return std::tuple_size<tuple_type>(); }
+};
+
 ///
 /// The DeviceInfo enum uniformly describes apects of a Device.
 ///

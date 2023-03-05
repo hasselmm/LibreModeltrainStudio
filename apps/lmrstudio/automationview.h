@@ -23,6 +23,9 @@ public:
 public slots:
     bool open(QString newFileName);
 
+protected:
+    void updateControls(core::Device *device) override;
+
 private:
     class Private;
     core::ConstPointer<Private> d;
