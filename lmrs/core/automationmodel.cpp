@@ -67,6 +67,13 @@ public:
     bool write(const AutomationModel *model) override;
 };
 
+auto findProperty(const QObject *object, QByteArrayView propertyName)
+{
+    const auto metaObject = object->metaObject();
+    const auto propertyIndex = metaObject->indexOfProperty(propertyName.constData());
+    return metaObject->property(propertyIndex);
+}
+
 } // namespace
 
 // =====================================================================================================================
@@ -922,14 +929,25 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
     } else if (const auto item = fromMetaType(type, parent)) {
         for (auto it = object.begin(); it != object.end(); ++it) {
             const auto key = it.key().toLatin1();
+            auto value = it.value();
 
-            if (it.key().startsWith('$'_L1))
+            if (key.startsWith('$'))
                 continue;
 
-            if (const auto p = item->parameter(key)) {
-                item->setProperty(key, p->fromJson(it.value()));
+            if (value.isNull()) {
+                const auto property = findProperty(item, key);
+
+                if (property.isResettable()) {
+                    property.reset(item);
+                } else {
+                    qCWarning(logger(this), "Cannot reset property \"%s\" of %s",
+                              key.constData(), item->metaObject()->className());
+                }
+            } else if (const auto parameter = item->parameter(key)) {
+                item->setProperty(key, parameter->fromJson(std::move(value)));
             } else {
-                qCWarning(logger(this), "Skipping unexpected property \"%s\"", key.constData());
+                qCWarning(logger(this), "Skipping unexpected property \"%s\" of %s",
+                          key.constData(), item->metaObject()->className());
             }
         }
 
@@ -974,8 +992,7 @@ void AutomationTypeModel::registerType(int typeId, Factory createEvent)
 
 bool AutomationTypeModel::verifyProperty(const Item *target, const Parameter &parameter, QByteArrayView propertyName)
 {
-    const auto propertyIndex = target->metaObject()->indexOfProperty(propertyName.constData());
-    const auto property = target->metaObject()->property(propertyIndex);
+    const auto property = findProperty(target, propertyName);
 
     if (!property.isValid()) {
         qCCritical(logger<AutomationModel>(),
@@ -1345,8 +1362,9 @@ bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
 
     beginRemoveRows(parent, row, row + count - 1);
-    const auto begin = d->m_events.begin() + row;
-    const auto end = begin + count;
+
+    auto begin = d->m_events.begin() + row;
+    auto end = begin + count;
 
     for (auto it = begin; it != end; ++it) {
         const auto event = *it;
