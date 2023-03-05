@@ -82,14 +82,15 @@ QJsonObject Item::toJsonObject() const
 {
     auto object = QJsonObject{{s_schema, typeUri(metaObject()).toString()}};
 
-    for (const auto &p: parameters()) {
-        if (metaObject()->indexOfProperty(p.hasValueKey()) >= 0
-                && property(p.hasValueKey()).toBool() == false) {
-            object.insert(QString::fromLatin1(p.valueKey()), QJsonValue::Null);
+    for (const auto &parameter: parameters()) {
+        if (metaObject()->indexOfProperty(parameter.hasValueKey()) >= 0
+                && property(parameter.hasValueKey()).toBool() == false) {
+            // insert null if the matching has{PropertyName} returns false
+            object.insert(QString::fromLatin1(parameter.valueKey()), QJsonValue::Null);
         } else {
             // FIXME always verify round-trip conversion?
-            auto value = p.toJson(property(p.valueKey()));
-            object.insert(QString::fromLatin1(p.valueKey()), std::move(value));
+            auto value = parameter.toJson(property(parameter.valueKey()));
+            object.insert(QString::fromLatin1(parameter.valueKey()), std::move(value));
         }
     }
 
