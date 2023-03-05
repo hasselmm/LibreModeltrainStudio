@@ -218,7 +218,8 @@ void DebugView::setDebugControl(core::DebugControl *newControl)
             d->nativeFrame->setEnabled(newControl->features() & Feature::NativeFrames);
             d->nativeFrameBox->clear();
 
-            for (auto [text, sequence]: newControl->nativeExampleFrames())
+            for (const auto frameList = newControl->nativeExampleFrames();
+                 const auto &[text, sequence]: frameList)
                 d->nativeFrameBox->addItem(std::move(text), std::move(sequence));
         } else {
             d->dccFrame->setEnabled(false);

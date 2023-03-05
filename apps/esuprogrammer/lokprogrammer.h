@@ -72,7 +72,7 @@ public slots:
 
 signals:
     void errorOccured(QString errorString);
-    void stateChanged(State state);
+    void stateChanged(esu::programmer::LokProgrammer::State state);
 
 private:
     class Private;

@@ -18,7 +18,11 @@ namespace lmrs::core {
 
 namespace {
 
-QList<QPointer<DeviceFactory>> s_deviceFactories;
+auto deviceFactoriesGlobal()
+{
+    static QList<QPointer<DeviceFactory>> s_deviceFactories;
+    return &s_deviceFactories;
+}
 
 template<size_t N>
 bool hasPrefix(const char *str, const char (& prefix)[N])
@@ -248,8 +252,8 @@ QString DeviceFactory::uniqueId(QVariantMap parameters)
 
 void DeviceFactory::addDeviceFactory(DeviceFactory *factory)
 {
-    if (!s_deviceFactories.contains(factory))
-        s_deviceFactories.append(factory);
+    if (!deviceFactoriesGlobal()->contains(factory))
+        deviceFactoriesGlobal()->append(factory);
 }
 
 QList<DeviceFactory *> DeviceFactory::deviceFactories()
@@ -257,7 +261,7 @@ QList<DeviceFactory *> DeviceFactory::deviceFactories()
     QList<DeviceFactory *> validFactories;
 
     static const auto isValid = [](auto p) { return !p.isNull(); };
-    std::copy_if(s_deviceFactories.begin(), s_deviceFactories.end(),
+    std::copy_if(deviceFactoriesGlobal()->begin(), deviceFactoriesGlobal()->end(),
                  std::back_inserter(validFactories), isValid);
 
     return validFactories;

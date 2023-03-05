@@ -113,9 +113,9 @@ void VehicleControlView::Private::onAddressBoxValueChanged()
         vehicleControl->subscribe(address, core::VehicleControl::PrimarySubscription);
 
     if (variableControl) {
+#if 0
         auto nameVariables = range(dcc::VariableSpace::RailComPlusName).toList(dcc::extendedVariable);
 
-#if 0
         variableControl->readExtendedVariables(address, std::move(nameVariables),
                                                [address](auto /*variable*/, auto value) {
             qInfo() << address << static_cast<char>(value);
