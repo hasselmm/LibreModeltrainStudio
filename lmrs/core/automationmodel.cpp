@@ -134,8 +134,9 @@ int Event::appendAction(Action *action)
 
 int Event::insertAction(Action *action, int before)
 {
-    if (LMRS_FAILED_COMPARE(logger(this), before, >=, 0)
-            | LMRS_FAILED_COMPARE(logger(this), before, <=, actionCount()))
+    if (LMRS_FAILED(logger(this), action != nullptr)
+            || LMRS_FAILED_COMPARE(logger(this), before, >=, 0)
+            || LMRS_FAILED_COMPARE(logger(this), before, <=, actionCount()))
         return -1;
 
     action->setParent(this);
