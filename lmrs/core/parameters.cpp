@@ -33,16 +33,21 @@ auto &Parameter::logger()
 
 bool Parameter::acceptsType(QMetaType metaType) const
 {
+    if (LMRS_FAILED(logger(), metaType.isValid()))
+        return false;
+
     switch (type()) {
     case Type::Invalid:
         return false;
 
     case Type::Choice:
-        if (const auto choiceModel = core::get_if<ChoiceModel>(model())) {
-            qInfo() << metaType.name() << choiceModel->valueType.name();
-        }
+        if (metaType.id() == qMetaTypeId<int>()
+                || metaType.id() == qMetaTypeId<uint>())
+            return true;
 
-        LMRS_UNIMPLEMENTED_FOR_KEY(type());
+        if (const auto choiceModel = core::get_if<ChoiceModel>(model()))
+            return metaType == choiceModel->valueType;
+
         return false;
 
     case Type::Flag:

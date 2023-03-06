@@ -182,7 +182,7 @@ void DeviceParameterWidget::Private::revalidate()
                                            &DeviceParameterWidget::hasAcceptableInputChanged);
 
     hasAcceptableInput = [this] {
-        for (const auto &editor: editors) {
+        for (const auto &editor: std::as_const(editors)) {
             if (!editor.hasAcceptableInput())
                 return false;
         }

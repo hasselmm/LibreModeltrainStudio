@@ -67,6 +67,13 @@ public:
     bool write(const AutomationModel *model) override;
 };
 
+auto findProperty(const QObject *object, QByteArrayView propertyName)
+{
+    const auto metaObject = object->metaObject();
+    const auto propertyIndex = metaObject->indexOfProperty(propertyName.constData());
+    return metaObject->property(propertyIndex);
+}
+
 } // namespace
 
 // =====================================================================================================================
@@ -75,14 +82,15 @@ QJsonObject Item::toJsonObject() const
 {
     auto object = QJsonObject{{s_schema, typeUri(metaObject()).toString()}};
 
-    for (const auto &p: parameters()) {
-        if (metaObject()->indexOfProperty(p.hasValueKey()) >= 0
-                && property(p.hasValueKey()).toBool() == false) {
-            object.insert(QString::fromLatin1(p.valueKey()), QJsonValue::Null);
+    for (const auto &parameter: parameters()) {
+        if (metaObject()->indexOfProperty(parameter.hasValueKey()) >= 0
+                && property(parameter.hasValueKey()).toBool() == false) {
+            // insert null if the matching has{PropertyName} returns false
+            object.insert(QString::fromLatin1(parameter.valueKey()), QJsonValue::Null);
         } else {
             // FIXME always verify round-trip conversion?
-            auto value = p.toJson(property(p.valueKey()));
-            object.insert(QString::fromLatin1(p.valueKey()), std::move(value));
+            auto value = parameter.toJson(property(parameter.valueKey()));
+            object.insert(QString::fromLatin1(parameter.valueKey()), std::move(value));
         }
     }
 
@@ -126,8 +134,9 @@ int Event::appendAction(Action *action)
 
 int Event::insertAction(Action *action, int before)
 {
-    if (LMRS_FAILED_COMPARE(logger(this), before, >=, 0)
-            | LMRS_FAILED_COMPARE(logger(this), before, <=, actionCount()))
+    if (LMRS_FAILED(logger(this), action != nullptr)
+            || LMRS_FAILED_COMPARE(logger(this), before, >=, 0)
+            || LMRS_FAILED_COMPARE(logger(this), before, <=, actionCount()))
         return -1;
 
     action->setParent(this);
@@ -896,7 +905,7 @@ AutomationTypeModel::AutomationTypeModel(QObject *parent)
     registerType<VehicleAction>();
 }
 
-Item *AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
 {
     if (const auto factory = m_factories.value(type.id()))
         return factory(parent);
@@ -905,12 +914,12 @@ Item *AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
     return nullptr;
 }
 
-Item *AutomationTypeModel::fromMetaObject(const QMetaObject *metaObject, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromMetaObject(const QMetaObject *metaObject, QObject *parent) const
 {
     return fromMetaType(metaTypeFromMetaObject(metaObject), parent);
 }
 
-Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const
 {
     const auto typeUri = object[s_schema].toString();
     const auto type = metaTypeFromUri(QUrl{typeUri});
@@ -919,17 +928,28 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
         qCWarning(logger(this), "Could not find type information for %ls", qUtf16Printable(typeUri));
     } else if (!type.metaObject()->inherits(baseType.metaObject())) {
         qCWarning(logger(this), "Could type %ls doesn't extend %s", qUtf16Printable(typeUri), baseType.name());
-    } else if (const auto item = fromMetaType(type, parent)) {
+    } else if (auto item = fromMetaType(type, parent)) {
         for (auto it = object.begin(); it != object.end(); ++it) {
             const auto key = it.key().toLatin1();
+            auto value = it.value();
 
-            if (it.key().startsWith('$'_L1))
+            if (key.startsWith('$'))
                 continue;
 
-            if (const auto p = item->parameter(key)) {
-                item->setProperty(key, p->fromJson(it.value()));
+            if (value.isNull()) {
+                const auto property = findProperty(item.get(), key);
+
+                if (property.isResettable()) {
+                    property.reset(item.get());
+                } else {
+                    qCWarning(logger(this), "Cannot reset property \"%s\" of %s",
+                              key.constData(), item->metaObject()->className());
+                }
+            } else if (const auto parameter = item->parameter(key)) {
+                item->setProperty(key, parameter->fromJson(std::move(value)));
             } else {
-                qCWarning(logger(this), "Skipping unexpected property \"%s\"", key.constData());
+                qCWarning(logger(this), "Skipping unexpected property \"%s\" of %s",
+                          key.constData(), item->metaObject()->className());
             }
         }
 
@@ -940,7 +960,7 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
     return nullptr;
 }
 
-Item *AutomationTypeModel::fromJson(QMetaType baseType, QByteArray json, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromJson(QMetaType baseType, QByteArray json, QObject *parent) const
 {
     auto parseStatus = QJsonParseError{};
     const auto document = QJsonDocument::fromJson(std::move(json), &parseStatus);
@@ -974,8 +994,7 @@ void AutomationTypeModel::registerType(int typeId, Factory createEvent)
 
 bool AutomationTypeModel::verifyProperty(const Item *target, const Parameter &parameter, QByteArrayView propertyName)
 {
-    const auto propertyIndex = target->metaObject()->indexOfProperty(propertyName.constData());
-    const auto property = target->metaObject()->property(propertyIndex);
+    const auto property = findProperty(target, propertyName);
 
     if (!property.isValid()) {
         qCCritical(logger<AutomationModel>(),
@@ -1047,6 +1066,12 @@ QVariant AutomationTypeModel::data(const QModelIndex &index, int role) const
                 return QVariant::fromValue(item);
 
             break;
+
+        case TypeRole:
+            if (const auto item = m_rows[index.row()].item())
+                return QVariant::fromValue(metaTypeFromObject(item));
+
+            break;
         }
     }
 
@@ -1103,6 +1128,14 @@ const Item *AutomationTypeModel::item(const QModelIndex &index) const
         return nullptr;
 
     return qvariant_cast<const Item *>(index.data(ItemRole));
+}
+
+QMetaType AutomationTypeModel::itemType(const QModelIndex &index) const
+{
+    if (const auto prototype = item(index))
+        return metaTypeFromObject(prototype);
+
+    return {};
 }
 
 // =====================================================================================================================
@@ -1331,8 +1364,9 @@ bool AutomationModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
 
     beginRemoveRows(parent, row, row + count - 1);
-    const auto begin = d->m_events.begin() + row;
-    const auto end = begin + count;
+
+    auto begin = d->m_events.begin() + row;
+    auto end = begin + count;
 
     for (auto it = begin; it != end; ++it) {
         const auto event = *it;
@@ -1416,13 +1450,13 @@ JsonFileReader::ModelPointer JsonFileReader::read(const AutomationTypeModel *typ
     auto model = std::make_unique<AutomationModel>();
 
     for (const auto eventArray = root[s_events].toArray(); const auto &value: eventArray) {
-        if (const auto event = types->fromJsonObject<Event>(value.toObject(), model.get())) {
+        if (auto event = types->fromJsonObject<Event>(value.toObject(), model.get())) {
             for (const auto actionArray = value[s_actions].toArray(); const auto &value: actionArray) {
-                if (const auto action = types->fromJsonObject<Action>(value.toObject(), model.get()))
-                    event->appendAction(action);
+                if (auto action = types->fromJsonObject<Action>(value.toObject(), model.get()))
+                    event->appendAction(action.release());
             }
 
-            model->appendEvent(event);
+            model->appendEvent(event.release());
         }
     }
 

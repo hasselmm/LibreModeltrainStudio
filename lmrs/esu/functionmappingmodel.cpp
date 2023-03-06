@@ -316,6 +316,11 @@ QString description(ExtendedVariableIndex variable)
     return {};
 }
 
+auto createFieldSplitter(QChar delimiter)
+{
+    return QRegularExpression{"\\s*"_L1 + QRegularExpression::escape(delimiter) + "\\s*"_L1};
+}
+
 } // namespace
 
 class FunctionMappingModel::Private : public core::PrivateObject<FunctionMappingModel>
@@ -420,18 +425,18 @@ class DelimiterSeparatedFileReader : public TextFileReaderBase
 public:
     explicit DelimiterSeparatedFileReader(QIODevice *device, QChar delimiter = ';'_L1)
         : TextFileReaderBase{device}
-        , m_delimiter{delimiter}
+        , m_fieldSplitter{createFieldSplitter(delimiter)}
     {}
 
     explicit DelimiterSeparatedFileReader(QString fileName, QChar delimiter = ';'_L1)
         : TextFileReaderBase{std::move(fileName)}
-        , m_delimiter{delimiter}
+        , m_fieldSplitter{createFieldSplitter(delimiter)}
     {}
 
     ModelPointer read() override;
 
 private:
-    QChar m_delimiter;
+    QRegularExpression m_fieldSplitter;
 };
 
 class PlainTextFileReader : public TextFileReaderBase
@@ -529,8 +534,7 @@ DelimiterSeparatedFileReader::ModelPointer DelimiterSeparatedFileReader::read()
 
     auto stream = QTextStream{&file};
 
-    const auto splitter = QRegularExpression{"\\s*"_L1 + QRegularExpression::escape(m_delimiter) + "\\s*"_L1};
-    const auto header = stream.readLine().trimmed().toLower().split(splitter);
+    const auto header = stream.readLine().trimmed().toLower().split(m_fieldSplitter);
     const auto variableColumn = header.indexOf("cv"_L1);
     const auto valueColumn = header.indexOf("value"_L1);
 
@@ -545,7 +549,7 @@ DelimiterSeparatedFileReader::ModelPointer DelimiterSeparatedFileReader::read()
         if (line.isEmpty())
             continue;
 
-        const auto columns = line.split(splitter);
+        const auto columns = line.split(m_fieldSplitter);
 
         if (variableColumn >= columns.count() || valueColumn >= columns.count()) {
             reportError(tr("Unexpected number of columns in line %1.").arg(lineNumber));

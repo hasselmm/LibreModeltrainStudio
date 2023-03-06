@@ -242,17 +242,21 @@ class TurnoutEvent : public Event
 {
     Q_OBJECT
 
-    Q_PROPERTY(quint16 primaryAddress READ primaryAddress WRITE setPrimaryAddress RESET resetPrimaryAddress NOTIFY primaryAddressChanged FINAL)
     Q_PROPERTY(bool hasPrimaryAddress READ hasPrimaryAddress NOTIFY primaryAddressChanged FINAL)
+    Q_PROPERTY(quint16 primaryAddress READ primaryAddress WRITE setPrimaryAddress
+               RESET resetPrimaryAddress NOTIFY primaryAddressChanged FINAL)
 
-    Q_PROPERTY(core::dcc::TurnoutState primaryState READ primaryState WRITE setPrimaryState RESET resetPrimaryState NOTIFY primaryStateChanged FINAL)
     Q_PROPERTY(bool hasPrimaryState READ hasPrimaryState NOTIFY primaryStateChanged FINAL)
+    Q_PROPERTY(core::dcc::TurnoutState primaryState READ primaryState WRITE setPrimaryState
+               RESET resetPrimaryState NOTIFY primaryStateChanged FINAL)
 
-    Q_PROPERTY(quint16 secondaryAddress READ secondaryAddress WRITE setSecondaryAddress NOTIFY secondaryAddressChanged FINAL)
     Q_PROPERTY(bool hasSecondaryAddress READ hasSecondaryAddress NOTIFY secondaryAddressChanged FINAL)
+    Q_PROPERTY(quint16 secondaryAddress READ secondaryAddress WRITE setSecondaryAddress
+               RESET resetSecondaryAddress NOTIFY secondaryAddressChanged FINAL)
 
-    Q_PROPERTY(core::dcc::TurnoutState secondaryState READ secondaryState WRITE setSecondaryState NOTIFY secondaryStateChanged FINAL)
     Q_PROPERTY(bool hasSecondaryState READ hasSecondaryState NOTIFY secondaryStateChanged FINAL)
+    Q_PROPERTY(core::dcc::TurnoutState secondaryState READ secondaryState WRITE setSecondaryState
+               RESET resetSecondaryState NOTIFY secondaryStateChanged FINAL)
 
 public:
     using Event::Event;
@@ -347,7 +351,7 @@ private:
     void onDetectorInfoChanged(accessory::DetectorInfo);
 
     QList<dcc::VehicleAddress> m_vehicles;
-    Type m_type;
+    Type m_type = Type::Any;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -500,7 +504,8 @@ class AutomationTypeModel : public QAbstractListModel
 public:
     enum DataRole {
         NameRole = Qt::DisplayRole,
-        ItemRole = Qt::UserRole,
+        TypeRole = Qt::UserRole,
+        ItemRole,
         EventRole,
         ActionRole,
     };
@@ -512,31 +517,35 @@ public:
     template<ItemType T>
     void registerType()
     {
-        registerType(qRegisterMetaType<T *>(), [](QObject *parent) { return new T{parent}; });
+        registerType(qRegisterMetaType<T *>(), [](QObject *parent) { return std::make_unique<T>(parent); });
     }
 
     template<ItemType T = Item>
-    T *fromType(QMetaType type, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromType(QMetaType type, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromMetaType(type, parent));
+        auto item = fromMetaType(type, parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     template<ItemType T = Item, ForwardDeclared<QJsonObject> JsonObject>
-    T *fromJsonObject(JsonObject object, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromJsonObject(JsonObject object, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent));
+        auto item = fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     template<ItemType T = Item>
-    T *fromJson(QByteArray json, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromJson(QByteArray json, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromJson(QMetaType::fromType<T *>(), std::move(json), parent));
+        auto item = fromJson(QMetaType::fromType<T *>(), std::move(json), parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     template<ItemType T = Item>
-    T *fromPrototype(const T *prototype, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromPrototype(const T *prototype, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromMetaObject(prototype->metaObject(), parent));
+        auto item = fromMetaObject(prototype->metaObject(), parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     int rowCount(const QModelIndex &parent = {}) const override;
@@ -547,17 +556,18 @@ public:
     const Action *actionItem(const QModelIndex &index) const;
     const Event *eventItem(const QModelIndex &index) const;
     const Item *item(const QModelIndex &index) const;
+    QMetaType itemType(const QModelIndex &index) const;
 
 private:
-    using Factory = std::function<Item *(QObject *)>;
+    using Factory = std::function<std::unique_ptr<Item>(QObject *)>;
     void registerType(int typeId, Factory createEvent);
 
     static bool verifyProperty(const Item *target, const Parameter &parameter, QByteArrayView propertyName);
 
-    Item *fromMetaType(QMetaType type, QObject *parent) const;
-    Item *fromMetaObject(const QMetaObject *metaObject, QObject *parent) const;
-    Item *fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const;
-    Item *fromJson(QMetaType baseType, QByteArray json, QObject *parent) const;
+    std::unique_ptr<Item> fromMetaType(QMetaType type, QObject *parent) const;
+    std::unique_ptr<Item> fromMetaObject(const QMetaObject *metaObject, QObject *parent) const;
+    std::unique_ptr<Item> fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const;
+    std::unique_ptr<Item> fromJson(QMetaType baseType, QByteArray json, QObject *parent) const;
 
     QHash<int, Factory> m_factories;
 

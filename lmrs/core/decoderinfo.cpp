@@ -80,7 +80,7 @@ ManufacturerTable readManufacturerNames()
     constexpr auto s_manufacturers = "manufacturers"_L1;
     constexpr auto s_identifier = "id"_L1;
 
-    for (const auto &entry: document[s_manufacturers].toArray()) {
+    for (const auto array = document[s_manufacturers].toArray(); const auto &entry: array) {
         const auto identifier = entry[s_identifier].toInt();
         auto name = entry[s_name].toString();
 
@@ -336,7 +336,7 @@ QSet<ExtendedVariableIndex> DecoderInfo::unsupportedVariableIds() const
 {
     QSet<ExtendedVariableIndex> unsupportedIds;
 
-    for (const auto value: d[s_unsupported].toArray())
+    for (const auto array = d[s_unsupported].toArray(); const auto value: array)
         unsupportedIds.insert(static_cast<ExtendedVariableIndex::value_type>(value.toInt()));
 
     return unsupportedIds;

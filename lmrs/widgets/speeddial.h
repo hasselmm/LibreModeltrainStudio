@@ -35,7 +35,7 @@ public:
 
 signals:
     void valueChanged(int value);
-    void biasChanged(Bias bias);
+    void biasChanged(lmrs::widgets::SpeedDial::Bias bias);
 
 private:
     class Private;

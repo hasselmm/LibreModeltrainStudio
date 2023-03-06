@@ -44,7 +44,9 @@ public:
     [[nodiscard]] auto operator!=(const FileFormat &rhs) const noexcept { return fields() != rhs.fields(); }
 
     [[nodiscard]] bool accepts(QString fileName) const;
+    [[nodiscard]] bool isValid() const noexcept;
 
+    explicit operator bool() const noexcept { return isValid(); }
 };
 
 // =====================================================================================================================

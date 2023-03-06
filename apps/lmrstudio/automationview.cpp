@@ -351,8 +351,10 @@ void AutomationView::updateControls(core::Device *device)
 void AutomationView::Private::createEventItem(const automation::Event *prototype)
 {
     if (const auto model = canvas->model()) {
-        const auto index = model->appendEvent(types->fromPrototype(prototype, model));
-        canvas->setCurrentIndex(index);
+        if (auto event = types->fromPrototype(prototype, model)) {
+            const auto index = model->appendEvent(event.release());
+            canvas->setCurrentIndex(index);
+        }
     }
 }
 
@@ -360,9 +362,11 @@ void AutomationView::Private::createActionItem(const automation::Action *prototy
 {
     if (const auto model = canvas->model()) {
         if (const auto eventIndex = model->index(canvas->currentIndex(), 0); eventIndex.isValid()) {
-            const auto actionIndex = model->appendAction(eventIndex, types->fromPrototype(prototype, model));
-            //canvas->setCurrentIndex(index);
-            qInfo() << Q_FUNC_INFO << actionIndex;
+            if (auto action = types->fromPrototype(prototype, model)) {
+                const auto actionIndex = model->appendAction(eventIndex, action.release());
+                //canvas->setCurrentIndex(index);
+                qInfo() << Q_FUNC_INFO << actionIndex;
+            }
         }
     }
 }
@@ -413,8 +417,8 @@ void AutomationView::Private::onEditPaste()
 {
     if (const auto mimeData = QApplication::clipboard()->mimeData()) {
         if (const auto json = mimeData->data(core::FileFormat::lmrsAutomationEvent().mimeType); !json.isEmpty()) {
-            if (const auto event = types->fromJson<automation::Event>(std::move(json), canvas->model())) {
-                const auto index = canvas->model()->insertEvent(event, canvas->currentIndex() + 1);
+            if (auto event = types->fromJson<automation::Event>(std::move(json), canvas->model())) {
+                const auto index = canvas->model()->insertEvent(event.release(), canvas->currentIndex() + 1);
                 canvas->setCurrentIndex(index);
             }
         }
