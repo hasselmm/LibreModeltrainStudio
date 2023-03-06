@@ -905,7 +905,7 @@ AutomationTypeModel::AutomationTypeModel(QObject *parent)
     registerType<VehicleAction>();
 }
 
-Item *AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
 {
     if (const auto factory = m_factories.value(type.id()))
         return factory(parent);
@@ -914,12 +914,12 @@ Item *AutomationTypeModel::fromMetaType(QMetaType type, QObject *parent) const
     return nullptr;
 }
 
-Item *AutomationTypeModel::fromMetaObject(const QMetaObject *metaObject, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromMetaObject(const QMetaObject *metaObject, QObject *parent) const
 {
     return fromMetaType(metaTypeFromMetaObject(metaObject), parent);
 }
 
-Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const
 {
     const auto typeUri = object[s_schema].toString();
     const auto type = metaTypeFromUri(QUrl{typeUri});
@@ -928,7 +928,7 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
         qCWarning(logger(this), "Could not find type information for %ls", qUtf16Printable(typeUri));
     } else if (!type.metaObject()->inherits(baseType.metaObject())) {
         qCWarning(logger(this), "Could type %ls doesn't extend %s", qUtf16Printable(typeUri), baseType.name());
-    } else if (const auto item = fromMetaType(type, parent)) {
+    } else if (auto item = fromMetaType(type, parent)) {
         for (auto it = object.begin(); it != object.end(); ++it) {
             const auto key = it.key().toLatin1();
             auto value = it.value();
@@ -937,10 +937,10 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
                 continue;
 
             if (value.isNull()) {
-                const auto property = findProperty(item, key);
+                const auto property = findProperty(item.get(), key);
 
                 if (property.isResettable()) {
-                    property.reset(item);
+                    property.reset(item.get());
                 } else {
                     qCWarning(logger(this), "Cannot reset property \"%s\" of %s",
                               key.constData(), item->metaObject()->className());
@@ -960,7 +960,7 @@ Item *AutomationTypeModel::fromJsonObject(QMetaType baseType, QJsonObject object
     return nullptr;
 }
 
-Item *AutomationTypeModel::fromJson(QMetaType baseType, QByteArray json, QObject *parent) const
+std::unique_ptr<Item> AutomationTypeModel::fromJson(QMetaType baseType, QByteArray json, QObject *parent) const
 {
     auto parseStatus = QJsonParseError{};
     const auto document = QJsonDocument::fromJson(std::move(json), &parseStatus);
@@ -1450,13 +1450,13 @@ JsonFileReader::ModelPointer JsonFileReader::read(const AutomationTypeModel *typ
     auto model = std::make_unique<AutomationModel>();
 
     for (const auto eventArray = root[s_events].toArray(); const auto &value: eventArray) {
-        if (const auto event = types->fromJsonObject<Event>(value.toObject(), model.get())) {
+        if (auto event = types->fromJsonObject<Event>(value.toObject(), model.get())) {
             for (const auto actionArray = value[s_actions].toArray(); const auto &value: actionArray) {
-                if (const auto action = types->fromJsonObject<Action>(value.toObject(), model.get()))
-                    event->appendAction(action);
+                if (auto action = types->fromJsonObject<Action>(value.toObject(), model.get()))
+                    event->appendAction(action.release());
             }
 
-            model->appendEvent(event);
+            model->appendEvent(event.release());
         }
     }
 

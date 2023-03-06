@@ -517,31 +517,35 @@ public:
     template<ItemType T>
     void registerType()
     {
-        registerType(qRegisterMetaType<T *>(), [](QObject *parent) { return new T{parent}; });
+        registerType(qRegisterMetaType<T *>(), [](QObject *parent) { return std::make_unique<T>(parent); });
     }
 
     template<ItemType T = Item>
-    T *fromType(QMetaType type, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromType(QMetaType type, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromMetaType(type, parent));
+        auto item = fromMetaType(type, parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     template<ItemType T = Item, ForwardDeclared<QJsonObject> JsonObject>
-    T *fromJsonObject(JsonObject object, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromJsonObject(JsonObject object, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent));
+        auto item = fromJsonObject(QMetaType::fromType<T *>(), std::move(object), parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     template<ItemType T = Item>
-    T *fromJson(QByteArray json, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromJson(QByteArray json, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromJson(QMetaType::fromType<T *>(), std::move(json), parent));
+        auto item = fromJson(QMetaType::fromType<T *>(), std::move(json), parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     template<ItemType T = Item>
-    T *fromPrototype(const T *prototype, QObject *parent = nullptr) const
+    std::unique_ptr<T> fromPrototype(const T *prototype, QObject *parent = nullptr) const
     {
-        return dynamic_cast<T *>(fromMetaObject(prototype->metaObject(), parent));
+        auto item = fromMetaObject(prototype->metaObject(), parent);
+        return std::unique_ptr<T>{dynamic_cast<T *>(item.release())};
     }
 
     int rowCount(const QModelIndex &parent = {}) const override;
@@ -555,15 +559,15 @@ public:
     QMetaType itemType(const QModelIndex &index) const;
 
 private:
-    using Factory = std::function<Item *(QObject *)>;
+    using Factory = std::function<std::unique_ptr<Item>(QObject *)>;
     void registerType(int typeId, Factory createEvent);
 
     static bool verifyProperty(const Item *target, const Parameter &parameter, QByteArrayView propertyName);
 
-    Item *fromMetaType(QMetaType type, QObject *parent) const;
-    Item *fromMetaObject(const QMetaObject *metaObject, QObject *parent) const;
-    Item *fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const;
-    Item *fromJson(QMetaType baseType, QByteArray json, QObject *parent) const;
+    std::unique_ptr<Item> fromMetaType(QMetaType type, QObject *parent) const;
+    std::unique_ptr<Item> fromMetaObject(const QMetaObject *metaObject, QObject *parent) const;
+    std::unique_ptr<Item> fromJsonObject(QMetaType baseType, QJsonObject object, QObject *parent) const;
+    std::unique_ptr<Item> fromJson(QMetaType baseType, QByteArray json, QObject *parent) const;
 
     QHash<int, Factory> m_factories;
 
