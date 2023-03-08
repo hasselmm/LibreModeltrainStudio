@@ -588,41 +588,41 @@ public slots:
     void disconnectFromHost();
 
 signals:
-    void errorOccured(lmrs::roco::z21::Client::Error error);
+    void errorOccured(lmrs::roco::z21::Client::Error error, QPrivateSignal);
 
-    void connected();
-    void disconnected();
+    void connected(QPrivateSignal);
+    void disconnected(QPrivateSignal);
 
-    void accessoryInfoReceived(lmrs::roco::z21::AccessoryInfo info);
-    void railcomInfoReceived(lmrs::roco::z21::RailcomInfo info);
-    void detectorInfoReceived(QList<lmrs::core::accessory::DetectorInfo> info);
-    void rbusDetectorInfoReceived(lmrs::roco::z21::RBusDetectorInfo info);
-    void loconetDetectorInfoReceived(lmrs::roco::z21::LoconetDetectorInfo info);
-    void canDetectorInfoReceived(QList<lmrs::roco::z21::CanDetectorInfo> info);
-    void turnoutInfoReceived(lmrs::roco::z21::TurnoutInfo info);
-    void vehicleInfoReceived(lmrs::roco::z21::VehicleInfo info);
-    void libraryInfoReceived(lmrs::roco::z21::LibraryInfo info);
+    void accessoryInfoReceived(lmrs::roco::z21::AccessoryInfo info, QPrivateSignal);
+    void railcomInfoReceived(lmrs::roco::z21::RailcomInfo info, QPrivateSignal);
+    void detectorInfoReceived(QList<lmrs::core::accessory::DetectorInfo> info, QPrivateSignal);
+    void rbusDetectorInfoReceived(lmrs::roco::z21::RBusDetectorInfo info, QPrivateSignal);
+    void loconetDetectorInfoReceived(lmrs::roco::z21::LoconetDetectorInfo info, QPrivateSignal);
+    void canDetectorInfoReceived(QList<lmrs::roco::z21::CanDetectorInfo> info, QPrivateSignal);
+    void turnoutInfoReceived(lmrs::roco::z21::TurnoutInfo info, QPrivateSignal);
+    void vehicleInfoReceived(lmrs::roco::z21::VehicleInfo info, QPrivateSignal);
+    void libraryInfoReceived(lmrs::roco::z21::LibraryInfo info, QPrivateSignal);
 
-    void isConnectedChanged(bool isConnected);
-    void hostAddressChanged(QHostAddress hostAddress);
-    void hostPortChanged(quint16 hostPort);
+    void isConnectedChanged(bool isConnected, QPrivateSignal);
+    void hostAddressChanged(QHostAddress hostAddress, QPrivateSignal);
+    void hostPortChanged(quint16 hostPort, QPrivateSignal);
 
-    void trackStatusChanged(lmrs::roco::z21::Client::TrackStatus trackStatus);
-    void centralStatusChanged(lmrs::roco::z21::Client::CentralStatus centralStatus);
-    void capabilitiesChanged(lmrs::roco::z21::Client::Capabilities capabilities);
-    void subscriptionsChanged(lmrs::roco::z21::Client::Subscriptions subscriptions);
-    void serialNumberChanged(quint32 serialNumber);
-    void firmwareVersionChanged(QVersionNumber firmwareVersion);
-    void protocolVersionChanged(QVersionNumber protocolVersion);
-    void centralIdChanged(int centralId);
-    void mainTrackCurrentChanged(lmrs::core::milliamperes mainTrackCurrent);
-    void programmingTrackCurrentChanged(lmrs::core::milliamperes programmingTrackCurrent);
-    void filteredMainTrackCurrentChanged(lmrs::core::milliamperes filteredMainTrackCurrent);
-    void temperatureChanged(lmrs::core::celsius temperature);
-    void supplyVoltageChanged(lmrs::core::millivolts supplyVoltage);
-    void trackVoltageChanged(lmrs::core::millivolts trackVoltage);
-    void hardwareTypeChanged(lmrs::roco::z21::Client::HardwareType hardwareType);
-    void lockStateChanged(lmrs::roco::z21::Client::LockState lockState);
+    void trackStatusChanged(lmrs::roco::z21::Client::TrackStatus trackStatus, QPrivateSignal);
+    void centralStatusChanged(lmrs::roco::z21::Client::CentralStatus centralStatus, QPrivateSignal);
+    void capabilitiesChanged(lmrs::roco::z21::Client::Capabilities capabilities, QPrivateSignal);
+    void subscriptionsChanged(lmrs::roco::z21::Client::Subscriptions subscriptions, QPrivateSignal);
+    void serialNumberChanged(quint32 serialNumber, QPrivateSignal);
+    void firmwareVersionChanged(QVersionNumber firmwareVersion, QPrivateSignal);
+    void protocolVersionChanged(QVersionNumber protocolVersion, QPrivateSignal);
+    void centralIdChanged(int centralId, QPrivateSignal);
+    void mainTrackCurrentChanged(lmrs::core::milliamperes mainTrackCurrent, QPrivateSignal);
+    void programmingTrackCurrentChanged(lmrs::core::milliamperes programmingTrackCurrent, QPrivateSignal);
+    void filteredMainTrackCurrentChanged(lmrs::core::milliamperes filteredMainTrackCurrent, QPrivateSignal);
+    void temperatureChanged(lmrs::core::celsius temperature, QPrivateSignal);
+    void supplyVoltageChanged(lmrs::core::millivolts supplyVoltage, QPrivateSignal);
+    void trackVoltageChanged(lmrs::core::millivolts trackVoltage, QPrivateSignal);
+    void hardwareTypeChanged(lmrs::roco::z21::Client::HardwareType hardwareType, QPrivateSignal);
+    void lockStateChanged(lmrs::roco::z21::Client::LockState lockState, QPrivateSignal);
 
 private:
     class Private;

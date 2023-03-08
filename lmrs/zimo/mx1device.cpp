@@ -658,7 +658,7 @@ void Device::VehicleControl::updateVehicleState(dcc::VehicleAddress address, con
     switch (vehicle.subscription) {
     case core::VehicleControl::NormalSubscription:
     case core::VehicleControl::PrimarySubscription:
-        emit vehicleInfoChanged(core::VehicleInfo{address, vehicle.direction, vehicle.speed, vehicle.functions});
+        emit vehicleInfoChanged(core::VehicleInfo{address, vehicle.direction, vehicle.speed, vehicle.functions}, {});
         break;
 
     case core::VehicleControl::CancelSubscription:
@@ -781,10 +781,10 @@ void Device::Private::setDeviceInfo(core::DeviceInfo id, QVariant value)
     // FIXME: share setDeviceInfo()
     if (auto it = deviceInfo.find(id); it == deviceInfo.end()) {
         deviceInfo.insert(id, std::move(value));
-        emit q()->deviceInfoChanged({id});
+        emit q()->deviceInfoChanged({id}, {});
     } else if (*it != value) {
         *it = std::move(value);
-        emit q()->deviceInfoChanged({id});
+        emit q()->deviceInfoChanged({id}, {});
     }
 }
 

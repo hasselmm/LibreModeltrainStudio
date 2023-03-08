@@ -830,7 +830,7 @@ void Device::updateDeviceInfo()
                 qCWarning(logger(this)) << "Unsupported interface info:" << it.key();
         }
 
-        emit deviceInfoChanged(d->deviceInfo.keys());
+        emit deviceInfoChanged(d->deviceInfo.keys(), {});
     });
 }
 
@@ -838,10 +838,10 @@ void Device::setDeviceInfo(core::DeviceInfo id, QVariant value)
 {
     if (auto it = d->deviceInfo.find(id); it == d->deviceInfo.end()) {
         d->deviceInfo.insert(id, std::move(value));
-        emit deviceInfoChanged({id});
+        emit deviceInfoChanged({id}, {});
     } else if (*it != value) {
         *it = std::move(value);
-        emit deviceInfoChanged({id});
+        emit deviceInfoChanged({id}, {});
     }
 }
 
