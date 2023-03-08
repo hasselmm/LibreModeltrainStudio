@@ -39,15 +39,8 @@ public:
     constexpr auto metaObject() const noexcept { return m_metaObject; }
     constexpr auto sourceText() const noexcept { return m_sourceText; }
 
-private:
-    auto fields() const
-    {
-        return std::tie(m_metaObject, m_sourceText, m_disambiguation, m_number, m_filter);
-    }
-
 public:
-    bool operator==(const String &rhs) const { return fields() == rhs.fields(); }
-    bool operator!=(const String &rhs) const { return !operator==(rhs); }
+    [[nodiscard]] constexpr bool operator==(const String &rhs) const noexcept = default;
 
     explicit operator bool() const;
     QString toString() const;

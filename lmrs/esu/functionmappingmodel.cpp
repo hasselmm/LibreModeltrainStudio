@@ -164,9 +164,6 @@ public:
 
     class const_iterator
     {
-    private:
-        constexpr auto fields() const { return std::tie(m_range, m_index); }
-
     public:
         constexpr const_iterator(const Columns *range, int index)
             : m_range{range}
@@ -182,8 +179,7 @@ public:
         auto &operator++() { ++m_index; return *this; }
         auto operator*() const { return *this; }
 
-        constexpr auto operator==(const const_iterator &rhs) const { return fields() == rhs.fields(); }
-        constexpr auto operator!=(const const_iterator &rhs) const { return fields() != rhs.fields(); }
+        [[nodiscard]] constexpr auto operator<=>(const const_iterator &rhs) const = default;
 
     private:
         const Columns *m_range;

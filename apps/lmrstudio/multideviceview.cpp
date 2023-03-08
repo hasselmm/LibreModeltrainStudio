@@ -29,8 +29,7 @@ public:
     const QModelIndex *operator->() const { return &m_index; }
     const QModelIndex &operator*() const { return m_index; }
 
-    bool operator==(const ModelIndexIterator &rhs) const { return m_index == rhs.m_index; }
-    bool operator!=(const ModelIndexIterator &rhs) const { return m_index != rhs.m_index; }
+    [[nodiscard]] bool operator==(const ModelIndexIterator &rhs) const noexcept = default;
 
 private:
     QModelIndex m_index;

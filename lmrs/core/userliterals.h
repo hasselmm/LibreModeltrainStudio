@@ -61,8 +61,7 @@ namespace internal {
 template<class Tag>
 struct RegularExpressionLiteralBase
 {
-    constexpr bool operator==(const RegularExpressionLiteralBase &rhs) const noexcept { return pattern == rhs.pattern; }
-    constexpr bool operator!=(const RegularExpressionLiteralBase &rhs) const noexcept { return pattern != rhs.pattern; }
+    [[nodiscard]] bool operator==(const RegularExpressionLiteralBase &rhs) const noexcept = default;
 
     QRegularExpressionMatch match(QString subject) const noexcept;
     QRegularExpression compile(Qt::CaseSensitivity cs = Qt::CaseInsensitive) const noexcept;

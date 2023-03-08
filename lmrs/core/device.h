@@ -47,10 +47,10 @@ Continuation retryOnError(Error error);
 template<typename T> // FIXME: move to more generic place, maybe algorithms.h?
 struct Result
 {
-    constexpr bool operator==(const Result &rhs) const { return std::tie(error, value) == std::tie(rhs.error, rhs.value); }
-    bool succeeded() const{ return error == Error::NoError; }
-    bool failed() const{ return error != Error::NoError; }
-    constexpr operator bool() const { return succeeded(); }
+    [[nodiscard]] constexpr bool operator==(const Result &rhs) const noexcept = default;
+    [[nodiscard]] constexpr bool succeeded() const noexcept { return error == Error::NoError; }
+    [[nodiscard]] constexpr bool failed() const noexcept { return error != Error::NoError; }
+    [[nodiscard]] constexpr operator bool() const noexcept { return succeeded(); }
 
     Error error;
     T value;

@@ -20,9 +20,7 @@ struct ModuleAddress
     NetworkId network;
     ModuleId module;
 
-    constexpr auto fields() const noexcept { return std::tie(network, module); }
-    constexpr auto operator==(const ModuleAddress &rhs) const noexcept { return fields() == rhs.fields(); }
-    constexpr auto operator!=(const ModuleAddress &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr auto operator<=>(const ModuleAddress &rhs) const noexcept = default;
 };
 
 struct PortAddress
@@ -31,9 +29,7 @@ struct PortAddress
     ModuleId module;
     PortIndex port;
 
-    constexpr auto fields() const noexcept { return std::tie(network, module, port); }
-    constexpr auto operator==(const PortAddress &rhs) const noexcept { return fields() == rhs.fields(); }
-    constexpr auto operator!=(const PortAddress &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr auto operator<=>(const PortAddress &rhs) const noexcept = default;
 
     constexpr auto moduleAddress() const { return ModuleAddress{network, module}; }
 };
@@ -87,9 +83,7 @@ struct PortAddress
     ModuleId module;
     PortIndex port;
 
-    constexpr auto fields() const noexcept { return std::tie(module, port); }
-    constexpr auto operator==(const PortAddress &rhs) const noexcept { return fields() == rhs.fields(); }
-    constexpr auto operator!=(const PortAddress &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr auto operator<=>(const PortAddress &rhs) const noexcept = default;
 };
 
 constexpr auto group(ModuleId module) noexcept
@@ -167,8 +161,8 @@ public slots:
     [[nodiscard]] static DetectorAddress forRBusPort(rbus::ModuleId module, rbus::PortIndex port);
 
 public:
-    bool operator==(const DetectorAddress &rhs) const;
-    bool operator!=(const DetectorAddress &rhs) const { return !(*this == rhs); }
+    bool operator==(const DetectorAddress &rhs) const noexcept;
+    bool operator!=(const DetectorAddress &rhs) const noexcept = default;
     operator QVariant() const { return QVariant::fromValue(*this); }
 
 private:
@@ -275,9 +269,7 @@ public:
     void addVehicles(QList<dcc::VehicleAddress> vehicles) { m_vehicles += std::move(vehicles); }
     void addDirections(QList<dcc::Direction> directions) { m_directions += std::move(directions); }
 
-    auto fields() const { return std::tie(m_address, m_occupancy, m_powerState, m_vehicles, m_directions); }
-    auto operator==(const DetectorInfo &rhs) const { return fields() == rhs.fields(); }
-    auto operator!=(const DetectorInfo &rhs) const { return fields() != rhs.fields(); }
+    [[nodiscard]] bool operator==(const DetectorInfo &rhs) const noexcept = default;
 
 private:
     DetectorAddress m_address = {};

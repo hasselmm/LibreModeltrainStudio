@@ -81,8 +81,7 @@ struct Condition
         , state{state}
     {}
 
-    [[nodiscard]] auto fields() const { return std::tie(variable, state); }
-    [[nodiscard]] auto operator==(const Condition &rhs) const { return fields() == rhs.fields(); }
+    [[nodiscard]] constexpr auto operator<=>(const Condition &rhs) const = default;
 
     Q_GADGET
 };
@@ -210,8 +209,7 @@ struct Mapping
         , sounds{std::move(sounds)}
     {}
 
-    [[nodiscard]] auto fields() const { return std::tie(conditions, outputs, effects, sounds); }
-    [[nodiscard]] auto operator==(const Mapping &rhs) const { return fields() == rhs.fields(); }
+    [[nodiscard]] bool operator==(const Mapping &rhs) const noexcept = default;
     [[nodiscard]] auto isEmpty() const { return conditions.empty() && !outputs && !effects && !sounds; }
 
     Condition::State state(Condition::Variable variable) const;

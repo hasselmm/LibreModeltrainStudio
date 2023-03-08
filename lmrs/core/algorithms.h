@@ -193,8 +193,9 @@ public:
     auto key() const noexcept { return m_meta.key(m_index); }
     auto value() const noexcept { return static_cast<T>(m_meta.value(m_index)); }
 
-    constexpr auto operator==(const MetaEnumEntry &rhs) const noexcept { return fields() == rhs.fields(); }
-    constexpr auto operator!=(const MetaEnumEntry &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr bool operator==(const MetaEnumEntry &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr bool operator!=(const MetaEnumEntry &rhs) const noexcept = default;
+    [[nodiscard]] inline auto operator<=>(const MetaEnumEntry &rhs) const noexcept;
 
     auto &operator++() noexcept { ++m_index; return *this; }
 
@@ -202,11 +203,22 @@ public:
     operator QVariant() const noexcept { return QVariant::fromValue(value()); }
 
 private:
-        auto fields() const noexcept { return std::make_tuple(m_meta.name(), m_index); }
+    [[nodiscard]] constexpr auto fields() const noexcept { return std::make_tuple(m_meta.name(), m_index); }
 
     QMetaEnum m_meta;
     int m_index;
 };
+
+template<typename T>
+auto MetaEnumEntry<T>::operator<=>(const MetaEnumEntry &rhs) const noexcept
+{
+    if (const auto cmp = strcmp(m_meta.name(), rhs.m_meta.name()); cmp < 0)
+        return std::strong_ordering::less;
+    else if (cmp > 0)
+        return std::strong_ordering::greater;
+
+    return m_index <=> rhs.m_index;
+}
 
 template<typename T>
 class MetaEnumIterator
@@ -225,8 +237,8 @@ public:
     auto *operator ->() const { return &m_entry; }
     auto &operator  *() const { return m_entry; }
 
-    auto operator ==(const MetaEnumIterator &rhs) const { return m_entry == rhs.m_entry; }
-    auto operator !=(const MetaEnumIterator &rhs) const { return m_entry != rhs.m_entry; }
+    [[nodiscard]] constexpr bool operator==(const MetaEnumIterator &rhs) const noexcept = default;
+    [[nodiscard]] auto operator<=>(const MetaEnumIterator &rhs) const noexcept = default;
 
     static auto begin(QMetaEnum meta) { return MetaEnumIterator{std::move(meta), 0}; }
     static auto end(QMetaEnum meta) { const auto n = meta.keyCount(); return MetaEnumIterator{std::move(meta), n}; }
@@ -255,8 +267,7 @@ public:
             increment();
     }
 
-    [[nodiscard]] auto operator==(const FlagsIterator &rhs) const { return fields() == rhs.fields(); }
-    [[nodiscard]] auto operator!=(const FlagsIterator &rhs) const { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr auto operator<=>(const FlagsIterator &rhs) const noexcept = default;
 
     [[nodiscard]] auto value() const { return static_cast<value_type>(metaEnum().value(m_index)); }
     [[nodiscard]] auto operator*() const { return value(); }
@@ -268,7 +279,6 @@ private:
     static auto metaEnum() { static const auto s_metaEnum = QMetaEnum::fromType<value_type>(); return s_metaEnum; }
     static auto keyCount() { return metaEnum().keyCount(); }
 
-    auto fields() const { return std::make_tuple(m_index, m_mask); }
     void increment() { do { ++m_index; } while(!hasValue() && isInRange()); }
 
     auto isValue(auto value) const  {  return core::value(value) != 0 && m_mask.testFlag(value); }
@@ -300,9 +310,7 @@ public:
     auto &operator++() { ++m_row; return *this; }
     auto operator-(const ItemModelIterator &rhs) const noexcept { return m_row - rhs.m_row; }
 
-    auto fields() const noexcept { return std::tie(m_model, m_row); }
-    auto operator==(const ItemModelIterator &rhs) const noexcept { return fields() == rhs.fields(); }
-    auto operator!=(const ItemModelIterator &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] auto operator<=>(const ItemModelIterator &rhs) const noexcept = default;
 
 private:
     QPointer<const QAbstractItemModel> m_model;

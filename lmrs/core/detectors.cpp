@@ -288,7 +288,7 @@ bool DetectorAddress::equals(const DetectorAddress &rhs) const
     return std::get<T>(m_value) == std::get<T>(rhs.m_value);
 }
 
-bool DetectorAddress::operator==(const DetectorAddress &rhs) const
+bool DetectorAddress::operator==(const DetectorAddress &rhs) const noexcept
 {
     if (type() != rhs.type())
         return false;

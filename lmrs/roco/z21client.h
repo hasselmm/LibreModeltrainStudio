@@ -223,9 +223,9 @@ public:
     accessory::rbus::GroupId group() const;
     QBitArray occupancy() const;
 
-    operator QList<accessory::DetectorInfo>() const;
-    auto operator==(const RBusDetectorInfo &rhs) const { return m_data == rhs.m_data; }
-    auto data() const { return m_data; }
+    [[nodiscard]] operator QList<accessory::DetectorInfo>() const;
+    [[nodiscard]] bool operator==(const RBusDetectorInfo &rhs) const noexcept = default;
+    [[nodiscard]] auto data() const { return m_data; }
 
 private:
     QByteArray m_data;
@@ -272,9 +272,9 @@ public:
     quint8 lissyClass() const;
     quint16 lissySpeed() const;
 
-    static QList<accessory::DetectorInfo> merge(QList<LoconetDetectorInfo> infoList);
-    auto operator==(const LoconetDetectorInfo &rhs) const { return m_data == rhs.m_data; }
-    auto data() const { return m_data; }
+    [[nodiscard]] static QList<accessory::DetectorInfo> merge(QList<LoconetDetectorInfo> infoList);
+    [[nodiscard]] bool operator==(const LoconetDetectorInfo &rhs) const noexcept = default;
+    [[nodiscard]] auto data() const { return m_data; }
 
     static std::pair<Query, quint16> address(const accessory::DetectorAddress &address);
 
@@ -348,9 +348,9 @@ public:
     auto isVehicleSet() const noexcept { return VehicleSetRange.contains(type()); }
     auto isLastVehicleSet() const noexcept { return isVehicleSet() && vehicle2() == 0; }
 
-    static QList<accessory::DetectorInfo> merge(QList<CanDetectorInfo> infoList);
-    auto operator==(const CanDetectorInfo &rhs) const { return m_data == rhs.m_data; }
-    auto data() const { return m_data; }
+    [[nodiscard]] static QList<accessory::DetectorInfo> merge(QList<CanDetectorInfo> infoList);
+    [[nodiscard]] bool operator==(const CanDetectorInfo &rhs) const noexcept = default;
+    [[nodiscard]] auto data() const { return m_data; }
 
 private:
     dcc::VehicleAddress vehicle(quint16 value) const;
