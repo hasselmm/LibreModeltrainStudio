@@ -113,8 +113,8 @@ public:
     virtual void requestEmergencyStop() = 0;
 
 signals:
-    void accessoryInfoChanged(lmrs::core::accessory::AccessoryInfo accessoryInfo);
-    void turnoutInfoChanged(lmrs::core::accessory::TurnoutInfo turnoutInfo);
+    void accessoryInfoChanged(lmrs::core::accessory::AccessoryInfo accessoryInfo, QPrivateSignal);
+    void turnoutInfoChanged(lmrs::core::accessory::TurnoutInfo turnoutInfo, QPrivateSignal);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(AccessoryControl::Features)
@@ -162,8 +162,8 @@ public:
     [[nodiscard]] virtual QList<QPair<QString, QByteArray>> nativeExampleFrames() const noexcept;
 
 signals:
-    void dccFrameReceived(QByteArray frame);
-    void nativeFrameReceived(QByteArray frame);
+    void dccFrameReceived(QByteArray frame, QPrivateSignal);
+    void nativeFrameReceived(QByteArray frame, QPrivateSignal);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DebugControl::Features)
@@ -195,7 +195,7 @@ public:
     virtual void disableTrackPower(ContinuationCallback<Error> callback) = 0;
 
 signals:
-    void stateChanged(lmrs::core::PowerControl::State state);
+    void stateChanged(lmrs::core::PowerControl::State state, QPrivateSignal);
 };
 
 ///
@@ -209,7 +209,7 @@ public:
     using Control::Control;
 
 signals:
-    void detectorInfoChanged(lmrs::core::accessory::DetectorInfo detectorInfo);
+    void detectorInfoChanged(lmrs::core::accessory::DetectorInfo detectorInfo, QPrivateSignal);
 };
 
 ///
@@ -241,10 +241,10 @@ public:
     auto hasFeature(Feature feature) const { return features().testFlag(feature); }
 
 signals:
-    void dataReceived(std::chrono::steady_clock::time_point timestamp);
-    void filteredSpeedChanged(lmrs::core::millimeters_per_second filteredSpeed);
-    void rawSpeedChanged(lmrs::core::millimeters_per_second rawSpeed);
-    void pulsesChanged(lmrs::core::hertz_f pulses);
+    void dataReceived(std::chrono::steady_clock::time_point timestamp, QPrivateSignal);
+    void filteredSpeedChanged(lmrs::core::millimeters_per_second filteredSpeed, QPrivateSignal);
+    void rawSpeedChanged(lmrs::core::millimeters_per_second rawSpeed, QPrivateSignal);
+    void pulsesChanged(lmrs::core::hertz_f pulses, QPrivateSignal);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(SpeedMeterControl::Features)
@@ -320,8 +320,8 @@ public:
     virtual void setFunction(dcc::VehicleAddress address, dcc::Function function, bool enabled = true) = 0;
 
 signals:
-    void vehicleNameChanged(lmrs::core::dcc::VehicleAddress, QString name);
-    void vehicleInfoChanged(lmrs::core::VehicleInfo vehicleInfo);
+    void vehicleNameChanged(lmrs::core::dcc::VehicleAddress, QString name, QPrivateSignal);
+    void vehicleInfoChanged(lmrs::core::VehicleInfo vehicleInfo, QPrivateSignal);
 };
 
 namespace internal {
@@ -410,7 +410,7 @@ public: // QAbstractItemModel interface
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 signals:
-    void deviceChanged(lmrs::core::Device *device);
+    void deviceChanged(lmrs::core::Device *device, QPrivateSignal);
 
 private:
     void onDeviceInfoChanged(QList<DeviceInfo> changedIds);
@@ -481,15 +481,14 @@ public:
     virtual void updateDeviceInfo() = 0;
 
 signals:
-    void stateChanged(lmrs::core::Device::State state);
-    void deviceInfoChanged(QList<lmrs::core::DeviceInfo> changedIds);
-    void controlsChanged();
+    void stateChanged(lmrs::core::Device::State state, QPrivateSignal);
+    void deviceInfoChanged(QList<lmrs::core::DeviceInfo> changedIds, QPrivateSignal);
+    void controlsChanged(QPrivateSignal);
 
 protected:
-    template<class Observable, typename T, typename U = T>
-    void observe(core::DeviceInfo id, Observable *observable,
-                 T (Observable::*getter)() const, void (Observable::*notify)(T),
-                 U (*convert)(T) = [](T value) { return value; });
+    template<class Observable, class PrivateSignal, typename T, typename U = T>
+    void observe(core::DeviceInfo id, Observable *observable, T (Observable::*getter)() const,
+                 void (Observable::*notify)(T, PrivateSignal), U (*convert)(T) = [](T value) { return value; });
 
     virtual void setDeviceInfo(core::DeviceInfo id, QVariant value) = 0;
 };
@@ -509,10 +508,9 @@ template<> inline         VariableControl *Device::control()       { return vari
 template<> inline const    VehicleControl *Device::control() const { return vehicleControl(); }
 template<> inline          VehicleControl *Device::control()       { return vehicleControl(); }
 
-template<class Observable, typename T, typename U>
-inline void Device::observe(core::DeviceInfo id, Observable *observable,
-                            T (Observable::*getter)() const, void (Observable::*notify)(T),
-                            U (*convert)(T))
+template<class Observable, class PrivateSignal, typename T, typename U>
+inline void Device::observe(core::DeviceInfo id, Observable *observable, T (Observable::*getter)() const,
+                            void (Observable::*notify)(T, PrivateSignal), U (*convert)(T))
 {
     const auto updateDeviceInfo = [this, convert, id](auto value) {
         setDeviceInfo(id, QVariant::fromValue(convert(std::move(value))));

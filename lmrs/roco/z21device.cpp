@@ -271,13 +271,13 @@ void AccessoryControl::requestTurnoutInfo(dcc::AccessoryAddress address, Turnout
 void AccessoryControl::onAccessoryInfoReceived(AccessoryInfo info)
 {
     qCDebug(logger(this)) << info;
-    emit accessoryInfoChanged({info.address(), info.state()});
+    emit accessoryInfoChanged({info.address(), info.state()}, {});
 }
 
 void AccessoryControl::onTurnoutInfoReceived(TurnoutInfo info)
 {
     qCDebug(logger(this)) << info;
-    emit turnoutInfoChanged({info.address(), info.state()});
+    emit turnoutInfoChanged({info.address(), info.state()}, {});
 }
 
 // =====================================================================================================================
@@ -315,9 +315,9 @@ DetectorControl::DetectorControl(Client *parent)
 
 void DetectorControl::onDetectorInfoReceived(QList<DetectorInfo> infoList)
 {
-    for (const auto &info: infoList) {
+    for (auto &info: infoList) {
         if (const auto oldInfo = std::exchange(m_infoCache[info.address()], info); oldInfo != info)
-            emit detectorInfoChanged(info);
+            emit detectorInfoChanged(info, {});
     }
 }
 
@@ -327,7 +327,7 @@ PowerControl::PowerControl(Client *parent)
     : core::PowerControl{parent}
 {
     connect(client(), &Client::trackStatusChanged, this, [this](auto trackStatus) {
-        emit stateChanged(state(trackStatus));
+        emit stateChanged(state(trackStatus), {});
     });
 }
 
@@ -510,7 +510,7 @@ void VehicleControl::onLibraryInfoReceived(LibraryInfo info)
     qDebug(logger(this)) << info;
     m_knownVehicles.insert(info.address());
 
-    emit vehicleNameChanged(info.address(), info.name());
+    emit vehicleNameChanged(info.address(), info.name(), {});
 }
 
 void VehicleControl::onRailcomInfoReceived(RailcomInfo info)
@@ -519,7 +519,7 @@ void VehicleControl::onRailcomInfoReceived(RailcomInfo info)
 
     if (!m_knownVehicles.contains(info.address())) {
         m_knownVehicles.insert(info.address());
-        emit vehicleInfoChanged(core::VehicleInfo{info.address(), {}, {}});
+        emit vehicleInfoChanged(core::VehicleInfo{info.address(), {}, {}}, {});
     }
 }
 
@@ -534,7 +534,8 @@ void lmrs::roco::z21::VehicleControl::onVehicleInfoReceived(z21::VehicleInfo inf
     for (auto fn: QMetaTypeId<z21::VehicleInfo::Function>{})
         functionState[static_cast<size_t>(fn.index())] = info.functions() & fn.value();
 
-    emit vehicleInfoChanged(core::VehicleInfo{info.address(), info.direction(), info.speed(), std::move(functionState), flags});
+    auto vehicleInfo = core::VehicleInfo{info.address(), info.direction(), info.speed(), std::move(functionState), flags};
+    emit vehicleInfoChanged(std::move(vehicleInfo), {});
 }
 
 PowerControl::State PowerControl::state(Client::TrackStatus trackStatus)
@@ -623,7 +624,7 @@ void Device::Private::onConnected()
 
 void Device::Private::onDisconnected()
 {
-    emit q()->stateChanged(q()->state());
+    emit q()->stateChanged(q()->state(), {});
 }
 
 // =====================================================================================================================
@@ -634,9 +635,9 @@ Device::Device(QHostAddress address, DeviceFactory *factory, QObject *parent)
 {
     connect(d->client, &Client::connected, d, &Private::onConnected);
     connect(d->client, &Client::disconnected, d, &Private::onDisconnected);
-    connect(d->client, &Client::isConnectedChanged, this, [this] { emit stateChanged(state()); });
-    connect(d->client, &Client::subscriptionsChanged, this, [this] { emit stateChanged(state()); });
-    connect(d->client, &Client::lockStateChanged, this, &Device::controlsChanged);
+    connect(d->client, &Client::isConnectedChanged, this, [this] { emit stateChanged(state(), {}); });
+    connect(d->client, &Client::subscriptionsChanged, this, [this] { emit stateChanged(state(), {}); });
+    connect(d->client, &Client::lockStateChanged, this, [this] { emit controlsChanged({}); });
 
     // FIXME: why are these two responses missing sometimes?
     // z21.stream: received 14 00 84 00 05 00 03 00 13 00 1b 00 83 45 83 45 02 00 03 00
@@ -784,10 +785,10 @@ void Device::setDeviceInfo(core::DeviceInfo id, QVariant value)
 {
     if (auto it = d->deviceInfo.find(id); it == d->deviceInfo.end()) {
         d->deviceInfo.insert(id, std::move(value));
-        emit deviceInfoChanged({id});
+        emit deviceInfoChanged({id}, {});
     } else if (*it != value) {
         *it = std::move(value);
-        emit deviceInfoChanged({id});
+        emit deviceInfoChanged({id}, {});
     }
 }
 

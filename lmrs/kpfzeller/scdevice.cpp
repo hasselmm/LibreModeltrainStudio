@@ -215,9 +215,9 @@ void SpeedCatDevice::SpeedMeter::addMeasurement(unsigned pulseCount)
     if (sampleCount < samples.size())
         ++sampleCount;
 
-    const auto now = Sample::Timestamp::clock::now();
+    auto now = Sample::Timestamp::clock::now();
     samples[currentSample] = {now, pulseCount};
-    emit dataReceived(now);
+    emit dataReceived(std::move(now), {});
 }
 
 core::SpeedMeterControl::Features SpeedCatDevice::SpeedMeter::features() const

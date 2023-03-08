@@ -865,97 +865,97 @@ Client::Private::Private(Client *parent)
 void Client::Private::setTrackStatus(TrackStatus trackStatus)
 {
     if (std::exchange(m_deviceInfo.trackStatus, trackStatus) != trackStatus)
-        emit q()->trackStatusChanged(m_deviceInfo.trackStatus);
+        emit q()->trackStatusChanged(m_deviceInfo.trackStatus, {});
 }
 
 void Client::Private::setCentralStatus(CentralStatus centralStatus)
 {
     if (std::exchange(m_deviceInfo.centralStatus, centralStatus) != centralStatus)
-        emit q()->centralStatusChanged(m_deviceInfo.centralStatus);
+        emit q()->centralStatusChanged(m_deviceInfo.centralStatus, {});
 }
 
 void Client::Private::setCapabilities(Capabilities capabilities)
 {
     if (std::exchange(m_deviceInfo.capabilities, capabilities) != capabilities)
-        emit q()->capabilitiesChanged(m_deviceInfo.capabilities);
+        emit q()->capabilitiesChanged(m_deviceInfo.capabilities, {});
 }
 
 void Client::Private::setSubscriptions(Subscriptions subscriptions)
 {
     if (std::exchange(m_deviceInfo.subscriptions, subscriptions) != subscriptions)
-        emit q()->subscriptionsChanged(m_deviceInfo.subscriptions);
+        emit q()->subscriptionsChanged(m_deviceInfo.subscriptions, {});
 }
 
 void Client::Private::setSerialNumber(quint32 serialNumber)
 {
     if (std::exchange(m_deviceInfo.serialNumber, serialNumber) != serialNumber)
-        emit q()->serialNumberChanged(m_deviceInfo.serialNumber);
+        emit q()->serialNumberChanged(m_deviceInfo.serialNumber, {});
 }
 
 void Client::Private::setFirmwareVersion(QVersionNumber firmwareVersion)
 {
     if (std::exchange(m_deviceInfo.firmwareVersion, firmwareVersion) != firmwareVersion)
-        emit q()->firmwareVersionChanged(m_deviceInfo.firmwareVersion);
+        emit q()->firmwareVersionChanged(m_deviceInfo.firmwareVersion, {});
 }
 
 void Client::Private::setProtocolVersion(QVersionNumber protocolVersion)
 {
     if (std::exchange(m_deviceInfo.protocolVersion, protocolVersion) != protocolVersion)
-        emit q()->protocolVersionChanged(m_deviceInfo.protocolVersion);
+        emit q()->protocolVersionChanged(m_deviceInfo.protocolVersion, {});
 }
 
 void Client::Private::setCentralId(int centralId)
 {
     if (std::exchange(m_deviceInfo.centralId, centralId) != centralId)
-        emit q()->centralIdChanged(m_deviceInfo.centralId);
+        emit q()->centralIdChanged(m_deviceInfo.centralId, {});
 }
 
 void Client::Private::setMainTrackCurrent(core::milliamperes mainTrackCurrent)
 {
     if (std::exchange(m_deviceInfo.mainTrackCurrent, mainTrackCurrent) != mainTrackCurrent)
-        emit q()->mainTrackCurrentChanged(m_deviceInfo.mainTrackCurrent);
+        emit q()->mainTrackCurrentChanged(m_deviceInfo.mainTrackCurrent, {});
 }
 
 void Client::Private::setProgrammingTrackCurrent(core::milliamperes programmingTrackCurrent)
 {
     if (std::exchange(m_deviceInfo.programmingTrackCurrent, programmingTrackCurrent) != programmingTrackCurrent)
-        emit q()->programmingTrackCurrentChanged(m_deviceInfo.programmingTrackCurrent);
+        emit q()->programmingTrackCurrentChanged(m_deviceInfo.programmingTrackCurrent, {});
 }
 
 void Client::Private::setFilteredMainTrackCurrent(core::milliamperes filteredMainTrackCurrent)
 {
     if (std::exchange(m_deviceInfo.filteredMainTrackCurrent, filteredMainTrackCurrent) != filteredMainTrackCurrent)
-        emit q()->filteredMainTrackCurrentChanged(m_deviceInfo.filteredMainTrackCurrent);
+        emit q()->filteredMainTrackCurrentChanged(m_deviceInfo.filteredMainTrackCurrent, {});
 }
 
 void Client::Private::setTemperature(core::celsius temperature)
 {
     if (std::exchange(m_deviceInfo.temperature, temperature) != temperature)
-        emit q()->temperatureChanged(m_deviceInfo.temperature);
+        emit q()->temperatureChanged(m_deviceInfo.temperature, {});
 }
 
 void Client::Private::setSupplyVoltage(core::millivolts supplyVoltage)
 {
     if (std::exchange(m_deviceInfo.supplyVoltage, supplyVoltage) != supplyVoltage)
-        emit q()->supplyVoltageChanged(m_deviceInfo.supplyVoltage);
+        emit q()->supplyVoltageChanged(m_deviceInfo.supplyVoltage, {});
 }
 
 void Client::Private::setTrackVoltage(core::millivolts trackVoltage)
 {
     if (std::exchange(m_deviceInfo.trackVoltage, trackVoltage) != trackVoltage)
-        emit q()->trackVoltageChanged(m_deviceInfo.trackVoltage);
+        emit q()->trackVoltageChanged(m_deviceInfo.trackVoltage, {});
 }
 
 void Client::Private::setHardwareType(HardwareType hardwareType)
 {
     if (std::exchange(m_deviceInfo.hardwareType, hardwareType) != hardwareType)
-        emit q()->hardwareTypeChanged(m_deviceInfo.hardwareType);
+        emit q()->hardwareTypeChanged(m_deviceInfo.hardwareType, {});
 }
 
 void Client::Private::setLockState(LockState lockState)
 {
     if (std::exchange(m_deviceInfo.lockState, lockState) != lockState)
-        emit q()->lockStateChanged(m_deviceInfo.lockState);
+        emit q()->lockStateChanged(m_deviceInfo.lockState, {});
 }
 
 void Client::Private::connectToHost(QHostAddress host, quint16 port)
@@ -994,7 +994,7 @@ void Client::Private::disconnectFromHost()
     resetObservers();
 
     if (isConnectedGuard.hasChanged())
-        emit q()->disconnected();
+        emit q()->disconnected({});
 }
 
 void Client::Private::sendRequest(QByteArray request, Observer observer)
@@ -1195,7 +1195,7 @@ void Client::Private::stopConnectTimeout()
 void Client::Private::reportError(Error error)
 {
     qCWarning(logger()) << "An error occured:" << error;
-    emit q()->errorOccured(error);
+    emit q()->errorOccured(error, {});
 }
 
 void Client::Private::queueCanDetectorInfoCallback(can::NetworkId networkId, CanDetectorInfoCallback callback)
@@ -1490,8 +1490,8 @@ void Client::Private::maybeEmitCanDetectorInfo(can::NetworkId networkId, const C
                 << Qt::endl << "FOO:CAN:" << infoList
                 << Qt::endl << "FOO:generic:" << genericInfo;
 
-        emit q()->canDetectorInfoReceived(std::move(infoList));
-        emit q()->detectorInfoReceived(std::move(genericInfo));
+        emit q()->canDetectorInfoReceived(std::move(infoList), {});
+        emit q()->detectorInfoReceived(std::move(genericInfo), {});
     }
 }
 
@@ -1508,7 +1508,7 @@ void Client::Private::emitPendingLoconetDetectorInfo()
 void Client::Private::parseBroadcasts(Message message)
 {
     if (const auto info = parseVehicleInfo(message)) {
-        emit q()->vehicleInfoReceived(info.value());
+        emit q()->vehicleInfoReceived(info.value(), {});
         return;
     }
 
@@ -1517,7 +1517,7 @@ void Client::Private::parseBroadcasts(Message message)
     case 11:
     case 17:
         if (const auto info = parseRailcomInfo(std::move(message)); info && info->isValid())
-            emit q()->railcomInfoReceived(info.value());
+            emit q()->railcomInfoReceived(info.value(), {});
 
         break;
 
@@ -1554,7 +1554,7 @@ void Client::Private::parseBroadcasts(Message message)
         if (const auto info = parseLoconetDetectorInfo(message))
             mergeLoconetDetectorInfo(info.value());
         else if (const auto info = parseTurnoutInfo(std::move(message)))
-            emit q()->turnoutInfoReceived(info.value());
+            emit q()->turnoutInfoReceived(info.value(), {});
 
         break;
 
@@ -1562,7 +1562,7 @@ void Client::Private::parseBroadcasts(Message message)
         if (const auto info = parseLoconetDetectorInfo(message))
             mergeLoconetDetectorInfo(info.value());
         else if (const auto info = parseAccessoryInfo(std::move(message)))
-            emit q()->accessoryInfoReceived(info.value());
+            emit q()->accessoryInfoReceived(info.value(), {});
 
         break;
 
@@ -1574,13 +1574,13 @@ void Client::Private::parseBroadcasts(Message message)
 
     case 15:
         if (const auto info = parseRBusDetectorInfo(std::move(message)))
-            emit q()->rbusDetectorInfoReceived(info.value());
+            emit q()->rbusDetectorInfoReceived(info.value(), {});
 
         break;
 
     case 16:
         if (const auto info = parseLibraryInfo(std::move(message)))
-            emit q()->libraryInfoReceived(info.value());
+            emit q()->libraryInfoReceived(info.value(), {});
 
         break;
 
@@ -2003,7 +2003,7 @@ void Client::queryVehicle(quint16 address, std::function<void(VehicleInfo)> call
     d->sendRequest(std::move(request), [this, callback](auto message) {
         if (const auto info = d->parseVehicleInfo(std::move(message))) {
             callIfDefined(callback, info.value());
-            emit vehicleInfoReceived(info.value());
+            emit vehicleInfoReceived(info.value(), {});
             return true;
         }
 
@@ -2027,7 +2027,7 @@ void Client::queryAccessoryInfo(dcc::AccessoryAddress address, std::function<voi
             if (info->address() == address)
                 callIfDefined(callback, info.value());
 
-            emit accessoryInfoReceived(info.value());
+            emit accessoryInfoReceived(info.value(), {});
             return true;
         }
 
@@ -2046,7 +2046,7 @@ void Client::queryTurnoutInfo(dcc::AccessoryAddress address, std::function<void 
             if (info->address() == address)
                 callIfDefined(callback, info.value());
 
-            emit turnoutInfoReceived(info.value());
+            emit turnoutInfoReceived(info.value(), {});
             return true;
         }
 
@@ -2153,7 +2153,7 @@ void Client::queryRailcom(quint16 address, std::function<void (RailcomInfo)> cal
         if (const auto info = d->parseRailcomInfo(std::move(message))) {
             if (info->address() == address) {
                 callIfDefined(callback, info.value());
-                emit railcomInfoReceived(info.value());
+                emit railcomInfoReceived(info.value(), {});
                 return true;
             } else if (!info->isValid()) {
                 return true; // FIXME: Seems we must better serialize these queries, as the empty no-railcom-message doesn't tell which request failed.
@@ -2328,7 +2328,7 @@ void Client::connectToHost(Subscriptions subscriptions, QHostAddress host, quint
     subscribe(subscriptions);
     queryTrackStatus([this](auto) {
         d->stopConnectTimeout();
-        emit connected();
+        emit connected({});
 
         // FIXME: maybe only do for black Z21
         queryCanDetectorInfo(can::NetworkIdAny, {});
