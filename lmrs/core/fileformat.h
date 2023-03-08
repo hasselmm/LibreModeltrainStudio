@@ -39,14 +39,11 @@ public:
 
     [[nodiscard]] static FileFormat merged(QList<FileFormat> formatList, QString name = {});
 
-    [[nodiscard]] auto fields() const noexcept { return std::tie(name, extensions); }
-    [[nodiscard]] auto operator==(const FileFormat &rhs) const noexcept { return fields() == rhs.fields(); }
-    [[nodiscard]] auto operator!=(const FileFormat &rhs) const noexcept { return fields() != rhs.fields(); }
-
     [[nodiscard]] bool accepts(QString fileName) const;
     [[nodiscard]] bool isValid() const noexcept;
 
-    explicit operator bool() const noexcept { return isValid(); }
+    [[nodiscard]] bool operator==(const FileFormat &rhs) const noexcept = default;
+    [[nodiscard]] explicit operator bool() const noexcept { return isValid(); }
 };
 
 // =====================================================================================================================

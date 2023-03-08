@@ -384,8 +384,7 @@ struct CellPosition
     int row;
     int column;
 
-    constexpr bool operator==(const CellPosition &) const = default;
-    constexpr bool operator!=(const CellPosition &) const = default;
+    [[nodiscard]] constexpr bool operator==(const CellPosition &) const noexcept = default;
 };
 
 QDebug operator<<(QDebug debug, const CellPosition &pos)

@@ -63,18 +63,18 @@ public:
         : m_data{std::move(data)}
     {}
 
-    int length() const;
-    auto rawData() const { return m_data; }
+    [[nodiscard]] int length() const;
+    [[nodiscard]] auto rawData() const { return m_data; }
 
     // Z21 LAN protocol
-    LanMessageId lanMessageId() const;
-    auto lanMessageLength() const { return length() - 4; }
-    auto lanData() const { return reinterpret_cast<const quint8 *>(m_data.constData() + 4); }
+    [[nodiscard]] LanMessageId lanMessageId() const;
+    [[nodiscard]] auto lanMessageLength() const { return length() - 4; }
+    [[nodiscard]] auto lanData() const { return reinterpret_cast<const quint8 *>(m_data.constData() + 4); }
 
     // XBus protocol
-    XBusMessageId xbusMessageId() const;
-    auto xbusMessageLength() const { return length() - 5; }
-    auto xbusData() const { return reinterpret_cast<const quint8 *>(m_data.constData() + 5); }
+    [[nodiscard]] XBusMessageId xbusMessageId() const;
+    [[nodiscard]] auto xbusMessageLength() const { return length() - 5; }
+    [[nodiscard]] auto xbusData() const { return reinterpret_cast<const quint8 *>(m_data.constData() + 5); }
 
 private:
     QByteArray m_data;
@@ -128,17 +128,17 @@ public:
 
     explicit VehicleInfo(QByteArray data);
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
-    dcc::VehicleAddress address() const;
-    Protocol protocol() const;
-    dcc::Speed speed() const;
-    dcc::Direction direction() const;
-    Functions functions() const;
+    [[nodiscard]] dcc::VehicleAddress address() const;
+    [[nodiscard]] Protocol protocol() const;
+    [[nodiscard]] dcc::Speed speed() const;
+    [[nodiscard]] dcc::Direction direction() const;
+    [[nodiscard]] Functions functions() const;
 
-    bool acquired() const;
-    bool consistMode() const;
-    bool smartSearch() const;
+    [[nodiscard]] bool acquired() const;
+    [[nodiscard]] bool consistMode() const;
+    [[nodiscard]] bool smartSearch() const;
 
 private:
     QByteArray m_data;
@@ -151,10 +151,10 @@ class AccessoryInfo
 public:
     explicit AccessoryInfo(QByteArray data);
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
-    dcc::AccessoryAddress address() const;
-    dcc::AccessoryState state() const;
+    [[nodiscard]] dcc::AccessoryAddress address() const;
+    [[nodiscard]] dcc::AccessoryState state() const;
 
 private:
     QByteArray m_data;
@@ -167,10 +167,10 @@ class TurnoutInfo
 public:
     explicit TurnoutInfo(QByteArray data);
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
-    dcc::AccessoryAddress address() const;
-    dcc::TurnoutState state() const;
+    [[nodiscard]] dcc::AccessoryAddress address() const;
+    [[nodiscard]] dcc::TurnoutState state() const;
 
 private:
     QByteArray m_data;
@@ -198,14 +198,14 @@ public:
     RailcomInfo() = default;
     explicit RailcomInfo(QByteArray data);
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
-    quint16 address() const;
-    quint32 receiveCounter() const;
-    quint16 errorCounter() const;
-    Options options() const;
-    quint8 speed() const;
-    quint8 qos() const;
+    [[nodiscard]] quint16 address() const;
+    [[nodiscard]] quint32 receiveCounter() const;
+    [[nodiscard]] quint16 errorCounter() const;
+    [[nodiscard]] Options options() const;
+    [[nodiscard]] quint8 speed() const;
+    [[nodiscard]] quint8 qos() const;
 
 private:
     QByteArray m_data;
@@ -218,14 +218,14 @@ struct RBusDetectorInfo
 public:
     explicit RBusDetectorInfo(QByteArray data = {});
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
-    accessory::rbus::GroupId group() const;
-    QBitArray occupancy() const;
+    [[nodiscard]] accessory::rbus::GroupId group() const;
+    [[nodiscard]] QBitArray occupancy() const;
 
-    operator QList<accessory::DetectorInfo>() const;
-    auto operator==(const RBusDetectorInfo &rhs) const { return m_data == rhs.m_data; }
-    auto data() const { return m_data; }
+    [[nodiscard]] operator QList<accessory::DetectorInfo>() const;
+    [[nodiscard]] bool operator==(const RBusDetectorInfo &rhs) const noexcept = default;
+    [[nodiscard]] auto data() const { return m_data; }
 
 private:
     QByteArray m_data;
@@ -260,23 +260,23 @@ public:
 
     explicit LoconetDetectorInfo(QByteArray data = {});
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
-    Type type() const;
+    [[nodiscard]] Type type() const;
 
-    accessory::loconet::ReportAddress address() const;
-    Occupancy occupancy() const;
-    dcc::VehicleAddress vehicle() const;
-    dcc::Direction direction() const;
+    [[nodiscard]] accessory::loconet::ReportAddress address() const;
+    [[nodiscard]] Occupancy occupancy() const;
+    [[nodiscard]] dcc::VehicleAddress vehicle() const;
+    [[nodiscard]] dcc::Direction direction() const;
 
-    quint8 lissyClass() const;
-    quint16 lissySpeed() const;
+    [[nodiscard]] quint8 lissyClass() const;
+    [[nodiscard]] quint16 lissySpeed() const;
 
-    static QList<accessory::DetectorInfo> merge(QList<LoconetDetectorInfo> infoList);
-    auto operator==(const LoconetDetectorInfo &rhs) const { return m_data == rhs.m_data; }
-    auto data() const { return m_data; }
+    [[nodiscard]] static QList<accessory::DetectorInfo> merge(QList<LoconetDetectorInfo> infoList);
+    [[nodiscard]] bool operator==(const LoconetDetectorInfo &rhs) const noexcept = default;
+    [[nodiscard]] auto data() const { return m_data; }
 
-    static std::pair<Query, quint16> address(const accessory::DetectorAddress &address);
+    [[nodiscard]] static std::pair<Query, quint16> address(const accessory::DetectorAddress &address);
 
 private:
     QByteArray m_data;
@@ -318,43 +318,43 @@ public:
 
     explicit CanDetectorInfo(QByteArray data = {});
 
-    bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
     using Key = std::tuple<accessory::can::NetworkId, accessory::can::ModuleId, accessory::can::PortIndex>;
-    auto key() const { return Key{networkId(), module(), port()}; }
+    [[nodiscard]] auto key() const { return Key{networkId(), module(), port()}; }
 
-    accessory::can::NetworkId networkId() const;
-    accessory::can::ModuleId module() const;
-    accessory::can::PortIndex port() const;
+    [[nodiscard]] accessory::can::NetworkId networkId() const;
+    [[nodiscard]] accessory::can::ModuleId module() const;
+    [[nodiscard]] accessory::can::PortIndex port() const;
 
-    Type type() const;
+    [[nodiscard]] Type type() const;
 
-    quint16 value1() const;
-    quint16 value2() const;
+    [[nodiscard]] quint16 value1() const;
+    [[nodiscard]] quint16 value2() const;
 
-    Occupancy occupancy() const;
-    PowerState powerState() const;
+    [[nodiscard]] Occupancy occupancy() const;
+    [[nodiscard]] PowerState powerState() const;
 
-    auto vehicle1() const { return vehicle(value1()); }
-    auto vehicle2() const { return vehicle(value2()); }
+    [[nodiscard]] auto vehicle1() const { return vehicle(value1()); }
+    [[nodiscard]] auto vehicle2() const { return vehicle(value2()); }
 
-    auto direction1() const { return direction(value1()); }
-    auto direction2() const { return direction(value2()); }
+    [[nodiscard]] auto direction1() const { return direction(value1()); }
+    [[nodiscard]] auto direction2() const { return direction(value2()); }
 
-    QList<dcc::VehicleAddress> vehicles() const;
-    QList<dcc::Direction> directions() const;
+    [[nodiscard]] QList<dcc::VehicleAddress> vehicles() const;
+    [[nodiscard]] QList<dcc::Direction> directions() const;
 
-    auto isOccupancy() const noexcept { return type() == Type::Occupancy; }
-    auto isVehicleSet() const noexcept { return VehicleSetRange.contains(type()); }
-    auto isLastVehicleSet() const noexcept { return isVehicleSet() && vehicle2() == 0; }
+    [[nodiscard]] auto isOccupancy() const noexcept { return type() == Type::Occupancy; }
+    [[nodiscard]] auto isVehicleSet() const noexcept { return VehicleSetRange.contains(type()); }
+    [[nodiscard]] auto isLastVehicleSet() const noexcept { return isVehicleSet() && vehicle2() == 0; }
 
-    static QList<accessory::DetectorInfo> merge(QList<CanDetectorInfo> infoList);
-    auto operator==(const CanDetectorInfo &rhs) const { return m_data == rhs.m_data; }
-    auto data() const { return m_data; }
+    [[nodiscard]] static QList<accessory::DetectorInfo> merge(QList<CanDetectorInfo> infoList);
+    [[nodiscard]] bool operator==(const CanDetectorInfo &rhs) const noexcept = default;
+    [[nodiscard]] auto data() const { return m_data; }
 
 private:
-    dcc::VehicleAddress vehicle(quint16 value) const;
-    dcc::Direction direction(quint16 value) const;
+    [[nodiscard]] dcc::VehicleAddress vehicle(quint16 value) const;
+    [[nodiscard]] dcc::Direction direction(quint16 value) const;
 
     QByteArray m_data;
 };
@@ -369,10 +369,10 @@ public:
     LibraryInfo() = default;
     explicit LibraryInfo(QByteArray data);
 
-    quint16 address() const;
-    quint8 index() const;
-    quint8 flags() const;
-    QString name() const;
+    [[nodiscard]] quint16 address() const;
+    [[nodiscard]] quint8 index() const;
+    [[nodiscard]] quint8 flags() const;
+    [[nodiscard]] QString name() const;
 
 private:
     QByteArray m_data;
@@ -501,28 +501,28 @@ public:
     explicit Client(QObject *parent = {});
 
     // attributes
-    QHostAddress hostAddress() const;
-    quint16 hostPort() const;
-    bool isConnected() const;
+    [[nodiscard]] QHostAddress hostAddress() const;
+    [[nodiscard]] quint16 hostPort() const;
+    [[nodiscard]] bool isConnected() const;
 
-    TrackStatus trackStatus() const;
-    CentralStatus centralStatus() const;
-    Capabilities capabilities() const;
-    Subscriptions subscriptions() const;
-    quint32 serialNumber() const;
-    QVersionNumber firmwareVersion() const;
-    QVersionNumber protocolVersion() const;
-    int centralId() const;
-    core::milliamperes mainTrackCurrent() const;
-    core::milliamperes programmingTrackCurrent() const;
-    core::milliamperes filteredMainTrackCurrent() const;
-    core::celsius temperature() const;
-    core::millivolts supplyVoltage() const;
-    core::millivolts trackVoltage() const;
-    HardwareType hardwareType() const;
-    LockState lockState() const;
+    [[nodiscard]] TrackStatus trackStatus() const;
+    [[nodiscard]] CentralStatus centralStatus() const;
+    [[nodiscard]] Capabilities capabilities() const;
+    [[nodiscard]] Subscriptions subscriptions() const;
+    [[nodiscard]] quint32 serialNumber() const;
+    [[nodiscard]] QVersionNumber firmwareVersion() const;
+    [[nodiscard]] QVersionNumber protocolVersion() const;
+    [[nodiscard]] int centralId() const;
+    [[nodiscard]] core::milliamperes mainTrackCurrent() const;
+    [[nodiscard]] core::milliamperes programmingTrackCurrent() const;
+    [[nodiscard]] core::milliamperes filteredMainTrackCurrent() const;
+    [[nodiscard]] core::celsius temperature() const;
+    [[nodiscard]] core::millivolts supplyVoltage() const;
+    [[nodiscard]] core::millivolts trackVoltage() const;
+    [[nodiscard]] HardwareType hardwareType() const;
+    [[nodiscard]] LockState lockState() const;
 
-    static QString hardwareName(Client::HardwareType type);
+    [[nodiscard]] static QString hardwareName(Client::HardwareType type);
 
     // operations
     void disableTrackPower(std::function<void(TrackStatus state)> callback = {});

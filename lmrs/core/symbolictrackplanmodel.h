@@ -133,12 +133,8 @@ public:
     State state = State::Undefined;
     Links links = Link::None;
 
-    constexpr auto fields() const noexcept { return std::tie(type, mode, state, links); }
-
-    constexpr auto operator==(const TrackSymbol &rhs) const noexcept { return fields() == rhs.fields(); }
-    constexpr auto operator!=(const TrackSymbol &rhs) const noexcept { return fields() != rhs.fields(); }
-
-    operator QVariant() const { return QVariant::fromValue(*this); }
+    [[nodiscard]] constexpr auto operator<=>(const TrackSymbol &rhs) const noexcept = default;
+    [[nodiscard]] operator QVariant() const { return QVariant::fromValue(*this); }
 };
 
 struct TrackSymbolInstance

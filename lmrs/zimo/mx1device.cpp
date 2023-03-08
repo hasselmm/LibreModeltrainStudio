@@ -70,9 +70,6 @@ struct RequestKey
     Request::SequenceNumber sequence;
     Request::Code code;
 
-    constexpr auto fields() const noexcept { return std::tie(sequence, code); }
-    constexpr auto operator==(const RequestKey &rhs) const noexcept { return fields() == rhs.fields(); }
-
     constexpr RequestKey() noexcept = default;
     constexpr RequestKey(RequestKey &&) noexcept = default;
     constexpr RequestKey(const RequestKey &) noexcept = default;
@@ -83,6 +80,8 @@ struct RequestKey
         : RequestKey{request.sequence(), request.code()} {}
     RequestKey(const Response &response)
         : RequestKey{response.requestSequence(), response.requestCode()} {}
+
+    [[nodiscard]] constexpr auto operator<=>(const RequestKey &rhs) const noexcept = default;
 };
 
 inline size_t qHash(RequestKey key, size_t seed = 0)

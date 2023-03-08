@@ -56,8 +56,8 @@ add_compile_options(
     -Werror=format
     -Werror=ignored-qualifiers
     -Werror=implicit-fallthrough
+    -Werror=missing-declarations
     -Werror=missing-field-initializers
-    -Werror=missing-prototypes
     -Werror=pessimizing-move
     -Werror=reorder
     -Werror=return-type
@@ -69,6 +69,12 @@ add_compile_options(
     -Werror=unused-parameter
     -Werror=unused-result
 )
+
+if (CLANG)
+    add_compile_options(
+        -Werror=missing-prototypes
+    )
+endif()
 
 find_package(CompilerCache)
 find_package(Doxygen)

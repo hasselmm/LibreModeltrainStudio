@@ -34,23 +34,16 @@ public:
         : String{other.m_metaObject, other.m_sourceText, other.m_disambiguation, other.m_number, filter}
     {}
 
-    String filtered(Filter filter) const noexcept { return {*this, std::move(filter)}; }
+    [[nodiscard]] String filtered(Filter filter) const noexcept { return {*this, std::move(filter)}; }
 
-    constexpr auto metaObject() const noexcept { return m_metaObject; }
-    constexpr auto sourceText() const noexcept { return m_sourceText; }
-
-private:
-    auto fields() const
-    {
-        return std::tie(m_metaObject, m_sourceText, m_disambiguation, m_number, m_filter);
-    }
+    [[nodiscard]] constexpr auto metaObject() const noexcept { return m_metaObject; }
+    [[nodiscard]] constexpr auto sourceText() const noexcept { return m_sourceText; }
 
 public:
-    bool operator==(const String &rhs) const { return fields() == rhs.fields(); }
-    bool operator!=(const String &rhs) const { return !operator==(rhs); }
+    [[nodiscard]] constexpr bool operator==(const String &rhs) const noexcept = default;
 
-    explicit operator bool() const;
-    QString toString() const;
+    [[nodiscard]] explicit operator bool() const;
+    [[nodiscard]] QString toString() const;
 
 private:
     const QMetaObject *m_metaObject = nullptr;

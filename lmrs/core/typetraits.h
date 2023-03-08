@@ -105,12 +105,9 @@ struct Range
     constexpr Range(Range<U> range) noexcept
         : Range{range.first, range.last} {}
 
-    constexpr bool contains(auto x) const;
-    constexpr auto size() const { return value(last) - value(first) + 1; }
-    constexpr auto fields() const { return std::tie(first, last); }
-
-    constexpr auto operator==(const Range &rhs) const { return fields() == rhs.fields(); }
-    constexpr auto operator!=(const Range &rhs) const { return !operator==(rhs); }
+    [[nodiscard]] constexpr bool contains(auto x) const;
+    [[nodiscard]] constexpr auto size() const { return value(last) - value(first) + 1; }
+    [[nodiscard]] constexpr auto operator<=>(const Range &rhs) const = default;
 
     class const_iterator
     {
@@ -123,11 +120,10 @@ struct Range
 
         explicit constexpr const_iterator(T value) : m_value{value} {}
 
-        constexpr auto operator==(const const_iterator &rhs) const { return m_value == rhs.m_value; }
-        constexpr auto operator!=(const const_iterator &rhs) const { return m_value != rhs.m_value; }
+        [[nodiscard]] constexpr auto operator<=>(const const_iterator &rhs) const noexcept = default;
 
-        constexpr auto operator*() const { return m_value; }
-        auto &operator++() { m_value = T{value(m_value) + 1}; return *this; }
+        [[nodiscard]] constexpr auto operator*() const noexcept { return m_value; }
+        auto &operator++() noexcept { m_value = T{value(m_value) + 1}; return *this; }
 
     private:
         T m_value;

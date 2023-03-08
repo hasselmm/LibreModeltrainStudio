@@ -296,8 +296,6 @@ bool TurnoutEvent::hasSecondaryState() const
 
 void TurnoutEvent::setControl(AccessoryControl *newControl)
 {
-    qCInfo(logger(this)) << Q_FUNC_INFO << newControl;
-
     if (newControl) {
         connect(newControl, &AccessoryControl::turnoutInfoChanged,
                 this, &TurnoutEvent::onTurnoutInfoChanged);

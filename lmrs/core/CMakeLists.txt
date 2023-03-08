@@ -55,7 +55,7 @@ add_library (
 )
 
 target_include_directories(LmrsCore PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries (LmrsCore PUBLIC Qt6::Network)
+target_link_libraries(LmrsCore PUBLIC Qt6::Network)
 
 add_library(Lmrs::Core ALIAS LmrsCore)
 lmrs_doxygen_add_target(LmrsCore)
