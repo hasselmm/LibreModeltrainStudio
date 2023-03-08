@@ -155,26 +155,26 @@ QMetaMethod findMetaMethod(void (Target::*)(Args...), const char (&signature)[N]
 QMetaEnum metaEnumFromMetaType(QMetaType metaType);
 
 template<EnumType T>
-inline const auto &metaEnum()
+[[nodiscard]] inline const auto &metaEnum()
 {
     static const auto meta = QMetaEnum::fromType<T>();
     return meta;
 }
 
 template<EnumType T>
-inline auto keyCount()
+[[nodiscard]] inline auto keyCount()
 {
     return metaEnum<T>().keyCount();
 }
 
 template<EnumType T>
-inline auto key(T value)
+[[nodiscard]] inline auto key(T value)
 {
     return metaEnum<T>().valueToKey(static_cast<int>(value));
 }
 
 template<EnumType T>
-inline auto keys(QFlags<T> values)
+[[nodiscard]] inline auto keys(QFlags<T> values)
 {
     if (const auto s = key(T{static_cast<typename QFlags<T>::Int>(values)}))
         return QByteArray::fromRawData(s, static_cast<qsizetype>(strlen(s)));
@@ -189,9 +189,9 @@ public:
     MetaEnumEntry(QMetaEnum meta, int index) noexcept
         : m_meta{std::move(meta)}, m_index{index} {}
 
-    constexpr auto index() const noexcept { return m_index; }
-    auto key() const noexcept { return m_meta.key(m_index); }
-    auto value() const noexcept { return static_cast<T>(m_meta.value(m_index)); }
+    [[nodiscard]] constexpr auto index() const noexcept { return m_index; }
+    [[nodiscard]] auto key() const noexcept { return m_meta.key(m_index); }
+    [[nodiscard]] auto value() const noexcept { return static_cast<T>(m_meta.value(m_index)); }
 
     [[nodiscard]] constexpr bool operator==(const MetaEnumEntry &rhs) const noexcept { return fields() != rhs.fields(); }
     [[nodiscard]] constexpr bool operator!=(const MetaEnumEntry &rhs) const noexcept = default;
@@ -199,8 +199,8 @@ public:
 
     auto &operator++() noexcept { ++m_index; return *this; }
 
-    constexpr operator T() const noexcept { return value(); }
-    operator QVariant() const noexcept { return QVariant::fromValue(value()); }
+    [[nodiscard]] constexpr operator T() const noexcept { return value(); }
+    [[nodiscard]] operator QVariant() const noexcept { return QVariant::fromValue(value()); }
 
 private:
     [[nodiscard]] constexpr auto fields() const noexcept { return std::make_tuple(m_meta.name(), m_index); }
@@ -233,15 +233,15 @@ public:
     MetaEnumIterator(QMetaEnum meta, int index)
         : m_entry{std::move(meta), index} {}
 
-    auto &operator ++() { ++m_entry; return *this; }
-    auto *operator ->() const { return &m_entry; }
-    auto &operator  *() const { return m_entry; }
+    auto &operator++() { ++m_entry; return *this; }
+    [[nodiscard]] auto *operator->() const { return &m_entry; }
+    [[nodiscard]] auto &operator*() const { return m_entry; }
 
     [[nodiscard]] constexpr bool operator==(const MetaEnumIterator &rhs) const noexcept = default;
     [[nodiscard]] auto operator<=>(const MetaEnumIterator &rhs) const noexcept = default;
 
-    static auto begin(QMetaEnum meta) { return MetaEnumIterator{std::move(meta), 0}; }
-    static auto end(QMetaEnum meta) { const auto n = meta.keyCount(); return MetaEnumIterator{std::move(meta), n}; }
+    [[nodiscard]] static auto begin(QMetaEnum meta) { return MetaEnumIterator{std::move(meta), 0}; }
+    [[nodiscard]] static auto end(QMetaEnum meta) { const auto n = meta.keyCount(); return MetaEnumIterator{std::move(meta), n}; }
 
 private:
     MetaEnumEntry<T> m_entry;
@@ -276,14 +276,14 @@ public:
     FlagsIterator operator++(int) { auto backup = *this; increment(); return backup; }
 
 private:
-    static auto metaEnum() { static const auto s_metaEnum = QMetaEnum::fromType<value_type>(); return s_metaEnum; }
-    static auto keyCount() { return metaEnum().keyCount(); }
+    [[nodiscard]] static auto metaEnum() { static const auto s_metaEnum = QMetaEnum::fromType<value_type>(); return s_metaEnum; }
+    [[nodiscard]] static auto keyCount() { return metaEnum().keyCount(); }
 
     void increment() { do { ++m_index; } while(!hasValue() && isInRange()); }
 
-    auto isValue(auto value) const  {  return core::value(value) != 0 && m_mask.testFlag(value); }
-    auto isInRange() const { return m_index < keyCount(); }
-    auto hasValue() const { return isValue(value()); }
+    [[nodiscard]] auto isValue(auto value) const  {  return core::value(value) != 0 && m_mask.testFlag(value); }
+    [[nodiscard]] auto isInRange() const { return m_index < keyCount(); }
+    [[nodiscard]] auto hasValue() const { return isValue(value()); }
 
     int m_index;
     T m_mask;
@@ -306,9 +306,9 @@ public:
         , m_row{row}
     {}
 
-    auto operator*() const { return m_model ? m_model->index(m_row, 0) : QModelIndex{}; }
+    [[nodiscard]] auto operator*() const { return m_model ? m_model->index(m_row, 0) : QModelIndex{}; }
+    [[nodiscard]] auto operator-(const ItemModelIterator &rhs) const noexcept { return m_row - rhs.m_row; }
     auto &operator++() { ++m_row; return *this; }
-    auto operator-(const ItemModelIterator &rhs) const noexcept { return m_row - rhs.m_row; }
 
     [[nodiscard]] auto operator<=>(const ItemModelIterator &rhs) const noexcept = default;
 
@@ -321,46 +321,46 @@ static_assert(requires { typename std::iterator_traits<ItemModelIterator>::itera
 
 } // namespace lmrs::core
 
-inline auto begin(const QMetaEnum &meta)
+[[nodiscard]] inline auto begin(const QMetaEnum &meta)
 {
     return lmrs::core::MetaEnumIterator<int>::begin(meta);
 }
 
-inline auto end(const QMetaEnum &meta)
+[[nodiscard]] inline auto end(const QMetaEnum &meta)
 {
     return lmrs::core::MetaEnumIterator<int>::end(meta);
 }
 
 template<lmrs::core::EnumType T>
-inline auto begin(const QMetaTypeId<T> &)
+[[nodiscard]] inline auto begin(const QMetaTypeId<T> &)
 {
     return lmrs::core::MetaEnumIterator<T>::begin(lmrs::core::metaEnum<T>());
 }
 
 template<lmrs::core::EnumType T>
-inline auto end(const QMetaTypeId<T> &)
+[[nodiscard]] inline auto end(const QMetaTypeId<T> &)
 {
     return lmrs::core::MetaEnumIterator<T>::end(lmrs::core::metaEnum<T>());
 }
 
 template <lmrs::core::FlagsType T>
-inline auto begin(T flags)
+[[nodiscard]] inline auto begin(T flags)
 {
     return lmrs::core::FlagsIterator<T>{flags, 0};
 }
 
 template <lmrs::core::FlagsType T>
-inline auto end(T flags)
+[[nodiscard]] inline auto end(T flags)
 {
     return lmrs::core::FlagsIterator<T>{flags};
 }
 
-inline auto begin(const QAbstractItemModel *model)
+[[nodiscard]] inline auto begin(const QAbstractItemModel *model)
 {
     return lmrs::core::ItemModelIterator{model, 0};
 }
 
-inline auto end(const QAbstractItemModel *model)
+[[nodiscard]] inline auto end(const QAbstractItemModel *model)
 {
     return lmrs::core::ItemModelIterator{model, model->rowCount()};
 }

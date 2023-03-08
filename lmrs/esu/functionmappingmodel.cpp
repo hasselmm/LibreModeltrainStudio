@@ -170,14 +170,14 @@ public:
             , m_index{index}
         {}
 
-        constexpr auto index() const { return m_index; }
-        constexpr auto page() const { return extendedPage(m_range->m_base); }
-        constexpr auto offset() const { return static_cast<quint16>(m_range->m_first + m_index); }
-        constexpr auto variable() const { return extendedVariable(variableIndex(m_range->m_base) + static_cast<quint16>(m_index), page()); }
-        constexpr operator auto() const { return variable(); }
+        [[nodiscard]] constexpr auto index() const { return m_index; }
+        [[nodiscard]] constexpr auto page() const { return extendedPage(m_range->m_base); }
+        [[nodiscard]] constexpr auto offset() const { return static_cast<quint16>(m_range->m_first + m_index); }
+        [[nodiscard]] constexpr auto variable() const { return extendedVariable(variableIndex(m_range->m_base) + static_cast<quint16>(m_index), page()); }
+        [[nodiscard]] constexpr operator auto() const { return variable(); }
 
         auto &operator++() { ++m_index; return *this; }
-        auto operator*() const { return *this; }
+        [[nodiscard]] auto operator*() const { return *this; }
 
         [[nodiscard]] constexpr auto operator<=>(const const_iterator &rhs) const = default;
 

@@ -258,11 +258,11 @@ public:
         , m_directions{std::move(directions)}
     {}
 
-    constexpr auto address() const noexcept { return m_address; }
-    constexpr auto occupancy() const noexcept { return m_occupancy;}
-    constexpr auto powerState() const noexcept { return m_powerState;}
-    auto vehicles() const noexcept { return m_vehicles; }
-    auto directions() const noexcept { return m_directions; }
+    [[nodiscard]] constexpr auto address() const noexcept { return m_address; }
+    [[nodiscard]] constexpr auto occupancy() const noexcept { return m_occupancy;}
+    [[nodiscard]] constexpr auto powerState() const noexcept { return m_powerState;}
+    [[nodiscard]] auto vehicles() const noexcept { return m_vehicles; }
+    [[nodiscard]] auto directions() const noexcept { return m_directions; }
 
     void setOccupancy(Occupancy occupancy) { m_occupancy = occupancy; }
     void setPowerState(PowerState powerState) { m_powerState = powerState; }

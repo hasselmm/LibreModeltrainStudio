@@ -63,16 +63,16 @@ struct RegularExpressionLiteralBase
 {
     [[nodiscard]] bool operator==(const RegularExpressionLiteralBase &rhs) const noexcept = default;
 
-    QRegularExpressionMatch match(QString subject) const noexcept;
-    QRegularExpression compile(Qt::CaseSensitivity cs = Qt::CaseInsensitive) const noexcept;
-    operator QRegularExpression() const noexcept;
-    size_t qHash(size_t seed = 0) const noexcept;
+    [[nodiscard]] QRegularExpressionMatch match(QString subject) const noexcept;
+    [[nodiscard]] QRegularExpression compile(Qt::CaseSensitivity cs = Qt::CaseInsensitive) const noexcept;
+    [[nodiscard]] operator QRegularExpression() const noexcept;
+    [[nodiscard]] size_t qHash(size_t seed = 0) const noexcept;
 
     QLatin1StringView pattern;
 };
 
 template<class Tag>
-inline size_t qHash(const RegularExpressionLiteralBase<Tag> &literal, size_t seed = 0) noexcept
+[[nodiscard]] inline size_t qHash(const RegularExpressionLiteralBase<Tag> &literal, size_t seed = 0) noexcept
 {
     return literal.qHash(seed);
 }

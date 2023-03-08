@@ -143,39 +143,39 @@ public:
         , m_model{std::move(model)}
     {}
 
-    constexpr auto type() const noexcept { return m_type; }
-    constexpr auto flags() const noexcept { return m_flags; }
+    [[nodiscard]] constexpr auto type() const noexcept { return m_type; }
+    [[nodiscard]] constexpr auto flags() const noexcept { return m_flags; }
 
-    auto key() const noexcept { return m_key; }
-    auto name() const noexcept { return m_name; }
-    auto nameTr() const noexcept { return m_name.toString(); }
-    auto model() const noexcept { return m_model; }
+    [[nodiscard]] auto key() const noexcept { return m_key; }
+    [[nodiscard]] auto name() const noexcept { return m_name; }
+    [[nodiscard]] auto nameTr() const noexcept { return m_name.toString(); }
+    [[nodiscard]] auto model() const noexcept { return m_model; }
 
-    bool acceptsType(QMetaType metaType) const;
-    QByteArray resetValueKey() const noexcept;
-    QByteArray hasValueKey() const noexcept;
-    QByteArray valueKey() const noexcept;
+    [[nodiscard]] bool acceptsType(QMetaType metaType) const;
+    [[nodiscard]] QByteArray resetValueKey() const noexcept;
+    [[nodiscard]] QByteArray hasValueKey() const noexcept;
+    [[nodiscard]] QByteArray valueKey() const noexcept;
 
-    QString invalidValueText() const noexcept;
+    [[nodiscard]] QString invalidValueText() const noexcept;
 
-    QByteArray typeName() const { return typeName(type()); }
-    static QByteArray typeName(Type type);
+    [[nodiscard]] QByteArray typeName() const { return typeName(type()); }
+    [[nodiscard]] static QByteArray typeName(Type type);
 
-    QVariant fromJson(QJsonValue value) const;
-    QJsonValue toJson(QVariant value) const;
+    [[nodiscard]] QVariant fromJson(QJsonValue value) const;
+    [[nodiscard]] QJsonValue toJson(QVariant value) const;
 
-    static Parameter choice(QByteArrayView key, l10n::String name, ChoiceModel model, Flags flags = {});
-    static Parameter flag(QByteArrayView key, l10n::String name, bool defaultValue = false, Flags flags = {});
-    static Parameter number(QByteArrayView key, l10n::String name, NumberModel model, Flags flags = {});
-    static Parameter text(QByteArrayView key, l10n::String name, TextModel model = {}, Flags flags = {});
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, ChoiceModel model, Flags flags = {});
+    [[nodiscard]] static Parameter flag(QByteArrayView key, l10n::String name, bool defaultValue = false, Flags flags = {});
+    [[nodiscard]] static Parameter number(QByteArrayView key, l10n::String name, NumberModel model, Flags flags = {});
+    [[nodiscard]] static Parameter text(QByteArrayView key, l10n::String name, TextModel model = {}, Flags flags = {});
 
-    static Parameter hostAddress(QByteArrayView key, l10n::String name,
-                                 ForwardDeclared<QList<QHostAddress>> auto proposals = {},
-                                 Flags flags = {}); // FIXME: make this a generic value type
+    [[nodiscard]] static Parameter hostAddress(QByteArrayView key, l10n::String name,
+                                               ForwardDeclared<QList<QHostAddress>> auto proposals = {},
+                                               Flags flags = {}); // FIXME: make this a generic value type
 
 
     template<class T>
-    static Parameter choice(QByteArrayView key, l10n::String name, QList<Choice> choices, Flags flags = {})
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, QList<Choice> choices, Flags flags = {})
     {
         qRegisterMetaType<T>();
         auto model = ChoiceModel{QMetaType::fromType<T>(), std::move(choices)};
@@ -183,14 +183,14 @@ public:
     }
 
     template<EnumType T>
-    static Parameter choice(QByteArrayView key, l10n::String name, Flags flags = {})
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, Flags flags = {})
     {
         qRegisterMetaType<T>();
         return choice(std::move(key), std::move(name), QMetaType::fromType<T>(), core::metaEnum<T>(), std::move(flags));
     }
 
     template<typename T>
-    static Parameter number(QByteArrayView key, l10n::String name, Flags flags = {})
+    [[nodiscard]] static Parameter number(QByteArrayView key, l10n::String name, Flags flags = {})
     {
         qRegisterMetaType<T>();
 
@@ -204,10 +204,10 @@ public:
 
 private:
     static auto &logger(auto) = delete;
-    static auto &logger();
+    [[nodiscard]] static auto &logger();
 
-    static Parameter text(QByteArrayView key, l10n::String name, QMetaType type, TextModel model, Flags flags);
-    static Parameter choice(QByteArrayView key, l10n::String name, QMetaType type, QMetaEnum values, Flags flags);
+    [[nodiscard]] static Parameter text(QByteArrayView key, l10n::String name, QMetaType type, TextModel model, Flags flags);
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, QMetaType type, QMetaEnum values, Flags flags);
 
     Type m_type = Type::Invalid;
     Flags m_flags;

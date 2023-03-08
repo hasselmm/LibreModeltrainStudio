@@ -122,8 +122,8 @@ struct Range
 
         [[nodiscard]] constexpr auto operator<=>(const const_iterator &rhs) const noexcept = default;
 
-        constexpr auto operator*() const { return m_value; }
-        auto &operator++() { m_value = T{value(m_value) + 1}; return *this; }
+        [[nodiscard]] constexpr auto operator*() const noexcept { return m_value; }
+        auto &operator++() noexcept { m_value = T{value(m_value) + 1}; return *this; }
 
     private:
         T m_value;

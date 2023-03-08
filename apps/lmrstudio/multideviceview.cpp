@@ -26,8 +26,8 @@ public:
     {}
 
     ModelIndexIterator &operator++() { m_index = m_index.siblingAtRow(m_index.row() + 1); return *this; }
-    const QModelIndex *operator->() const { return &m_index; }
-    const QModelIndex &operator*() const { return m_index; }
+    [[nodiscard]] const QModelIndex *operator->() const { return &m_index; }
+    [[nodiscard]] const QModelIndex &operator*() const { return m_index; }
 
     [[nodiscard]] bool operator==(const ModelIndexIterator &rhs) const noexcept = default;
 
@@ -50,8 +50,8 @@ public:
         : ModelRange{model->index(first, 0, parent), model->index(last, 0, parent)}
     {}
 
-    auto begin() const { return m_begin; }
-    auto end() const { return m_end; }
+    [[nodiscard]] auto begin() const { return m_begin; }
+    [[nodiscard]] auto end() const { return m_end; }
 
 private:
     ModelIndexIterator m_begin;
@@ -59,8 +59,8 @@ private:
 };
 
 // FIXME: Move to public header for sharing
-inline ModelIndexIterator begin(const QAbstractItemModel *model) { return {model->index(0, 0)}; }
-inline ModelIndexIterator end(const QAbstractItemModel *model) { return {model->index(0, model->rowCount() - 1)}; }
+[[nodiscard]] inline ModelIndexIterator begin(const QAbstractItemModel *model) { return {model->index(0, 0)}; }
+[[nodiscard]] inline ModelIndexIterator end(const QAbstractItemModel *model) { return {model->index(0, model->rowCount() - 1)}; }
 
 namespace lmrs::studio {
 
