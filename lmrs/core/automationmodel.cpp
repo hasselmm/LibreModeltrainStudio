@@ -69,6 +69,10 @@ public:
 
 auto findProperty(const QObject *object, QByteArrayView propertyName)
 {
+    if (LMRS_FAILED(logger<Parameter>(), object != nullptr)
+            || LMRS_FAILED(logger<Parameter>(), !propertyName.isEmpty()))
+        return QMetaProperty{};
+
     const auto metaObject = object->metaObject();
     const auto propertyIndex = metaObject->indexOfProperty(propertyName.constData());
     return metaObject->property(propertyIndex);

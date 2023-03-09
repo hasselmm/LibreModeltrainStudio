@@ -193,7 +193,7 @@ public:
     [[nodiscard]] auto key() const noexcept { return m_meta.key(m_index); }
     [[nodiscard]] auto value() const noexcept { return static_cast<T>(m_meta.value(m_index)); }
 
-    [[nodiscard]] constexpr bool operator==(const MetaEnumEntry &rhs) const noexcept { return fields() != rhs.fields(); }
+    [[nodiscard]] constexpr bool operator==(const MetaEnumEntry &rhs) const noexcept { return fields() == rhs.fields(); }
     [[nodiscard]] constexpr bool operator!=(const MetaEnumEntry &rhs) const noexcept = default;
     [[nodiscard]] inline auto operator<=>(const MetaEnumEntry &rhs) const noexcept;
 
