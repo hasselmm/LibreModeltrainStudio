@@ -28,39 +28,6 @@ bool contains(const QList<T> &list, const QList<T> &sublist)
     return intersection.size() == subset.size();
 }
 
-// FIXME: move to algorithms
-constexpr quint64 label(const char *const s, size_t shift = 0)
-{
-    if (s[0] == '\0')
-        return 0;
-    if (shift == 56)
-        return 0;
-
-    return (static_cast<quint64>(s[0]) << shift) ^ label(&s[1], shift + 1);
-}
-
-template<typename T>
-constexpr auto label()
-{
-    return label(QMetaType::fromType<T>().name());
-}
-
-constexpr auto label(QMetaType metaType)
-{
-    return label(metaType.name());
-}
-
-constexpr auto label(const QObject *object)
-{
-    if (object)
-        return label(object->metaObject()->metaType());
-
-    return label<void>();
-}
-
-static_assert(label<int>());
-static_assert(label<int>() != label<uint>());
-
 template<class T, Flavour expectedFlavour, class BaseType>
 T *flavour_cast(BaseType *object, Flavour flavour)
 {
@@ -72,8 +39,7 @@ T *flavour_cast(BaseType *object, Flavour flavour)
 
 std::unique_ptr<Event> flavouredEvent(std::unique_ptr<Event> event, Flavour flavour)
 {
-    switch (label(event.get())) {
-    case label<CanDetectorEvent>():
+    if (dynamic_cast<CanDetectorEvent *>(event.get())) {
         if (const auto modifiedEvent = flavour_cast<CanDetectorEvent, Flavour::Modified>(event.get(), flavour)) {
             modifiedEvent->setNetwork(0x310b);
             modifiedEvent->setModule(1);
@@ -82,8 +48,9 @@ std::unique_ptr<Event> flavouredEvent(std::unique_ptr<Event> event, Flavour flav
         }
 
         return event;
+    }
 
-    case label<RBusDetectorEvent>():
+    if (dynamic_cast<RBusDetectorEvent *>(event.get())) {
         if (const auto modifiedEvent = flavour_cast<RBusDetectorEvent, Flavour::Modified>(event.get(), flavour)) {
             modifiedEvent->setModule(1);
             modifiedEvent->setPort(2);
@@ -91,16 +58,18 @@ std::unique_ptr<Event> flavouredEvent(std::unique_ptr<Event> event, Flavour flav
         }
 
         return event;
+    }
 
-    case label<RBusDetectorGroupEvent>():
+    if (dynamic_cast<RBusDetectorGroupEvent *>(event.get())) {
         if (const auto modifiedEvent = flavour_cast<RBusDetectorGroupEvent, Flavour::Modified>(event.get(), flavour)) {
             modifiedEvent->setGroup(1);
             modifiedEvent->setType(CanDetectorEvent::Type::Entering);
         }
 
         return event;
+    }
 
-    case label<TurnoutEvent>():
+    if (dynamic_cast<TurnoutEvent *>(event.get())) {
         if (const auto modifiedEvent = flavour_cast<TurnoutEvent, Flavour::Modified>(event.get(), flavour)) {
             modifiedEvent->setPrimaryAddress(1);
             modifiedEvent->setPrimaryState(dcc::TurnoutState::Straight);
@@ -117,22 +86,24 @@ std::unique_ptr<Event> flavouredEvent(std::unique_ptr<Event> event, Flavour flav
 
 std::unique_ptr<Action> flavouredAction(std::unique_ptr<Action> action, Flavour flavour)
 {
-    switch (label(action.get())) {
-    case label<MessageAction>():
+    if (dynamic_cast<MessageAction *>(action.get())) {
         if (const auto modifiedAction = flavour_cast<MessageAction, Flavour::Modified>(action.get(), flavour)) {
             modifiedAction->setMessage("Turnout {address} has switched to state {state}"_L1);
         }
 
         return action;
-    case label<TurnoutAction>():
+    }
+
+    if (dynamic_cast<TurnoutAction *>(action.get())) {
         if (const auto modifiedAction = flavour_cast<TurnoutAction, Flavour::Modified>(action.get(), flavour)) {
             modifiedAction->setAddress(1);
             modifiedAction->setState(dcc::TurnoutState::Red);
         }
 
         return action;
+    }
 
-    case label<VehicleAction>():
+    if (dynamic_cast<VehicleAction *>(action.get())) {
         if (const auto modifiedAction = flavour_cast<VehicleAction, Flavour::Modified>(action.get(), flavour)) {
             modifiedAction->setAddress(1);
             modifiedAction->setDirection(dcc::Direction::Forward);
@@ -148,14 +119,12 @@ std::unique_ptr<Action> flavouredAction(std::unique_ptr<Action> action, Flavour 
 
 std::unique_ptr<Event> makeEventForActionType(QMetaType metaType, QObject *parent)
 {
-    switch (label(metaType)) {
-    case label<MessageAction *>():
+    if (metaType == QMetaType::fromType<MessageAction *>())
         return flavouredEvent(std::make_unique<TurnoutEvent>(parent), Flavour::Initial);
-    case label<TurnoutAction *>():
+    if (metaType == QMetaType::fromType<TurnoutAction *>())
         return flavouredEvent(std::make_unique<TurnoutEvent>(parent), Flavour::Initial);
-    case label<VehicleAction *>():
+    if (metaType == QMetaType::fromType<VehicleAction *>())
         return flavouredEvent(std::make_unique<CanDetectorEvent>(parent), Flavour::Initial);
-    }
 
     LMRS_UNIMPLEMENTED_FOR_METATYPE(metaType);
     return {};
@@ -169,8 +138,7 @@ QJsonObject addAction(QJsonObject event, QJsonObject action)
 
 QJsonObject jsonForItemType(QMetaType metaType, Flavour flavour)
 {
-    switch (label(metaType)) {
-    case label<CanDetectorEvent *>():
+    if (metaType == QMetaType::fromType<CanDetectorEvent *>()) {
         return {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/CanDetectorEvent"_L1},
             {"network"_L1,          flavour == Flavour::Initial ? QJsonValue{} : 0x310b},
@@ -179,8 +147,9 @@ QJsonObject jsonForItemType(QMetaType metaType, Flavour flavour)
             {"type"_L1,             flavour == Flavour::Initial ? "Any"_L1 : "Entering"_L1},
             {"$actions"_L1,         QJsonArray{}},
         };
+    }
 
-    case label<RBusDetectorEvent *>():
+    if (metaType == QMetaType::fromType<RBusDetectorEvent *>()) {
         return {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/RBusDetectorEvent"_L1},
             {"module"_L1,           flavour == Flavour::Initial ? QJsonValue{} : 1},
@@ -188,16 +157,18 @@ QJsonObject jsonForItemType(QMetaType metaType, Flavour flavour)
             {"type"_L1,             flavour == Flavour::Initial ? "Any"_L1 : "Entering"_L1},
             {"$actions"_L1,         QJsonArray{}},
         };
+    }
 
-    case label<RBusDetectorGroupEvent *>():
+    if (metaType == QMetaType::fromType<RBusDetectorGroupEvent *>()) {
         return {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/RBusDetectorGroupEvent"_L1},
             {"group"_L1,            flavour == Flavour::Initial ? QJsonValue{} : 1},
             {"type"_L1,             flavour == Flavour::Initial ? "Any"_L1 : "Entering"_L1},
             {"$actions"_L1,         QJsonArray{}},
         };
+    }
 
-    case label<TurnoutEvent *>():
+    if (metaType == QMetaType::fromType<TurnoutEvent *>()) {
         return {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/TurnoutEvent"_L1},
             {"primaryAddress"_L1,   flavour == Flavour::Initial ? QJsonValue{} : 1},
@@ -206,20 +177,24 @@ QJsonObject jsonForItemType(QMetaType metaType, Flavour flavour)
             {"secondaryState"_L1,   flavour == Flavour::Initial ? QJsonValue{} : "Branched"_L1},
             {"$actions"_L1,         QJsonArray{}},
         };
+    }
 
-    case label<MessageAction *>():
+    if (metaType == QMetaType::fromType<MessageAction *>()) {
         return addAction(jsonForItemType(QMetaType::fromType<TurnoutEvent *>(), Flavour::Initial), {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/MessageAction"_L1},
             {"message"_L1,          flavour == Flavour::Initial ? ""_L1 : "Turnout {address} has switched to state {state}"_L1},
         });
+    }
 
-    case label<TurnoutAction *>():
+    if (metaType == QMetaType::fromType<TurnoutAction *>()) {
         return addAction(jsonForItemType(QMetaType::fromType<TurnoutEvent *>(), Flavour::Initial), {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/TurnoutAction"_L1},
             {"address"_L1,          flavour == Flavour::Initial ? QJsonValue{} : 1},
             {"state"_L1,            flavour == Flavour::Initial ? QJsonValue{} : "Branched"_L1}, // FIXME: decide how to deal with Branched/Straight vs. Red/Green
         });
-    case label<VehicleAction *>():
+    }
+
+    if (metaType == QMetaType::fromType<VehicleAction *>()) {
         return addAction(jsonForItemType(QMetaType::fromType<CanDetectorEvent *>(), Flavour::Initial), {
             {"$schema"_L1,          "https://taschenorakel.de/lmrs/core/automation/VehicleAction"_L1},
             {"address"_L1,          flavour == Flavour::Initial ? QJsonValue{} : 1},
