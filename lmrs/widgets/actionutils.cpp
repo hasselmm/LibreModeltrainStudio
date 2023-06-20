@@ -122,7 +122,7 @@ void ComboBoxAction::setModel(QAbstractItemModel *newModel)
         }
 
         updateVisiblity();
-        emit modelChanged(m_model, {});
+        emit modelChanged(m_model, QPrivateSignal{});
     }
 }
 
@@ -177,7 +177,7 @@ void ComboBoxAction::setCurrentIndex(int newIndex)
                 comboBox->setCurrentIndex(m_currentIndex);
         }
 
-        emit currentIndexChanged(m_currentIndex, {});
+        emit currentIndexChanged(m_currentIndex, QPrivateSignal{});
     }
 }
 

@@ -167,11 +167,6 @@ inline bool reportFailure(const QLoggingCategory &category,
 } // namespace logging::internal
 } // namespace lmrs::core
 
-inline QDebug operator<<(QDebug debug, const QMetaType &type)
-{
-    return debug << "QMetaType(" << type.name() << ")";
-}
-
 template <typename T, typename Period>
 inline QDebug operator<<(QDebug debug, std::chrono::duration<T, Period> duration)
 {

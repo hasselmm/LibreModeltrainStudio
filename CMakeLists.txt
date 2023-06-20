@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(
-    Qt6
+    Qt6 6.5
     COMPONENTS CoreTools Charts LinguistTools Multimedia QuickWidgets SerialPort Sql Svg Test Xml
     OPTIONAL_COMPONENTS ZlibPrivate
     QUIET REQUIRED

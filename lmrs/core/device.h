@@ -115,6 +115,9 @@ public:
 signals:
     void accessoryInfoChanged(lmrs::core::accessory::AccessoryInfo accessoryInfo, QPrivateSignal);
     void turnoutInfoChanged(lmrs::core::accessory::TurnoutInfo turnoutInfo, QPrivateSignal);
+
+protected:
+    using QProtectedSignal = QPrivateSignal;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(AccessoryControl::Features)
@@ -164,6 +167,9 @@ public:
 signals:
     void dccFrameReceived(QByteArray frame, QPrivateSignal);
     void nativeFrameReceived(QByteArray frame, QPrivateSignal);
+
+protected:
+    using QProtectedSignal = QPrivateSignal;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(DebugControl::Features)
@@ -196,6 +202,9 @@ public:
 
 signals:
     void stateChanged(lmrs::core::PowerControl::State state, QPrivateSignal);
+
+protected:
+    using QProtectedSignal = QPrivateSignal;
 };
 
 ///
@@ -210,6 +219,9 @@ public:
 
 signals:
     void detectorInfoChanged(lmrs::core::accessory::DetectorInfo detectorInfo, QPrivateSignal);
+
+protected:
+    using QProtectedSignal = QPrivateSignal;
 };
 
 ///
@@ -245,6 +257,9 @@ signals:
     void filteredSpeedChanged(lmrs::core::millimeters_per_second filteredSpeed, QPrivateSignal);
     void rawSpeedChanged(lmrs::core::millimeters_per_second rawSpeed, QPrivateSignal);
     void pulsesChanged(lmrs::core::hertz_f pulses, QPrivateSignal);
+
+protected:
+    using QProtectedSignal = QPrivateSignal;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(SpeedMeterControl::Features)
@@ -292,6 +307,8 @@ public:
                                        ContinuationCallback<VariableValueResult> callback);
 
 protected:
+    using QProtectedSignal = QPrivateSignal;
+
     virtual void selectPage(dcc::VehicleAddress address, dcc::ExtendedPageIndex page,
                             ContinuationCallback<Error> callback);
     virtual void selectPage(dcc::VehicleAddress address, dcc::SusiPageIndex page,
@@ -322,6 +339,9 @@ public:
 signals:
     void vehicleNameChanged(lmrs::core::dcc::VehicleAddress, QString name, QPrivateSignal);
     void vehicleInfoChanged(lmrs::core::VehicleInfo vehicleInfo, QPrivateSignal);
+
+protected:
+    using QProtectedSignal = QPrivateSignal;
 };
 
 namespace internal {
@@ -486,6 +506,8 @@ signals:
     void controlsChanged(QPrivateSignal);
 
 protected:
+    using QProtectedSignal = QPrivateSignal;
+
     template<class Observable, class PrivateSignal, typename T, typename U = T>
     void observe(core::DeviceInfo id, Observable *observable, T (Observable::*getter)() const,
                  void (Observable::*notify)(T, PrivateSignal), U (*convert)(T) = [](T value) { return value; });

@@ -241,7 +241,7 @@ void FileSharing::Private::processDeviceInfo(QNetworkDatagram message)
     }
 
     qCInfo(logger(), "Nearby Z21 App discovered: %ls", qUtf16Printable(info.deviceName()));
-    emit q()->deviceDiscovered(std::move(info),{});
+    emit q()->deviceDiscovered(std::move(info), FileSharing::QPrivateSignal{});
 }
 
 bool FileSharing::Private::sendDeviceInfo(QHostAddress address, quint16 port)
