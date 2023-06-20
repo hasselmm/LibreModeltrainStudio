@@ -313,7 +313,9 @@ void Device::PowerControl::enterServiceMode(core::ContinuationCallback<core::Err
                                 // FIXME: handle continuation result, but first find a better pattern than the 16 lines approach in z21::PowerControl::enablePower()
                                 core::callIfDefined(core::Continuation::Retry, callback, makeError(valueResponse->status()));
                             } else {
-                                const auto stateGuard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged);
+                                const auto stateGuard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged,
+                                                                            PowerControl::QProtectedSignal{});
+
                                 m_state = State::ServiceMode; // FIXME: is there really no way to query current power mode on LP2?
                                 // FIXME: handle continuation result, but first find a better pattern than the 16 lines approach in z21::PowerControl::enablePower()
                                 core::callIfDefined(core::Continuation::Proceed, callback, core::Error::NoError);
@@ -349,7 +351,8 @@ void Device::PowerControl::enableTrackPower(core::ContinuationCallback<core::Err
                         // FIXME: actually really check for errors
                         core::callIfDefined(core::Continuation::Retry, callback, core::Error::RequestFailed);
                     } else {
-                        const auto stateGuard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged);
+                        const auto stateGuard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged,
+                                                                    core::PowerControl::QProtectedSignal{});
                         m_state = State::PowerOn; // FIXME: is there really no way to query current power mode on LP2?
                         // FIXME: handle continuation result, but first find a better pattern than the 16 lines approach in z21::PowerControl::enablePower()
                         core::callIfDefined(core::Continuation::Proceed, callback, core::Error::NoError);
@@ -374,7 +377,8 @@ void Device::PowerControl::disableTrackPower(core::ContinuationCallback<core::Er
             // FIXME: handle continuation result, but first find a better pattern than the 16 lines approach in z21::PowerControl::enablePower()
             core::callIfDefined(core::Continuation::Retry, callback, makeError(valueResponse->status()));
         } else {
-            const auto stateGuard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged);
+            const auto stateGuard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged,
+                                                        core::PowerControl::QProtectedSignal{});
             m_state = State::PowerOff; // FIXME: is there really no way to query current power mode on LP2?
             // FIXME: handle continuation result, but first find a better pattern than the 16 lines approach in z21::PowerControl::enablePower()
             core::callIfDefined(core::Continuation::Proceed, callback, core::Error::NoError);
@@ -596,7 +600,8 @@ Device::Private *Device::VehicleControl::d() const
 
 void Device::Private::sendRequest(Request request, std::function<void (Response)> callback)
 {
-    const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged,
+                                           core::Device::QProtectedSignal{});
 
     if (!serialPort->isOpen()) {
         reportError(tr("Cannot send to disconnected device"));
@@ -712,7 +717,8 @@ QString Device::uniqueId() const
 
 bool Device::connectToDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged,
+                                           core::Device::QProtectedSignal{});
 
     d->cancelConnectTimeout();
 
@@ -764,7 +770,8 @@ bool Device::connectToDevice()
 
 void Device::disconnectFromDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged,
+                                           core::Device::QProtectedSignal{});
 
     d->cancelConnectTimeout();
     d->streamReader.setDevice(nullptr);
@@ -811,7 +818,8 @@ void Device::updateDeviceInfo()
         deviceInfoIds.append(entry.value());
 
     readDeviceInformation(deviceInfoIds, [this](auto result, auto values) {
-        const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+        const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged,
+                                               core::Device::QProtectedSignal{});
 
         d->cancelConnectTimeout();
 
@@ -830,7 +838,7 @@ void Device::updateDeviceInfo()
                 qCWarning(logger(this)) << "Unsupported interface info:" << it.key();
         }
 
-        emit deviceInfoChanged(d->deviceInfo.keys(), {});
+        emit deviceInfoChanged(d->deviceInfo.keys(), core::Device::QProtectedSignal{});
     });
 }
 
@@ -838,10 +846,10 @@ void Device::setDeviceInfo(core::DeviceInfo id, QVariant value)
 {
     if (auto it = d->deviceInfo.find(id); it == d->deviceInfo.end()) {
         d->deviceInfo.insert(id, std::move(value));
-        emit deviceInfoChanged({id}, {});
+        emit deviceInfoChanged({id}, core::Device::QProtectedSignal{});
     } else if (*it != value) {
         *it = std::move(value);
-        emit deviceInfoChanged({id}, {});
+        emit deviceInfoChanged({id}, core::Device::QProtectedSignal{});
     }
 }
 

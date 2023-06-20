@@ -271,13 +271,13 @@ void AccessoryControl::requestTurnoutInfo(dcc::AccessoryAddress address, Turnout
 void AccessoryControl::onAccessoryInfoReceived(AccessoryInfo info)
 {
     qCDebug(logger(this)) << info;
-    emit accessoryInfoChanged({info.address(), info.state()}, {});
+    emit accessoryInfoChanged({info.address(), info.state()}, AccessoryControl::QProtectedSignal{});
 }
 
 void AccessoryControl::onTurnoutInfoReceived(TurnoutInfo info)
 {
     qCDebug(logger(this)) << info;
-    emit turnoutInfoChanged({info.address(), info.state()}, {});
+    emit turnoutInfoChanged({info.address(), info.state()}, AccessoryControl::QProtectedSignal{});
 }
 
 // =====================================================================================================================
@@ -317,7 +317,7 @@ void DetectorControl::onDetectorInfoReceived(QList<DetectorInfo> infoList)
 {
     for (auto &info: infoList) {
         if (const auto oldInfo = std::exchange(m_infoCache[info.address()], info); oldInfo != info)
-            emit detectorInfoChanged(info, {});
+            emit detectorInfoChanged(info, core::DetectorControl::QProtectedSignal{});
     }
 }
 
@@ -327,7 +327,7 @@ PowerControl::PowerControl(Client *parent)
     : core::PowerControl{parent}
 {
     connect(client(), &Client::trackStatusChanged, this, [this](auto trackStatus) {
-        emit stateChanged(state(trackStatus), {});
+        emit stateChanged(state(trackStatus), core::PowerControl::QProtectedSignal{});
     });
 }
 
@@ -510,7 +510,7 @@ void VehicleControl::onLibraryInfoReceived(LibraryInfo info)
     qDebug(logger(this)) << info;
     m_knownVehicles.insert(info.address());
 
-    emit vehicleNameChanged(info.address(), info.name(), {});
+    emit vehicleNameChanged(info.address(), info.name(), core::VehicleControl::QProtectedSignal{});
 }
 
 void VehicleControl::onRailcomInfoReceived(RailcomInfo info)
@@ -519,7 +519,7 @@ void VehicleControl::onRailcomInfoReceived(RailcomInfo info)
 
     if (!m_knownVehicles.contains(info.address())) {
         m_knownVehicles.insert(info.address());
-        emit vehicleInfoChanged(core::VehicleInfo{info.address(), {}, {}}, {});
+        emit vehicleInfoChanged(core::VehicleInfo{info.address(), {}, {}}, core::VehicleControl::QProtectedSignal{});
     }
 }
 
@@ -535,7 +535,7 @@ void lmrs::roco::z21::VehicleControl::onVehicleInfoReceived(z21::VehicleInfo inf
         functionState[static_cast<size_t>(fn.index())] = info.functions() & fn.value();
 
     auto vehicleInfo = core::VehicleInfo{info.address(), info.direction(), info.speed(), std::move(functionState), flags};
-    emit vehicleInfoChanged(std::move(vehicleInfo), {});
+    emit vehicleInfoChanged(std::move(vehicleInfo), core::VehicleControl::QProtectedSignal{});
 }
 
 PowerControl::State PowerControl::state(Client::TrackStatus trackStatus)
@@ -617,14 +617,14 @@ void Device::Private::updateDeviceInfo()
 
 void Device::Private::onConnected()
 {
-    const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged, core::Device::QProtectedSignal{});
     q()->setDeviceInfo(core::DeviceInfo::ManufacturerId, 161); // FIXME: provide manufacturer constants
     updateDeviceInfo();
 }
 
 void Device::Private::onDisconnected()
 {
-    emit q()->stateChanged(q()->state(), {});
+    emit q()->stateChanged(q()->state(), core::Device::QProtectedSignal{});
 }
 
 // =====================================================================================================================
@@ -635,9 +635,9 @@ Device::Device(QHostAddress address, DeviceFactory *factory, QObject *parent)
 {
     connect(d->client, &Client::connected, d, &Private::onConnected);
     connect(d->client, &Client::disconnected, d, &Private::onDisconnected);
-    connect(d->client, &Client::isConnectedChanged, this, [this] { emit stateChanged(state(), {}); });
-    connect(d->client, &Client::subscriptionsChanged, this, [this] { emit stateChanged(state(), {}); });
-    connect(d->client, &Client::lockStateChanged, this, [this] { emit controlsChanged({}); });
+    connect(d->client, &Client::isConnectedChanged, this, [this] { emit stateChanged(state(), core::Device::QProtectedSignal{}); });
+    connect(d->client, &Client::subscriptionsChanged, this, [this] { emit stateChanged(state(), core::Device::QProtectedSignal{}); });
+    connect(d->client, &Client::lockStateChanged, this, [this] { emit controlsChanged(core::Device::QProtectedSignal{}); });
 
     // FIXME: why are these two responses missing sometimes?
     // z21.stream: received 14 00 84 00 05 00 03 00 13 00 1b 00 83 45 83 45 02 00 03 00
@@ -687,7 +687,7 @@ QString Device::uniqueId() const
 
 bool Device::connectToDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged, core::Device::QProtectedSignal{});
 
     d->client->connectToHost(Client::Subscription::Generic
                              | Client::Subscription::AnyVehicle
@@ -704,7 +704,7 @@ bool Device::connectToDevice()
 
 void Device::disconnectFromDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged, core::Device::QProtectedSignal{});
     d->client->disconnectFromHost();
 }
 
@@ -785,10 +785,10 @@ void Device::setDeviceInfo(core::DeviceInfo id, QVariant value)
 {
     if (auto it = d->deviceInfo.find(id); it == d->deviceInfo.end()) {
         d->deviceInfo.insert(id, std::move(value));
-        emit deviceInfoChanged({id}, {});
+        emit deviceInfoChanged({id}, core::Device::QProtectedSignal{});
     } else if (*it != value) {
         *it = std::move(value);
-        emit deviceInfoChanged({id}, {});
+        emit deviceInfoChanged({id}, core::Device::QProtectedSignal{});
     }
 }
 

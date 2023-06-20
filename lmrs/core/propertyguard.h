@@ -69,31 +69,31 @@ auto propertyGuard(Target *target, Value (GetterTarget::*getter)() const,
     };
 }
 
-template <class Target, typename Value, typename GetterTarget = Target, typename EmitterTarget = Target>
-auto propertyGuard(Target *target, Value (GetterTarget::*getter)() const, void (EmitterTarget::*emitter)())
-{
-    return PropertyGuard<Value> {
-        [target, getter] { return (target->*getter)(); },
-        [target, emitter](auto) { Q_EMIT (target->*emitter)(); }
-    };
-}
-
-template <class Target, typename Value, typename GetterTarget = Target, typename EmitterTarget = Target>
-auto propertyGuard(Target *target, Value (GetterTarget::*getter)() const, void (EmitterTarget::*emitter)(Value))
-{
-    return PropertyGuard<Value> {
-        [target, getter] { return (target->*getter)(); },
-        [target, emitter](auto value) { Q_EMIT (target->*emitter)(std::move(value)); }
-    };
-}
-
-template <class Target, typename Value, typename PS, typename GetterTarget = Target, typename EmitterTarget = Target>
+template <class Target, typename Value, typename GetterTarget = Target,
+          typename EmitterTarget = Target, typename... EmitterArgs>
 auto propertyGuard(Target *target, Value (GetterTarget::*getter)() const,
-                   void (EmitterTarget::*emitter)(Value, PS))
+                   void (EmitterTarget::*emitter)(EmitterArgs...),
+                   EmitterArgs... emitterArgs)
 {
     return PropertyGuard<Value> {
         [target, getter] { return (target->*getter)(); },
-        [target, emitter](auto value) { Q_EMIT (target->*emitter)(std::move(value), {}); }
+        [target, emitter, emitterArgs...](auto) {
+            Q_EMIT (target->*emitter)(std::move(emitterArgs)...);
+        }
+    };
+}
+
+template <class Target, typename Value, typename GetterTarget = Target,
+          typename EmitterTarget = Target, typename... EmitterArgs>
+auto propertyGuard(Target *target, Value (GetterTarget::*getter)() const,
+                   void (EmitterTarget::*emitter)(Value, EmitterArgs...),
+                   EmitterArgs... emitterArgs)
+{
+    return PropertyGuard<Value> {
+        [target, getter] { return (target->*getter)(); },
+        [target, emitter, emitterArgs...](auto value) {
+            Q_EMIT (target->*emitter)(std::move(value), std::move(emitterArgs)...);
+        }
     };
 }
 

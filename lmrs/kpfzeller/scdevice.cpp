@@ -205,10 +205,18 @@ public:
 
 void SpeedCatDevice::SpeedMeter::addMeasurement(unsigned pulseCount)
 {
-    const auto deviceStateGuard = core::propertyGuard(device(), &core::Device::state, &core::Device::stateChanged);
-    const auto filteredSpeedGuard = core::propertyGuard(this, &SpeedMeter::filteredSpeed, &SpeedMeter::filteredSpeedChanged);
-    const auto rawSpeedGuard = core::propertyGuard(this, &SpeedMeter::rawSpeed, &SpeedMeter::rawSpeedChanged);
-    const auto pulseCountGuard = core::propertyGuard(this, &SpeedMeter::pulses, &SpeedMeter::pulsesChanged);
+    const auto deviceStateGuard = core::propertyGuard(device(), &core::Device::state,
+                                                      &core::Device::stateChanged,
+                                                      Device::QProtectedSignal{});
+    const auto filteredSpeedGuard = core::propertyGuard(this, &SpeedMeter::filteredSpeed,
+                                                        &SpeedMeter::filteredSpeedChanged,
+                                                        SpeedMeterControl::QProtectedSignal{});
+    const auto rawSpeedGuard = core::propertyGuard(this, &SpeedMeter::rawSpeed,
+                                                   &SpeedMeter::rawSpeedChanged,
+                                                   SpeedMeterControl::QProtectedSignal{});
+    const auto pulseCountGuard = core::propertyGuard(this, &SpeedMeter::pulses,
+                                                     &SpeedMeter::pulsesChanged,
+                                                     SpeedMeterControl::QProtectedSignal{});
 
     if (sampleCount > 0)
         currentSample = (currentSample + 1) % samples.size();
@@ -217,7 +225,7 @@ void SpeedCatDevice::SpeedMeter::addMeasurement(unsigned pulseCount)
 
     auto now = Sample::Timestamp::clock::now();
     samples[currentSample] = {now, pulseCount};
-    emit dataReceived(std::move(now), {});
+    emit dataReceived(std::move(now), SpeedMeterControl::QProtectedSignal{});
 }
 
 core::SpeedMeterControl::Features SpeedCatDevice::SpeedMeter::features() const
@@ -359,7 +367,7 @@ QString SpeedCatDevice::uniqueId() const
 
 bool SpeedCatDevice::connectToDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged, Device::QProtectedSignal{});
 
     if (!d->serialPort->setBaudRate(QSerialPort::Baud9600)) {
         d->reportError(d->serialPort->errorString());
@@ -398,7 +406,7 @@ bool SpeedCatDevice::connectToDevice()
 
 void SpeedCatDevice::disconnectFromDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged, Device::QProtectedSignal{});
 
     d->speedMeter->sampleCount = 0;
     d->serialPort->close();

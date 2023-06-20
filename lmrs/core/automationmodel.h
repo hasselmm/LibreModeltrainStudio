@@ -345,6 +345,8 @@ signals:
     void typeChanged(lmrs::core::automation::DetectorEvent::Type type, QPrivateSignal);
 
 protected:
+    using DetectorEventSignal = QPrivateSignal;
+
     void setControl(DetectorControl *newControl) override;
 
 private:

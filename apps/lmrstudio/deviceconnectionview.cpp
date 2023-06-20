@@ -383,7 +383,8 @@ void DeviceConnectionView::Private::resizeDeviceInfoColumns()
 void DeviceConnectionView::Private::onCurrentDeviceIndexChanged(const QModelIndex &index)
 {
     const auto guard = propertyGuard(q(), &DeviceConnectionView::currentDevice,
-                                     &DeviceConnectionView::currentDeviceChanged);
+                                     &DeviceConnectionView::currentDeviceChanged,
+                                     DeviceConnectionView::QPrivateSignal{});
 
     currentDevice = ConnectedDeviceModel::device(index);
     deviceInfoModel()->setDevice(currentDevice);
@@ -452,7 +453,8 @@ void DeviceConnectionView::Private::onConnectButtonClicked()
 void DeviceConnectionView::Private::onDisconnectButtonClicked()
 {
     const auto guard = propertyGuard(q(), &DeviceConnectionView::currentDevice,
-                                     &DeviceConnectionView::currentDeviceChanged);
+                                     &DeviceConnectionView::currentDeviceChanged,
+                                     DeviceConnectionView::QPrivateSignal{});
 
     if (currentDevice) {
         if (const auto powerControl = currentDevice->powerControl())
@@ -597,7 +599,7 @@ void DeviceConnectionView::setCurrentDevice(core::Device *newDevice)
             d->connectedDevicesView->setCurrentIndex(std::move(index));
         }
 
-        emit currentDeviceChanged(d->currentDevice, {});
+        emit currentDeviceChanged(d->currentDevice, QPrivateSignal{});
     }
 }
 

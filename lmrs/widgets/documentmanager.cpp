@@ -33,7 +33,7 @@ QString DocumentManager::fileName() const
 void DocumentManager::setModified(bool newModified)
 {
     if (std::exchange(m_modified, newModified) != m_modified)
-        emit modifiedChanged(m_modified, {});
+        emit modifiedChanged(m_modified, QPrivateSignal{});
 }
 
 void DocumentManager::markModified()
@@ -62,7 +62,7 @@ void DocumentManager::resetWithModel(QVariant model)
         return;
 
     m_fileName.clear();
-    emit fileNameChanged(m_fileName, {});
+    emit fileNameChanged(m_fileName, QPrivateSignal{});
 
     resetModel(std::move(model));
     resetModified();
@@ -78,7 +78,9 @@ void DocumentManager::openWithFileName(QString newFileName)
     if (maybeSaveChanges() == QDialog::Rejected)
         return;
 
-    const auto fileNameGuard = core::propertyGuard(this, &DocumentManager::fileName, &DocumentManager::fileNameChanged);
+    const auto fileNameGuard = core::propertyGuard(this, &DocumentManager::fileName,
+                                                   &DocumentManager::fileNameChanged,
+                                                   QPrivateSignal{});
 
     if (newFileName.isEmpty()) {
         auto filters = core::FileFormat::openFileDialogFilter(readableFileFormats());
@@ -114,7 +116,7 @@ void DocumentManager::saveAs()
     });
 
     m_fileName.clear();
-    emit fileNameChanged(m_fileName, {});
+    emit fileNameChanged(m_fileName, QPrivateSignal{});
 
     if (saveChanges() == QDialog::Accepted)
         restoreFileName.dismiss();
@@ -141,7 +143,9 @@ QDialog::DialogCode DocumentManager::maybeSaveChanges()
 
 QDialog::DialogCode DocumentManager::saveChanges()
 {
-    const auto fileNameGuard = core::propertyGuard(this, &DocumentManager::fileName, &DocumentManager::fileNameChanged);
+    const auto fileNameGuard = core::propertyGuard(this, &DocumentManager::fileName,
+                                                   &DocumentManager::fileNameChanged,
+                                                   QPrivateSignal{});
 
     if (m_fileName.isEmpty()) {
         auto filters = core::FileFormat::saveFileDialogFilter(writableFileFormats());

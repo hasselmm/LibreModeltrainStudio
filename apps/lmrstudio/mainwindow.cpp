@@ -924,11 +924,11 @@ bool MainWindowView::isDetachable() const
 void MainWindowView::connectDocumentManager(widgets::DocumentManager *manager)
 {
     connect(manager, &widgets::DocumentManager::fileNameChanged, this, [this](QString fileName) {
-        emit fileNameChanged(std::move(fileName), {});
+        emit fileNameChanged(std::move(fileName), QPrivateSignal{});
     });
 
     connect(manager, &widgets::DocumentManager::modifiedChanged, this, [this](bool modified) {
-        emit modifiedChanged(modified, {});
+        emit modifiedChanged(modified, QPrivateSignal{});
     });
 }
 

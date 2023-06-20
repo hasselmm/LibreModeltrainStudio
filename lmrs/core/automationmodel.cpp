@@ -146,8 +146,8 @@ int Event::insertAction(Action *action, int before)
     action->setParent(this);
     m_actions.insert(before, action);
 
-    emit actionInserted(action, before, {});
-    emit actionsChanged({});
+    emit actionInserted(action, before, QPrivateSignal{});
+    emit actionsChanged(QPrivateSignal{});
 
     return before;
 }
@@ -165,8 +165,8 @@ Action *Event::removeAction(int index)
 
     m_actions.removeAt(index);
 
-    emit actionRemoved(action, index, {});
-    emit actionsChanged({});
+    emit actionRemoved(action, index, QPrivateSignal{});
+    emit actionsChanged(QPrivateSignal{});
 
     return action;
 }
@@ -201,13 +201,13 @@ QList<Parameter> TurnoutEvent::parameters() const
 void TurnoutEvent::setPrimaryAddress(dcc::AccessoryAddress newAddress)
 {
     if (std::exchange(m_primaryAddress, std::move(newAddress)) != m_primaryAddress)
-        emit primaryAddressChanged(m_primaryAddress.value(), {});
+        emit primaryAddressChanged(m_primaryAddress.value(), QPrivateSignal{});
 }
 
 void TurnoutEvent::resetPrimaryAddress()
 {
     if (std::exchange(m_primaryAddress, {}) != m_primaryAddress)
-        emit primaryAddressChanged({}, {});
+        emit primaryAddressChanged({}, QPrivateSignal{});
 }
 
 dcc::AccessoryAddress TurnoutEvent::primaryAddress() const
@@ -226,13 +226,13 @@ bool TurnoutEvent::hasPrimaryAddress() const
 void TurnoutEvent::setSecondaryAddress(dcc::AccessoryAddress newAddress)
 {
     if (std::exchange(m_secondaryAddress, std::move(newAddress)) != m_secondaryAddress)
-        emit secondaryAddressChanged(m_secondaryAddress.value(), {});
+        emit secondaryAddressChanged(m_secondaryAddress.value(), QPrivateSignal{});
 }
 
 void TurnoutEvent::resetSecondaryAddress()
 {
     if (std::exchange(m_secondaryAddress, {}) != m_secondaryAddress)
-        emit secondaryAddressChanged({}, {});
+        emit secondaryAddressChanged({}, QPrivateSignal{});
 }
 
 dcc::AccessoryAddress TurnoutEvent::secondaryAddress() const
@@ -251,13 +251,13 @@ bool TurnoutEvent::hasSecondaryAddress() const
 void TurnoutEvent::setPrimaryState(dcc::TurnoutState newState)
 {
     if (std::exchange(m_primaryState, std::move(newState)) != m_primaryState)
-        emit primaryStateChanged(m_primaryState.value(), {});
+        emit primaryStateChanged(m_primaryState.value(), QPrivateSignal{});
 }
 
 void TurnoutEvent::resetPrimaryState()
 {
     if (std::exchange(m_primaryState, {}) != m_primaryState)
-        emit primaryStateChanged({}, {});
+        emit primaryStateChanged({}, QPrivateSignal{});
 }
 
 dcc::TurnoutState TurnoutEvent::primaryState() const
@@ -276,13 +276,13 @@ bool TurnoutEvent::hasPrimaryState() const
 void TurnoutEvent::setSecondaryState(dcc::TurnoutState newState)
 {
     if (std::exchange(m_secondaryState, std::move(newState)) != m_secondaryState)
-        emit secondaryStateChanged(m_secondaryState.value(), {});
+        emit secondaryStateChanged(m_secondaryState.value(), QPrivateSignal{});
 }
 
 void TurnoutEvent::resetSecondaryState()
 {
     if (std::exchange(m_secondaryState, {}) != m_secondaryState)
-        emit secondaryStateChanged({}, {});
+        emit secondaryStateChanged({}, QPrivateSignal{});
 }
 
 dcc::TurnoutState TurnoutEvent::secondaryState() const
@@ -324,7 +324,7 @@ QList<Parameter> DetectorEvent::parameters() const
 void DetectorEvent::setVehicles(QList<dcc::VehicleAddress> newVehicles)
 {
     if (std::exchange(m_vehicles, std::move(newVehicles)) != m_vehicles)
-        emit vehiclesChanged(m_vehicles, {});
+        emit vehiclesChanged(m_vehicles, QPrivateSignal{});
 }
 
 QList<dcc::VehicleAddress> DetectorEvent::vehicles() const
@@ -335,7 +335,7 @@ QList<dcc::VehicleAddress> DetectorEvent::vehicles() const
 void DetectorEvent::setType(Type newType)
 {
     if (std::exchange(m_type, std::move(newType)) != m_type)
-        emit typeChanged(m_type, {});
+        emit typeChanged(m_type, QPrivateSignal{});
 }
 
 DetectorEvent::Type DetectorEvent::type() const
@@ -392,15 +392,17 @@ bool CanDetectorEvent::hasDetector() const
 void CanDetectorEvent::setNetwork(can::NetworkId newNetwork)
 {
     if (std::exchange(m_network, std::move(newNetwork)) != m_network)
-        emit networkChanged(m_network.value(), {});
+        emit networkChanged(m_network.value(), QPrivateSignal{});
 }
 
 void CanDetectorEvent::resetNetwork()
 {
-    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
+    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector,
+                                             &DetectorEvent::detectorChanged,
+                                             DetectorEventSignal{});
 
     if (std::exchange(m_network, {}) != m_network)
-        emit networkChanged({}, {});
+        emit networkChanged({}, QPrivateSignal{});
 }
 
 can::NetworkId CanDetectorEvent::network() const
@@ -419,15 +421,17 @@ bool CanDetectorEvent::hasNetwork() const
 void CanDetectorEvent::setModule(can::ModuleId newModule)
 {
     if (std::exchange(m_module, std::move(newModule)) != m_module)
-        emit moduleChanged(m_module.value(), {});
+        emit moduleChanged(m_module.value(), QPrivateSignal{});
 }
 
 void CanDetectorEvent::resetModule()
 {
-    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector, &DetectorEvent::detectorChanged);
+    const auto detectorGuard = propertyGuard(this, &DetectorEvent::detector,
+                                             &DetectorEvent::detectorChanged,
+                                             DetectorEventSignal{});
 
     if (std::exchange(m_module, {}) != m_module)
-        emit moduleChanged({}, {});
+        emit moduleChanged({}, QPrivateSignal{});
 }
 
 can::ModuleId CanDetectorEvent::module() const
@@ -446,13 +450,13 @@ bool CanDetectorEvent::hasModule() const
 void CanDetectorEvent::setPort(can::PortIndex newPort)
 {
     if (std::exchange(m_port, std::move(newPort)) != m_port)
-        emit portChanged(m_port.value(), {});
+        emit portChanged(m_port.value(), QPrivateSignal{});
 }
 
 void CanDetectorEvent::resetPort()
 {
     if (std::exchange(m_port, {}) != m_port)
-        emit portChanged({}, {});
+        emit portChanged({}, QPrivateSignal{});
 }
 
 can::PortIndex CanDetectorEvent::port() const
@@ -511,13 +515,13 @@ bool RBusDetectorGroupEvent::hasDetector() const
 void RBusDetectorGroupEvent::setGroup(rbus::GroupId newGroup)
 {
     if (std::exchange(m_group, std::move(newGroup)) != m_group)
-        emit groupChanged(m_group.value(), {});
+        emit groupChanged(m_group.value(), QPrivateSignal{});
 }
 
 void RBusDetectorGroupEvent::resetGroup()
 {
     if (std::exchange(m_group, {}) != m_group)
-        emit groupChanged({}, {});
+        emit groupChanged({}, QPrivateSignal{});
 }
 
 rbus::GroupId RBusDetectorGroupEvent::group() const
@@ -581,13 +585,13 @@ bool RBusDetectorEvent::hasDetector() const
 void RBusDetectorEvent::setModule(rbus::ModuleId newModule)
 {
     if (std::exchange(m_module, std::move(newModule)) != m_module)
-        emit moduleChanged(m_module.value(), {});
+        emit moduleChanged(m_module.value(), QPrivateSignal{});
 }
 
 void RBusDetectorEvent::resetModule()
 {
     if (std::exchange(m_module, {}) != m_module)
-        emit moduleChanged({}, {});
+        emit moduleChanged({}, QPrivateSignal{});
 }
 
 rbus::ModuleId RBusDetectorEvent::module() const
@@ -606,13 +610,13 @@ bool RBusDetectorEvent::hasModule() const
 void RBusDetectorEvent::setPort(rbus::PortIndex newPort)
 {
     if (std::exchange(m_port, std::move(newPort)) != m_port)
-        emit portChanged(m_port.value(), {});
+        emit portChanged(m_port.value(), QPrivateSignal{});
 }
 
 void RBusDetectorEvent::resetPort()
 {
     if (std::exchange(m_port, {}) != m_port)
-        emit portChanged({}, {});
+        emit portChanged({}, QPrivateSignal{});
 }
 
 rbus::PortIndex RBusDetectorEvent::port() const
@@ -662,13 +666,13 @@ QList<Parameter> TurnoutAction::parameters() const
 void TurnoutAction::setAddress(dcc::AccessoryAddress newAddress)
 {
     if (std::exchange(m_address, std::move(newAddress)) != m_address)
-        emit addressChanged(m_address.value(), {});
+        emit addressChanged(m_address.value(), QPrivateSignal{});
 }
 
 void TurnoutAction::resetAddress()
 {
     if (std::exchange(m_address, {}) != m_address)
-        emit addressChanged({}, {});
+        emit addressChanged({}, QPrivateSignal{});
 }
 
 dcc::AccessoryAddress TurnoutAction::address() const
@@ -687,13 +691,13 @@ bool TurnoutAction::hasAddress() const
 void TurnoutAction::setState(dcc::TurnoutState newState)
 {
     if (std::exchange(m_state, std::move(newState)) != m_state)
-        emit stateChanged(m_state.value(), {});
+        emit stateChanged(m_state.value(), QPrivateSignal{});
 }
 
 void TurnoutAction::resetState()
 {
     if (std::exchange(m_state, {}) != m_state)
-        emit stateChanged({}, {});
+        emit stateChanged({}, QPrivateSignal{});
 }
 
 dcc::TurnoutState TurnoutAction::state() const
@@ -729,13 +733,13 @@ QList<Parameter> VehicleAction::parameters() const
 void VehicleAction::setAddress(dcc::VehicleAddress newAddress)
 {
     if (std::exchange(m_address, std::move(newAddress)) != m_address)
-        emit addressChanged(m_address.value(), {});
+        emit addressChanged(m_address.value(), QPrivateSignal{});
 }
 
 void VehicleAction::resetAddress()
 {
     if (std::exchange(m_address, {}) != m_address)
-        emit addressChanged({}, {});
+        emit addressChanged({}, QPrivateSignal{});
 }
 
 dcc::VehicleAddress VehicleAction::address() const
@@ -767,13 +771,13 @@ bool VehicleAction::hasSpeed() const
 void VehicleAction::setSpeed(dcc::Speed126 newSpeed)
 {
     if (std::exchange(m_speed, std::move(newSpeed)) != m_speed)
-        emit speedChanged(m_speed.value(), {});
+        emit speedChanged(m_speed.value(), QPrivateSignal{});
 }
 
 void VehicleAction::resetSpeed()
 {
     if (std::exchange(m_speed, {}) != m_speed)
-        emit speedChanged({}, {});
+        emit speedChanged({}, QPrivateSignal{});
 }
 
 dcc::Direction VehicleAction::direction() const
@@ -792,13 +796,13 @@ bool VehicleAction::hasDirection() const
 void VehicleAction::setDirection(dcc::Direction newDirection)
 {
     if (std::exchange(m_direction, std::move(newDirection)) != m_direction)
-        emit directionChanged(m_direction.value(), {});
+        emit directionChanged(m_direction.value(), QPrivateSignal{});
 }
 
 void VehicleAction::resetDirection()
 {
     if (std::exchange(m_direction, {}) != m_direction)
-        emit directionChanged({}, {});
+        emit directionChanged({}, QPrivateSignal{});
 }
 
 dcc::FunctionState VehicleAction::functions() const
@@ -827,13 +831,13 @@ quint64 VehicleAction::functionMask() const
 void VehicleAction::setFunctions(dcc::FunctionState newFunctions)
 {
     if (std::exchange(m_functions, std::move(newFunctions)) != m_functions)
-        emit functionsChanged(m_functions.value(), {});
+        emit functionsChanged(m_functions.value(), QPrivateSignal{});
 }
 
 void VehicleAction::resetFunctions()
 {
     if (std::exchange(m_functions, {}) != m_functions)
-        emit functionsChanged({}, {});
+        emit functionsChanged({}, QPrivateSignal{});
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -854,7 +858,7 @@ QList<Parameter> MessageAction::parameters() const
 void MessageAction::setMessage(QString newMessage)
 {
     if (std::exchange(m_message, std::move(newMessage)) != m_message)
-        emit messageChanged(m_message, {});
+        emit messageChanged(m_message, QPrivateSignal{});
 }
 
 QString MessageAction::message() const

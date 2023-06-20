@@ -349,7 +349,9 @@ void Device::PowerControl::enableTrackPower(core::ContinuationCallback<core::Err
 {
     d()->queueRequest(Request::powerOn(), [this, callback](Response response) {
         if (response.status() == Response::Status::Succeeded) {
-            const auto guard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged);
+            const auto guard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged,
+                                                   PowerControl::QProtectedSignal{});
+
             currentState = PowerControl::State::PowerOn;
             callback(core::Error::NoError);
         } else {
@@ -365,7 +367,9 @@ void Device::PowerControl::disableTrackPower(core::ContinuationCallback<core::Er
 {
     d()->queueRequest(Request::powerOff(), [this, callback](Response response) {
         if (response.status() == Response::Status::Succeeded) {
-            const auto guard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged);
+            const auto guard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged,
+                                                   PowerControl::QProtectedSignal{});
+
             currentState = PowerControl::State::PowerOff;
             callback(core::Error::NoError);
         } else {
@@ -382,7 +386,8 @@ void Device::PowerControl::updateState()
     qInfo() << Q_FUNC_INFO;
 
     d()->queueRequest(Request::queryPowerState(), [this](PowerControlResponse response) {
-        const auto guard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged);
+        const auto guard = core::propertyGuard(this, &PowerControl::state, &PowerControl::stateChanged,
+                                               PowerControl::QProtectedSignal{});
 
         if (response.status() & PowerControlResponse::Status::BroadcastStopped)
             currentState = PowerControl::State::EmergencyStop;
@@ -510,7 +515,7 @@ void Device::Private::startCommunication()
         queueRequest(Request::startCommunication(), [this](SerialToolInfoReponse) {
             cancelConnectTimeout();
 
-            const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged);
+            const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged, Device::QProtectedSignal{});
             setDeviceInfo(core::DeviceInfo::ManufacturerId, 145);
             updateDeviceInfo();
 
@@ -658,7 +663,8 @@ void Device::VehicleControl::updateVehicleState(dcc::VehicleAddress address, con
     switch (vehicle.subscription) {
     case core::VehicleControl::NormalSubscription:
     case core::VehicleControl::PrimarySubscription:
-        emit vehicleInfoChanged(core::VehicleInfo{address, vehicle.direction, vehicle.speed, vehicle.functions}, {});
+        emit vehicleInfoChanged(core::VehicleInfo{address, vehicle.direction, vehicle.speed, vehicle.functions},
+                                VehicleControl::QProtectedSignal{});
         break;
 
     case core::VehicleControl::CancelSubscription:
@@ -705,7 +711,7 @@ QString Device::uniqueId() const
 
 bool Device::Private::connectToDevice()
 {
-    const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(q(), &Device::state, &Device::stateChanged, Device::QProtectedSignal{});
 
     cancelConnectTimeout();
 
@@ -759,7 +765,7 @@ bool Device::connectToDevice()
 
 void Device::disconnectFromDevice()
 {
-    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged);
+    const auto guard = core::propertyGuard(this, &Device::state, &Device::stateChanged, Device::QProtectedSignal{});
 
     d->cancelConnectTimeout();
     d->serialPort->disconnect(this);
@@ -781,10 +787,10 @@ void Device::Private::setDeviceInfo(core::DeviceInfo id, QVariant value)
     // FIXME: share setDeviceInfo()
     if (auto it = deviceInfo.find(id); it == deviceInfo.end()) {
         deviceInfo.insert(id, std::move(value));
-        emit q()->deviceInfoChanged({id}, {});
+        emit q()->deviceInfoChanged({id}, Device::QProtectedSignal{});
     } else if (*it != value) {
         *it = std::move(value);
-        emit q()->deviceInfoChanged({id}, {});
+        emit q()->deviceInfoChanged({id}, Device::QProtectedSignal{});
     }
 }
 
