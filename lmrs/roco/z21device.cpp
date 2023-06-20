@@ -175,7 +175,7 @@ private:
 
 auto defaultAddresses()
 {
-    QList<QHostAddress> defaultAddresses;
+    auto defaultAddresses = QList<QHostAddress>{};
 
     for (const auto &hostAddress: QNetworkInterface::allAddresses()) {
         if (hostAddress.protocol() != QAbstractSocket::IPv4Protocol)
