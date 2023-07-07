@@ -58,6 +58,7 @@ public:
     explicit Private(core::DeviceFactory *factory, DeviceParameterWidget *d)
         : PrivateObject{d}
         , factory{factory}
+        , parameters{factory->parameters()}
     {}
 
     Editor createEditor(core::Parameter parameter);
@@ -68,6 +69,7 @@ public:
     void revalidate();
 
     QPointer<core::DeviceFactory> const factory;
+    const QList<core::Parameter> parameters;
     QMap<QByteArray, Editor> editors;
     bool hasAcceptableInput = true;
 };
@@ -198,7 +200,7 @@ DeviceParameterWidget::DeviceParameterWidget(core::DeviceFactory *factory, QWidg
     const auto layout = new QFormLayout{this};
     layout->setContentsMargins({});
 
-    for (const auto &parameter: d->factory->parameters()) {
+    for (const auto &parameter: std::as_const(d->parameters)) {
         if (auto editor = d->createEditor(parameter); editor.widget) {
             auto label = new l10n::Facade<QLabel>{parameter.name(), this};
             layout->addRow(label, editor.widget);
