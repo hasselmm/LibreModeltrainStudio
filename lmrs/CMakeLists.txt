@@ -1,5 +1,6 @@
 add_subdirectory(core)
 add_subdirectory(gui)
+add_subdirectory(serial)
 add_subdirectory(widgets)
 
 add_subdirectory(esu)
