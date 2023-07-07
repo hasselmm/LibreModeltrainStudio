@@ -106,9 +106,9 @@ DeviceParameterWidget::Private::Editor DeviceParameterWidget::Private::createCho
     if (const auto choices = model.toStringList(); !choices.isEmpty()) {
         for (const auto &text: choices)
             editor->addItem(text, text);
-    } else if (const auto choiceModel = model.value<core::parameters::ChoiceModel>(); !choiceModel.choices.isEmpty()) {
-        for (const auto &choice: choiceModel.choices)
-            editor->addItem(choice.text, choice.value);
+    } else if (const auto choiceModel = model.value<core::parameters::ChoiceModel>();
+               choiceModel.isValid() && choiceModel.choices()) {
+        editor->setModel(choiceModel.choices());
     } else {
         qCWarning(logger(), "Unsupported type %s for values of choices parameter", model.typeName());
     }

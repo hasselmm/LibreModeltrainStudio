@@ -33,7 +33,7 @@ Item {
             id: choiceEditor
 
             // FIXME: handle optional parameters
-            model: editor.parameter.model.qmlChoices
+            model: editor.parameter.model.choices
 
             textRole: "text"
             valueRole: "value"
