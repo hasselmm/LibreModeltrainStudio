@@ -6,6 +6,8 @@
 #include <lmrs/core/propertyguard.h>
 #include <lmrs/core/userliterals.h>
 
+#include <lmrs/serial/serialportmodel.h>
+
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QTimerEvent>
@@ -24,26 +26,10 @@ constexpr auto s_expectedProductId = 0x7523;    // CH340
 constexpr auto s_vendorName = "KPF-Zeller"_L1;
 constexpr auto s_productName = "Speed-Cat Plus"_L1;
 
-// FIXME: move to paramers
-auto defaultPorts()
+bool probeSerialPort(const QSerialPortInfo &info)
 {
-    auto serialPorts = QList<core::parameters::Choice>{};
-
-    for (const auto &info: QSerialPortInfo::availablePorts()) {
-        if (info.vendorIdentifier() != s_expectedVendorId)
-            continue;
-        if (info.productIdentifier() != s_expectedProductId)
-            continue;
-
-        auto description = info.portName();
-
-        if (auto text = info.description(); !text.isEmpty())
-            description += " ("_L1 + text + ')'_L1;
-
-        serialPorts.emplaceBack(std::move(description), info.portName());
-    }
-
-    return serialPorts;
+    return info.vendorIdentifier() == s_expectedVendorId
+            && info.productIdentifier() == s_expectedProductId;
 }
 
 auto displayName(SpeedCatDevice::Scale scale)
@@ -449,7 +435,8 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::choice<QString>(s_parameterPortName, LMRS_TR("Serial &port:"), defaultPorts()),
+        core::Parameter::choice(s_parameterPortName, LMRS_TR("Serial &port:"),
+                                std::make_shared<serial::SerialPortModel>(probeSerialPort)),
         core::Parameter::choice<SpeedCatDevice::Scale>(s_parameterScale, LMRS_TR("Model &scale:"), defaultScales()),
         core::Parameter::flag(s_parameterRubber, LMRS_TR("&Rubber band:"), true),
     };

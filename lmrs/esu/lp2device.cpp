@@ -12,6 +12,8 @@
 #include <lmrs/core/userliterals.h>
 #include <lmrs/core/validatingvariantmap.h>
 
+#include <lmrs/serial/serialportmodel.h>
+
 #include <QEvent>
 #include <QSerialPort>
 #include <QSerialPortInfo>
@@ -21,22 +23,6 @@ namespace lmrs::esu::lp2 {
 namespace {
 
 constexpr auto s_parameter_portName = "port"_BV;
-
-auto defaultPorts()
-{
-    auto serialPorts = QList<core::parameters::Choice>{};
-
-    for (const auto &info: QSerialPortInfo::availablePorts()) {
-        auto description = info.portName();
-
-        if (auto text = info.description(); !text.isEmpty())
-            description += " ("_L1 + text + ')'_L1;
-
-        serialPorts.emplaceBack(std::move(description), info.portName());
-    }
-
-    return serialPorts;
-}
 
 constexpr auto makeError(Response::Status status)
 {
@@ -912,7 +898,8 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::choice<QString>(s_parameter_portName, LMRS_TR("Serial &port:"), defaultPorts()),
+        core::Parameter::choice(s_parameter_portName, LMRS_TR("Serial &port:"),
+                                std::make_shared<serial::SerialPortModel>()),
     };
 }
 

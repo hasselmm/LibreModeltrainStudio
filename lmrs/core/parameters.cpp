@@ -26,6 +26,110 @@ QByteArray prefixedKey(QByteArray key, QByteArray prefix)
 
 } // namespace
 
+QVariant parameters::ChoiceListModel::data(const QModelIndex &index, int role) const
+{
+    if (hasIndex(index.row(), index.column(), index.parent())) {
+        switch (static_cast<DataRole>(role)) {
+        case TextRole:
+            return m_choices[index.row()].text;
+        case ValueRole:
+            return m_choices[index.row()].value;
+        }
+    }
+
+    return {};
+}
+
+int parameters::ChoiceListModel::rowCount(const QModelIndex &parent) const
+{
+    if (Q_UNLIKELY(parent.isValid()))
+        return 0;
+
+    return static_cast<int>(m_choices.count());
+}
+
+QHash<int, QByteArray> parameters::ChoiceListModel::roleNames() const
+{
+    return {
+        {TextRole, "text"},
+        {ValueRole, "value"},
+    };
+}
+
+int parameters::ChoiceListModel::findValue(QVariant value) const
+{
+    const auto sameByValue = [value](const Choice &choice) {
+        return choice.value == value;
+    };
+
+    const auto first = m_choices.constBegin();
+    const auto last = m_choices.constEnd();
+
+    if (const auto it = std::find_if(first, last, sameByValue); it != last)
+        return static_cast<int>(it - first);
+
+    return -1;
+}
+
+QVariantList parameters::ChoiceListModel::values() const
+{
+    auto values = QVariantList{};
+    values.reserve(m_choices.size());
+
+    std::transform(m_choices.constBegin(), m_choices.constEnd(), std::back_inserter(values),
+                   [](const Choice &choice) { return choice.value; });
+
+    return values;
+}
+
+void parameters::ChoiceListModel::append(QString text, QVariant value)
+{
+    const auto nextRow = static_cast<int>(m_choices.count());
+
+    beginInsertRows({}, nextRow, nextRow);
+    m_choices.emplaceBack(std::move(text), std::move(value));
+    endInsertRows();
+}
+
+void parameters::ChoiceListModel::removeAll(QVariant value)
+{
+    for (auto it = m_choices.begin(); it != m_choices.end(); ) {
+        if (it->value == value) {
+            const auto row = static_cast<int>(it - m_choices.begin());
+            beginRemoveRows({}, row, row);
+            it = m_choices.erase(it);
+            endRemoveRows();
+        } else {
+            ++it;
+        }
+    }
+}
+
+void parameters::ChoiceListModel::setChoices(QList<Choice> choices)
+{
+    beginResetModel();
+    m_choices = std::move(choices);
+    endResetModel();
+}
+
+void parameters::ChoiceListModel::setChoices(QVariantList values, std::function<QString (QVariant)> makeText)
+{
+    if (!makeText) {
+        setChoices(values, [](auto value) { return value.toString(); });
+        return;
+    }
+
+    auto choices = QList<Choice>{};
+    choices.reserve(values.count());
+
+    std::transform(values.constBegin(), values.constEnd(), std::back_inserter(choices), [makeText](auto value) {
+        auto text = makeText(value);
+        return Choice{std::move(text), std::move(value)};
+    });
+
+    setChoices(std::move(choices));
+}
+
 auto &Parameter::logger()
 {
     return core::logger<Parameter>();
@@ -170,17 +274,19 @@ QJsonValue Parameter::toJson(QVariant value) const
 
 Parameter Parameter::choice(QByteArrayView key, l10n::String name, parameters::ChoiceModel model, Flags flags)
 {
-    if (LMRS_FAILED(logger(), !model.choices.isEmpty())
-            || LMRS_FAILED(logger(), model.valueType.isValid())) {
+    if (LMRS_FAILED(logger(), model.isValid())
+            || LMRS_FAILED(logger(), model.choices())) {
         qCCritical(logger(), "Invalid choice model for parameter \"%s\"", key.constData());
         return {};
     }
 
-    for (auto it = model.choices.begin(); it != model.choices.end(); ++it) {
-        if (LMRS_FAILED_EQUALS(logger(), it->value.metaType(), model.valueType)) {
+    for (const auto &index: model.choices()) {
+        const auto value = ChoiceListModel::value(index);
+
+        if (LMRS_FAILED_EQUALS(logger(), value.metaType(), model.valueType)) {
             qCCritical(logger(), "Choice \"%ls\" at index %d has invalid type %s (expected: %s)",
-                       qUtf16Printable(it->text), static_cast<int>(it - model.choices.begin()),
-                      it->value.typeName(), model.valueType.name());
+                       qUtf16Printable(ChoiceListModel::text(index)), index.row(),
+                       value.typeName(), model.valueType.name());
         }
     }
 

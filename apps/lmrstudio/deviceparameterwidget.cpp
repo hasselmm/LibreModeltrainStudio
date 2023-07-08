@@ -58,6 +58,7 @@ public:
     explicit Private(core::DeviceFactory *factory, DeviceParameterWidget *d)
         : PrivateObject{d}
         , factory{factory}
+        , parameters{factory->parameters()}
     {}
 
     Editor createEditor(core::Parameter parameter);
@@ -68,6 +69,7 @@ public:
     void revalidate();
 
     QPointer<core::DeviceFactory> const factory;
+    const QList<core::Parameter> parameters;
     QMap<QByteArray, Editor> editors;
     bool hasAcceptableInput = true;
 };
@@ -104,9 +106,9 @@ DeviceParameterWidget::Private::Editor DeviceParameterWidget::Private::createCho
     if (const auto choices = model.toStringList(); !choices.isEmpty()) {
         for (const auto &text: choices)
             editor->addItem(text, text);
-    } else if (const auto choiceModel = model.value<core::parameters::ChoiceModel>(); !choiceModel.choices.isEmpty()) {
-        for (const auto &choice: choiceModel.choices)
-            editor->addItem(choice.text, choice.value);
+    } else if (const auto choiceModel = model.value<core::parameters::ChoiceModel>();
+               choiceModel.isValid() && choiceModel.choices()) {
+        editor->setModel(choiceModel.choices());
     } else {
         qCWarning(logger(), "Unsupported type %s for values of choices parameter", model.typeName());
     }
@@ -198,7 +200,7 @@ DeviceParameterWidget::DeviceParameterWidget(core::DeviceFactory *factory, QWidg
     const auto layout = new QFormLayout{this};
     layout->setContentsMargins({});
 
-    for (const auto &parameter: d->factory->parameters()) {
+    for (const auto &parameter: std::as_const(d->parameters)) {
         if (auto editor = d->createEditor(parameter); editor.widget) {
             auto label = new l10n::Facade<QLabel>{parameter.name(), this};
             layout->addRow(label, editor.widget);

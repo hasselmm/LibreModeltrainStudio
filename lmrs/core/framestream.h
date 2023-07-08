@@ -140,7 +140,7 @@ public:
     bool isAtEnd() const;
     bool readNext(int minimumSize = 0);
 
-    QByteArray frame() const;   
+    QByteArray frame() const;
     qsizetype bufferedBytes() const;
 
 private:

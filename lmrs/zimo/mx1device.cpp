@@ -10,8 +10,9 @@
 #include <lmrs/core/validatingvariantmap.h>
 #include <lmrs/core/vehicleinfomodel.h>
 
+#include <lmrs/serial/serialportmodel.h>
+
 #include <QSerialPort>
-#include <QSerialPortInfo>
 #include <QTimerEvent>
 
 namespace lmrs::zimo::mx1 {
@@ -25,23 +26,6 @@ namespace {
 
 constexpr auto s_parameter_portName = "port"_BV;
 constexpr auto s_parameter_portSpeed = "speed"_BV;
-
-// FIXME: share with esu::lp2
-auto defaultPorts()
-{
-    auto serialPorts = QList<core::parameters::Choice>{};
-
-    for (const auto &info: QSerialPortInfo::availablePorts()) {
-        auto description = info.portName();
-
-        if (auto text = info.description(); !text.isEmpty())
-            description += " ("_L1 + text + ')'_L1;
-
-        serialPorts.emplaceBack(std::move(description), info.portName());
-    }
-
-    return serialPorts;
-}
 
 auto serialSpeeds()
 {
@@ -828,7 +812,7 @@ QString DeviceFactory::name() const
 QList<core::Parameter> DeviceFactory::parameters() const
 {
     return {
-        core::Parameter::choice<QString>(s_parameter_portName, LMRS_TR("Serial &port:"), defaultPorts()),
+        core::Parameter::choice(s_parameter_portName, LMRS_TR("Serial &port:"), std::make_shared<serial::SerialPortModel>()),
         core::Parameter::choice<QSerialPort::BaudRate>(s_parameter_portSpeed, LMRS_TR("&Speed:"), serialSpeeds()),
     };
 }

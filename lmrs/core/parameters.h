@@ -11,18 +11,6 @@ class QHostAddress;
 
 namespace lmrs::core::parameters {
 
-struct ParameterModel
-{
-    Q_GADGET
-
-public:
-    constexpr ParameterModel(QMetaType valueType = {})
-        : valueType{std::move(valueType)}
-    {}
-
-    QMetaType valueType;
-};
-
 struct Choice
 {
     Q_GADGET
@@ -39,22 +27,85 @@ public:
     QVariant value;
 };
 
+class ChoiceListModel : public QAbstractListModel
+{
+    Q_OBJECT
+
+public:
+    enum DataRole {
+        TextRole = Qt::DisplayRole,
+        ValueRole = Qt::UserRole,
+    };
+
+    explicit ChoiceListModel(QMetaType valueType, QObject *parent = nullptr)
+        : QAbstractListModel{parent}
+        , m_valueType{std::move(valueType)}
+    {}
+
+    explicit ChoiceListModel(QMetaType valueType, QList<Choice> choices, QObject *parent = nullptr)
+        : QAbstractListModel{parent}
+        , m_valueType{std::move(valueType)}
+        , m_choices{std::move(choices)}
+    {}
+
+    [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    [[nodiscard]] int rowCount(const QModelIndex &parent = {}) const override;
+    [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
+
+    [[nodiscard]] auto valueType() const { return m_valueType; }
+    [[nodiscard]] int findValue(QVariant value) const;
+    [[nodiscard]] QVariantList values() const;
+
+    void append(QString text, QVariant value);
+    void removeAll(QVariant value);
+
+    void setChoices(QList<Choice> choices);
+    void setChoices(QVariantList values, std::function<QString (QVariant)> makeText = {});
+
+    [[nodiscard]] static auto text(const QModelIndex &index) { return index.data(TextRole).toString(); }
+    [[nodiscard]] static auto value(const QModelIndex &index) { return index.data(ValueRole); }
+
+private:
+    QMetaType m_valueType;
+    QList<Choice> m_choices;
+};
+
+struct ParameterModel
+{
+    Q_GADGET
+
+public:
+    constexpr ParameterModel(QMetaType valueType = {})
+        : valueType{std::move(valueType)}
+    {}
+
+    [[nodiscard]] auto isValid() const { return valueType.isValid(); }
+
+    QMetaType valueType;
+};
+
 struct ChoiceModel : public ParameterModel
 {
     Q_GADGET
-    Q_PROPERTY(QList<lmrs::core::parameters::Choice> choices MEMBER choices CONSTANT FINAL)
-    Q_PROPERTY(QVariantList qmlChoices READ qmlChoices CONSTANT FINAL)
+    Q_PROPERTY(lmrs::core::parameters::ChoiceListModel *choices READ choices CONSTANT FINAL)
 
 public:
-    QList<Choice> choices;
+    constexpr ChoiceModel() = default;
 
-    QVariantList qmlChoices() const
-    {
-        auto result = QVariantList{};
-        result.reserve(choices.size());
-        std::transform(choices.begin(), choices.end(), std::back_inserter(result), &QVariant::fromValue<Choice>);
-        return result;
-    }
+    ChoiceModel(QMetaType valueType, QList<Choice> choices)
+        : ParameterModel{std::move(valueType)}
+        , m_choices{std::make_shared<ChoiceListModel>(std::move(valueType), std::move(choices))}
+    {}
+
+    ChoiceModel(QMetaType valueType, std::shared_ptr<ChoiceListModel> choices)
+        : ParameterModel{std::move(valueType)}
+        , m_choices{std::move(choices)}
+    {}
+
+    ChoiceListModel *choices() const { return m_choices.get(); }
+
+private:
+    std::shared_ptr<ChoiceListModel> m_choices;
 };
 
 struct NumberModel : public ParameterModel
@@ -174,6 +225,13 @@ public:
                                                Flags flags = {}); // FIXME: make this a generic value type
 
 
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name,
+                                          std::shared_ptr<ChoiceListModel> choices, Flags flags = {})
+    {
+        auto model = ChoiceModel{choices->valueType(), std::move(choices)};
+        return choice(std::move(key), std::move(name), std::move(model), std::move(flags));
+    }
+
     template<class T>
     [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, QList<Choice> choices, Flags flags = {})
     {
@@ -206,8 +264,13 @@ private:
     static auto &logger(auto) = delete;
     [[nodiscard]] static auto &logger();
 
-    [[nodiscard]] static Parameter text(QByteArrayView key, l10n::String name, QMetaType type, TextModel model, Flags flags);
-    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, QMetaType type, QMetaEnum values, Flags flags);
+    [[nodiscard]] static Parameter text(QByteArrayView key, l10n::String name, QMetaType type,
+                                        TextModel model, Flags flags);
+
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, QMetaType type,
+                                          QMetaEnum values, Flags flags);
+    [[nodiscard]] static Parameter choice(QByteArrayView key, l10n::String name, QMetaType type,
+                                          std::shared_ptr<ChoiceListModel> choices, Flags flags);
 
     Type m_type = Type::Invalid;
     Flags m_flags;

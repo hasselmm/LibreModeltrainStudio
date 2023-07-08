@@ -5,7 +5,7 @@ add_library (
 )
 
 target_include_directories(LmrsKpfZeller PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries(LmrsKpfZeller PUBLIC Lmrs::Core Qt6::SerialPort)
+target_link_libraries(LmrsKpfZeller PUBLIC Lmrs::Serial)
 
 add_library(Lmrs::KpfZeller ALIAS LmrsKpfZeller)
 lmrs_doxygen_add_target(LmrsKpfZeller)
