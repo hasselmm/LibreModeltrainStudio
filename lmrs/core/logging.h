@@ -167,11 +167,15 @@ inline bool reportFailure(const QLoggingCategory &category,
 } // namespace logging::internal
 } // namespace lmrs::core
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
+
 template <typename T, typename Period>
 inline QDebug operator<<(QDebug debug, std::chrono::duration<T, Period> duration)
 {
     return debug << duration.count() << lmrs::core::unit<decltype(duration)>;
 }
+
+#endif // QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 
 template <typename T, class Unit, class Ratio>
 inline QDebug operator<<(QDebug debug, lmrs::core::quantity<T, Unit, Ratio> quantity)
