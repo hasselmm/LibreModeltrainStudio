@@ -7,24 +7,61 @@ on:
     branches: [ main ]
 
 jobs:
-  Build-on-Ubuntu:
-    name: "Build on Ubuntu"
-    runs-on: ubuntu-22.04
+  build-and-test:
+    name: "Build and test"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04, windows-2022 ]
+        qt: [ 6.5.3, 6.6.3 ] # 6.7.1
+        include:
+          - os: ubuntu-22.04
+            qt-host: 'linux'
+            qt-arch: 'gcc_64'
+            qt-tools: 'tools_ninja'
+            cmake-flags: >-
+              -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-14
+              -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-14
+              -DCMAKE_MAKE_PROGRAM:FILEPATH=$IQTA_TOOLS/Ninja/ninja
+              -DCPACK_BINARY_STGZ:BOOL=OFF
+              -DCPACK_BINARY_TGZ:BOOL=ON
+              -DCPACK_BINARY_TZ:BOOL=OFF
+            package-ext: '.tar.gz'
+
+          # - os: ubuntu-22.04
+          #   qt: 6.7.1
+          #   qt-arch: 'linux_gcc_64'
+
+          - os: windows-2022
+            qt-host: 'windows'
+            qt-arch: 'win64_mingw'
+            qt-tools: 'tools_mingw1310 tools_ninja tools_opensslv3_x64'
+            cmake-flags: >-
+              -DCMAKE_C_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1310_64/bin/gcc.exe
+              -DCMAKE_CXX_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1310_64/bin/g++.exe
+              -DCMAKE_MAKE_PROGRAM:FILEPATH=$env:IQTA_TOOLS/Ninja/ninja.exe
+              -DOPENSSL_ROOT_DIR:PATH=$env:IQTA_TOOLS/OpenSSLv3/Win_x64
+              -DCPACK_BINARY_NSIS:BOOL=OFF
+              -DCPACK_BINARY_ZIP:BOOL=ON
+            package-ext: '.zip'
+
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: '6.5.1'
-          host: 'linux'
+          version: ${{ matrix.qt }}
+          host: ${{ matrix.qt-host }}
           target: 'desktop'
-          arch: 'gcc_64'
+          arch: ${{ matrix.qt-arch }}
           modules: 'qtcharts qtmultimedia qtserialport'
-          tools: 'tools_ninja'
+          tools: ${{ matrix.qt-tools }}
           cache: true
 
       - name: Set up compiler cache
@@ -32,19 +69,12 @@ jobs:
         with:
           ccache_options: |
             max_size=100M
-          override_cache_key: ccache-linux-clang-x86_64
+          override_cache_key: ccache-${{ matrix.os }}-${{ matrix.qt }}
           update_packager_index: false
+          windows_compile_environment: msvc
 
       - name: Configure project
-        run: >
-          mkdir build && cd build && cmake -GNinja
-          -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-14
-          -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-14
-          -DCMAKE_MAKE_PROGRAM:FILEPATH=$IQTA_TOOLS/Ninja/ninja
-          -DCPACK_BINARY_STGZ:BOOL=OFF
-          -DCPACK_BINARY_TGZ:BOOL=ON
-          -DCPACK_BINARY_TZ:BOOL=OFF
-          ..
+        run: mkdir build && cd build && cmake -GNinja ${{ matrix.cmake-flags }} ..
 
       - name: Build project
         run: cd build && cmake --build . --target all -- -k0
@@ -59,63 +89,8 @@ jobs:
         run: cd build && cmake --build . --target package
 
       - name: Archive packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: packages
-          path: build/*.tar.gz
-          retention-days: 3
-
-  Build-on-Windows:
-    name: "Build on Windows"
-    runs-on: windows-2022
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.5.1'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_mingw'
-          modules: 'qtcharts qtmultimedia qtserialport'
-          tools: 'tools_mingw90 tools_ninja'
-          cache: true
-
-      - name: Set up compiler cache
-        uses: chocobo1/setup-ccache-action@v1
-        with:
-          ccache_options: |
-            max_size=100M
-          override_cache_key: ccache-windows-mingw64
-          windows_compile_environment: msvc # guess "windows_package_manager: choco" would be a better name
-
-      - name: Configure project
-        run: >
-          mkdir build && cd build && cmake -GNinja
-          -DCMAKE_C_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/gcc.exe
-          -DCMAKE_CXX_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/g++.exe
-          -DCMAKE_MAKE_PROGRAM:FILEPATH=$env:IQTA_TOOLS/Ninja/ninja.exe
-          -DCPACK_BINARY_NSIS:BOOL=OFF
-          -DCPACK_BINARY_ZIP:BOOL=ON
-          ..
-
-      - name: Build project
-        run: cd build && cmake --build . --target all -- -k0
-
-      - name: Test project
-        run: cd build && ctest --rerun-failed --output-on-failure
-        continue-on-error: true # remove once tests are expected to be stable
-
-      - name: Package project
-        run: cd build && cmake --build . --target package
-
-      - name: Archive packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: packages
-          path: build/*.zip
+          name: packages-${{ matrix.os }}-${{ matrix.qt }}
+          path: build/*${{ matrix.package-ext }}
           retention-days: 3

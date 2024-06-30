@@ -50,9 +50,12 @@ public:
     explicit AutomationCanvas(QWidget *parent = nullptr)
         : QQuickWidget{parent}
     {
-        qmlRegisterType<automation::Action>("Lmrs.Core.Automation", 1, 0, "Action");
-        qmlRegisterType<automation::Event>("Lmrs.Core.Automation", 1, 0, "Event");
-        qmlRegisterType<automation::Item>("Lmrs.Core.Automation", 1, 0, "Item");
+        qmlRegisterUncreatableType<automation::Action>("Lmrs.Core.Automation", 1, 0, "Action",
+                                                       "Cannot create instances of an abstract type"_L1);
+        qmlRegisterUncreatableType<automation::Event>("Lmrs.Core.Automation", 1, 0, "Event",
+                                                      "Cannot create instances of an abstract type"_L1);
+        qmlRegisterUncreatableType<automation::Item>("Lmrs.Core.Automation", 1, 0, "Item",
+                                                     "Cannot create instances of an abstract type"_L1);
 
         qmlRegisterType<automation::Parameter>("Lmrs.Core.Automation", 1, 0, "parameter");
 
