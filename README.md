@@ -23,11 +23,11 @@ Supported Hardware
 Building
 --------
 
-This software is built using Qt 6.4. So you'll have to install the
+This software is built using Qt 6.5. So you'll have to install the
 [Qt SDK](https://qt.io/) first. Once Qt is installed you can simply
 open the toplevel `CMakeLists.txt` in QtCreator.
 
-Alternatively open a commandline, add Qt 6.4 to your `PATH`,
+Alternatively open a commandline, add Qt 6.5 to your `PATH`,
 and run [CMake](https://cmake.org/).
 
 [![Continuous Integration][ci-status-icon]][ci-status-link]
