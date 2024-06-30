@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -59,9 +59,9 @@ jobs:
         run: cd build && cmake --build . --target package
 
       - name: Archive packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: packages
+          name: packages-qt6.5.3-ubuntu
           path: build/*.tar.gz
           retention-days: 3
 
@@ -70,7 +70,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -114,8 +114,8 @@ jobs:
         run: cd build && cmake --build . --target package
 
       - name: Archive packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: packages
+          name: packages-qt6.5.3-windows
           path: build/*.zip
           retention-days: 3
