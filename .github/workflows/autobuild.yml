@@ -82,7 +82,7 @@ jobs:
           target: 'desktop'
           arch: 'win64_mingw'
           modules: 'qtcharts qtmultimedia qtserialport'
-          tools: 'tools_mingw90 tools_ninja'
+          tools: 'tools_mingw90 tools_ninja tools_opensslv3_x64'
           cache: true
 
       - name: Set up compiler cache
@@ -99,6 +99,7 @@ jobs:
           -DCMAKE_C_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/gcc.exe
           -DCMAKE_CXX_COMPILER:FILEPATH=$env:IQTA_TOOLS/mingw1120_64/bin/g++.exe
           -DCMAKE_MAKE_PROGRAM:FILEPATH=$env:IQTA_TOOLS/Ninja/ninja.exe
+          -DOPENSSL_ROOT_DIR:PATH=$env:IQTA_TOOLS/OpenSSLv3/Win_x64
           -DCPACK_BINARY_NSIS:BOOL=OFF
           -DCPACK_BINARY_ZIP:BOOL=ON
           ..
